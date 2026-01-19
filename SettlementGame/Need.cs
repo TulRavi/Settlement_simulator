@@ -3,54 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+/*
+ Каждая потребность должна сама уметь проживать один тик.
+Внешний код не должен знать:какая это потребность,как она растёт,как она насыщается,какие ресурсы она потребляет
+Внешний код должен делть одно и то же всегда:«Проживи тик».
+ * */
 namespace SettlementGame
 {
-    internal class Need
+    internal abstract class Need
     {
-        public string NeedName { get; set; }
-
-        private double needAmount;
-
-        public bool IsCritical { get; private set; }
-
-        public double NeedAmount
+        private double amount;
+        public double Amount
         {
-            get { return needAmount; }
-            set {needAmount = Math.Clamp(value, 0, 1);}
+            get { return amount; }                      
+            private set { amount = Math.Clamp(value, 0, 1); }
+        }
+        public abstract bool IsCritical { get; }
+        //public abstract double delta { get; }
+        protected void ChangeAmount(double delta)
+        {
+            Amount = Amount + delta;
+        }
+        public abstract void ChangePerTick();//его будем переопределять
+        public bool AmountIsMoreThanOne()
+        {
+            return Amount >= 1;                       
         }
 
-        public Need(string NeedName,double NeedAmount=0,bool IsCritical=false) {
-            this.NeedName = NeedName;
-            this.NeedAmount = NeedAmount;
-            this.IsCritical = IsCritical;
-            }
-
-
-
-        //private double thirst;
-
-        //public double Thirst
-        //{
-        //    get { return thirst; }
-        //    set
-        //    {
-        //        thirst = Math.Clamp(value, 0, 1);
-        //        if (thirst > 1) { Worker.IsAlive = false; }
-        //    }
-        //}
-
-
-        //private double hunger;
-
-        //public double Hunger
-        //{
-        //    get { return hunger; }
-        //    set
-        //    {
-        //        hunger = hunger = Math.Clamp(value, 0, 1);
-        //        if (hunger > 1) { IsAlive = false; }
-        //    }
-        //}
     }
 }
