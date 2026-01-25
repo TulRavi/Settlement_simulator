@@ -20,11 +20,11 @@ namespace SettlementGame
         }
         public abstract bool IsCritical { get; }
         //public abstract double delta { get; }
-        protected void ChangeAmount(double delta)
+        public void ChangeAmount(double delta)
         {
             Amount = Amount + delta;
         }
-        public abstract void ChangePerTick();//его будем переопределять
+        public abstract void ChangePerTick(DataWorld world);//его будем переопределять
         public bool AmountIsMoreThanOne()
         {
             return Amount >= 1;                       

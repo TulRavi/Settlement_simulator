@@ -8,7 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Berries.cs" />
+    <Compile Remove="Food.cs" />
+    <Compile Remove="Meat.cs" />
+    <Compile Remove="Resource1.cs" />
     <Compile Remove="Resourses.cs" />
+    <Compile Remove="Wood.cs" />
   </ItemGroup>
 
 </Project>

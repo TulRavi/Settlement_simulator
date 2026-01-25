@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace SettlementGame
 {
-    internal class Wood:Resource
+    internal enum ResourceCategory
     {
-        //public override public int Amount
-        //{
-        //    get { return 1; }
-        //}
+
+        Food,
+        Water,
+        Material
     }
 }

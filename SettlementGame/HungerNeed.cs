@@ -13,13 +13,17 @@ namespace SettlementGame
             get { return true; }
         }
 
-        public override void ChangePerTick()
+        public override void ChangePerTick(DataWorld world)
         {
             ChangeAmount(0.1);
-            if (FoodStorage.HasFood)
+
+            foreach (Resource food in world.ResourceList)
             {
-                FoodStorage.Consume(1);
-                ChangeAmount(-0.2);
+                if (food.TryToConsume(1))
+                {
+                    ChangeAmount(-0.2);
+                    break;
+                }
             }
         }
 
