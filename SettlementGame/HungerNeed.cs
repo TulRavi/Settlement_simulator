@@ -13,13 +13,13 @@ namespace SettlementGame
             get { return true; }
         }
 
-        public override void ChangePerTick(DataWorld world)
+        public override void ChangePerTick(DataWorld world) //
         {
             ChangeAmount(0.1);
 
-            foreach (Resource food in world.ResourceList)
+            foreach (ResourceOfSettlement food in world.ResourceList)
             {
-                if (food.TryToConsume(1))
+                if (food.ResourceCategory == ResourceCategory.Food && food.TryToConsume(1)) //нужда отправляет запрос на потребление ресурсу
                 {
                     ChangeAmount(-0.2);
                     break;

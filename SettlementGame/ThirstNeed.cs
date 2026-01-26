@@ -17,18 +17,15 @@ namespace SettlementGame
         {
             ChangeAmount(0.2);
 
-            foreach (Resource water in world.ResourceList)
+            foreach (ResourceOfSettlement water in world.ResourceList)
             {
-                if (water.TryToConsume(3))
+                if (water.ResourceCategory==ResourceCategory.Water && water.TryToConsume(3))
                 {
                     ChangeAmount(-0.3);
                     break;
                 }
             }
         }
-        //public override double delta
-        //{
-        //    get { return 0.2; }
-        //}
+        
     }
 }

@@ -12,12 +12,12 @@ namespace SettlementGame
 
         {   //List <Resource> listResource=new List <Resource>();
             DataWorld world = new DataWorld();
-            world.ResourceList.Add(new Resource(ResourceType.Meat, 10));
-            world.ResourceList.Add(new Resource(ResourceType.Berries, 20));
-            world.ResourceList.Add(new Resource(ResourceType.CleanWater, 50));
-            world.ResourceList.Add(new Resource(ResourceType.Wood, 40));
-            world.ResourceList.Add(new Resource(ResourceType.Stone, 40));
-            world.ResourceList.Add(new Resource(ResourceType.Gold, 0));
+            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Meat, 10));
+            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Berries, 20));
+            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.CleanWater, 50));
+            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Wood, 40));
+            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Stone, 40));
+            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Gold, 0));
 
             return world;
         }
@@ -35,6 +35,35 @@ namespace SettlementGame
                 world.WorkersList.Add(worker);//рабочий с заданнами потербностями добавлен в лист рабочих
                 //workerNeeds.Clear();
             }
+        }
+        public static void PrintState(DataWorld world)
+        {
+            int i = 0;
+            foreach (Worker worker in world.WorkersList)
+            {
+
+
+                foreach (Need need in worker.workerNeeds)
+                {
+                    Console.WriteLine($"{worker} {i} {need.ToString()} {need.Amount}");
+                }
+                i++;
+            }
+            i = 0;
+            foreach (ResourceOfSettlement resource in world.ResourceList)
+            {
+
+
+                Console.WriteLine($"{resource} {resource.ResourceType.ToString()} {resource.Amount}");
+
+
+            }
+
+        }
+        public static void CreateBuilding(DataWorld world, BuildingType buildingType)
+        {
+            Building building = new Building(buildingType);
+            world.BuildingList.Add(building);
         }
     }
 }

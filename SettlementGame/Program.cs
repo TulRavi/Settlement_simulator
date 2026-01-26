@@ -14,18 +14,28 @@ namespace SettlementGame
         public static DateOnly currentDate = new DateOnly();
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
+            Console.WriteLine("Enter the number of workers");
+            int numberOfWorkers=int.Parse(Console.ReadLine());
             DataWorld world=WorldCreator.CretateWorld();
             //world.WorkersList = new List<Worker>();
-            WorldCreator.CreateWorkers(5,world);
-            Console.WriteLine("созданы рабочие с заданными потребностями");
+            WorldCreator.CreateWorkers(numberOfWorkers, world);
+            Console.WriteLine("workers with needs were created");
             //CreateResourses();
             //Data.WorkersList.ElementAt(0).workerNeeds.ElementAt(0).ChangePerTick(0.1);
             //Data.WorkersList.ElementAt(0).workerNeeds.ElementAt(1).ChangePerTick(0.2);
             //Data.WorkersList.ElementAt(3).workerNeeds.ElementAt(1).ChangePerTick(0.5);
-            Console.WriteLine();
-            Tick(world);
+            
+            string userInput = null;
+            while(userInput!= "2")
+            {
+                Console.WriteLine("Enter 2 to finish the simulation,1 for create WoodMaker");
+                userInput = Console.ReadLine();
+                if (userInput == "1") { WorldCreator.CreateBuilding(world, BuildingType.WoodMakery); }
+                Tick(world);
+                WorldCreator.PrintState(world);
 
+
+            }
 
             //для теста
 
@@ -41,6 +51,7 @@ namespace SettlementGame
         {
             currentDate=currentDate.AddDays(1);
         }
+        
         public static void Tick(DataWorld world)
         {   
             DateChanges(world);
@@ -51,6 +62,10 @@ namespace SettlementGame
                 {
                     need.ChangePerTick(world);
                 }
+            }
+            foreach (Building building in world.BuildingList)
+            {
+                building.CreateSomething(world);
             }
             RemoveDeadWorkers(world);
 

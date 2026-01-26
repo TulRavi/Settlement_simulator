@@ -9,7 +9,8 @@ namespace SettlementGame
     internal  class DataWorld
     {
         public  List<Worker> WorkersList=new  List<Worker>();
-        public  List<Resource> ResourceList = new List<Resource>();
+        public  List<ResourceOfSettlement> ResourceList = new List<ResourceOfSettlement>();
+        public List<Building> BuildingList = new List<Building>();
         
         
     }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SettlementGame
 {
-    internal class Resource
+    internal class ResourceOfSettlement
     {
         public ResourceType ResourceType { get;}
         public ResourceCategory ResourceCategory {get;}
@@ -15,7 +15,7 @@ namespace SettlementGame
         public int Amount
         {
             get { return amount; }
-            set { amount = Math.Clamp(value, 0, 1000); }
+            protected set { amount = Math.Clamp(value, 0, 1000); }
         }
 
 
@@ -28,7 +28,13 @@ namespace SettlementGame
             return true;
         }
 
-        public Resource(ResourceType ResourceType, int Amount)
+        public void Increase(int value)
+        {
+            amount = amount + value;
+            
+        }
+
+        public ResourceOfSettlement(ResourceType ResourceType, int Amount)
         {
             this.ResourceType = ResourceType;
             ResourceCategory = ResourceCatalog.GetCategory(ResourceType);

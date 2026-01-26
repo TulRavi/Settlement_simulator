@@ -14,6 +14,9 @@ namespace SettlementGame
             CleanWater,
             Wood,
             Stone,
-            Gold
+            Gold,
+            Doska,
+            Kirpich,
+            Moneta
      }
 }
