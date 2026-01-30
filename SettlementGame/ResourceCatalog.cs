@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,8 +19,12 @@ namespace SettlementGame
                 case ResourceType.Wood: return ResourceCategory.Material;
                 case ResourceType.Stone: return ResourceCategory.Material;
                 case ResourceType.Gold: return ResourceCategory.Material;
+                case ResourceType.Doska: return ResourceCategory.Material;
+                case ResourceType.Kirpich: return ResourceCategory.Material;
+                case ResourceType.Moneta: return ResourceCategory.Money;
                 default: throw new ArgumentOutOfRangeException();
-
+               
+            
             }
         }
     }

@@ -6,12 +6,8 @@ using System.Threading.Tasks;
 
 namespace SettlementGame
 {
-    internal enum ResourceCategory
+    internal interface IUserAction
     {
-
-        Food,
-        Water,
-        Material,
-        Money
+        void Execute(DataWorld world);
     }
 }

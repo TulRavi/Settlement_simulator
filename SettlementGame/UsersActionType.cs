@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace SettlementGame
 {
-    internal enum ResourceCategory
+    internal enum UsersActionType
     {
-
-        Food,
-        Water,
-        Material,
-        Money
+        CreateBuilding,
+        StopBuilding,
+        Destroybuilding,
+        HairEmployee,
+        FireEmployee
     }
 }

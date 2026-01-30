@@ -10,6 +10,26 @@ namespace SettlementGame
     internal class Building
     {   
         public BuildingType BuildingType { get; }
+        //public bool HasEmployee { get; private set; }
+
+        public Worker AssignedWorker { get; private set; }
+
+        internal void AssignWorker(Worker worker)
+        {
+            AssignedWorker = worker;
+        }
+
+        internal void RemoveWorker()
+        {
+            AssignedWorker = null;
+        }
+
+        public bool HasEmployee => AssignedWorker != null;
+
+
+
+        public bool IsBuild { get; private set; }
+        public bool IsOpenedForUser { get; private set; }
 
         public Building(BuildingType BuildingType)
         {

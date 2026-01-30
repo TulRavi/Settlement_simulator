@@ -25,6 +25,24 @@ namespace SettlementGame
                 //if(IsAlive = false) { workerIsDead(как передать аргумент в свойство); }
             }
         }
+
+
+        public bool IsEmployed => WorkPlace != null;
+        private Building workPlace;
+
+        public Building WorkPlace { get; private set; }
+
+        internal void AssignWithWorkPlace(Building building)
+        {
+            WorkPlace = building;
+        }
+
+        internal void UnassignWithWorkPlace()
+        {
+            WorkPlace = null;
+        }
+
+
         public void RecalculateState()
         {
             foreach (Need need in workerNeeds)                // Проверяем каждую потребность

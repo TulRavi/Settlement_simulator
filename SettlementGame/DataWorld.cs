@@ -11,7 +11,8 @@ namespace SettlementGame
         public  List<Worker> WorkersList=new  List<Worker>();
         public  List<ResourceOfSettlement> ResourceList = new List<ResourceOfSettlement>();
         public List<Building> BuildingList = new List<Building>();
-        
-        
+        public List<BuildingType> PossibleBuildingList = new List<BuildingType>();
+
+
     }
 }

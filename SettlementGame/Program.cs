@@ -8,6 +8,9 @@ using System.Security.Cryptography.X509Certificates;
 //HungerNeed и пр. могут иметь свой базовый рост, но кто именно(рабочий/) их удовлетворил — не их дело.
 namespace SettlementGame
 {
+    //этапы: 1) старт поселения - создание рабочих начальных и приказов метополии
+    //2) запуск цикла производства и изм.состояния рабочих, их кол-ва, шкал довольства игроком, кол-ва материалов/зданий
+    //3)мб случайное событие - вкл.позже.
     internal class Program
     {
          
@@ -26,27 +29,22 @@ namespace SettlementGame
             //Data.WorkersList.ElementAt(3).workerNeeds.ElementAt(1).ChangePerTick(0.5);
             
             string userInput = null;
-            while(userInput!= "2")
+            while(userInput!= "end")
             {
-                Console.WriteLine("Enter 2 to finish the simulation,1 for create WoodMaker");
+                
+                Console.WriteLine("Enter end to finish the simulation,1 for create smth,2 to manage workers");
                 userInput = Console.ReadLine();
-                if (userInput == "1") { WorldCreator.CreateBuilding(world, BuildingType.WoodMakery); }
+                if (userInput == "1") {
+                    WorldCreator.CreateNewBuilding(world);
+
+                    //WorldCreator.CreateBuilding(world, BuildingType.WoodMakery);
+                }
                 Tick(world);
                 WorldCreator.PrintState(world);
 
-
             }
-
-            //для теста
-
-            //этапы: 1) старт поселения - создание рабочих начальных и приказов метополии
-            //2) запуск цикла производства и изм.состояния рабочих, их кол-ва, шкал довольства игроком, кол-ва материалов/зданий
-            //3)мб случайное событие - вкл.позже.
-
-
-
-
         }
+        
         public static void DateChanges(DataWorld world)
         {
             currentDate=currentDate.AddDays(1);
@@ -65,7 +63,10 @@ namespace SettlementGame
             }
             foreach (Building building in world.BuildingList)
             {
-                building.CreateSomething(world);
+                if (building.HasEmployee == true)
+                {
+                    building.CreateSomething(world);
+                }
             }
             RemoveDeadWorkers(world);
 
