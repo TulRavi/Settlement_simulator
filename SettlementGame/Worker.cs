@@ -35,6 +35,8 @@ namespace SettlementGame
         internal void AssignWithWorkPlace(Building building)
         {
             WorkPlace = building;
+            //building.HasEmployee = true;
+            
         }
 
         internal void UnassignWithWorkPlace()

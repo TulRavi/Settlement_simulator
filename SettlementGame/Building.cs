@@ -4,11 +4,13 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SettlementGame
 {
     internal class Building
-    {   
+    {
+        
         public BuildingType BuildingType { get; }
         //public bool HasEmployee { get; private set; }
 
@@ -25,6 +27,19 @@ namespace SettlementGame
         }
 
         public bool HasEmployee => AssignedWorker != null;
+        
+        //private bool hasEmployee;
+
+        //public bool HasEmployee
+        //{
+        //    get { return hasEmployee; }
+        //    set { hasEmployee = value;
+        //        if (hasEmployee == false)
+        //        {
+        //            //AssignedWorker != null;
+        //        }
+        //    }
+        //}
 
 
 

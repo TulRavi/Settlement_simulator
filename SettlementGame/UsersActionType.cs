@@ -8,10 +8,15 @@ namespace SettlementGame
 {
     internal enum UsersActionType
     {
-        CreateBuilding,
-        StopBuilding,
-        Destroybuilding,
-        HairEmployee,
-        FireEmployee
+        End = 0,
+        CreateBuilding =1,
+        //StopBuilding,
+        Destroybuilding=3,
+        HireWorker=4,
+        FireWorker=5,
+        DoNothing=9
+            
+        //FireEmployee
+        
     }
 }

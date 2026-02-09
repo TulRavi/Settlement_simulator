@@ -1,16 +1,16 @@
 ﻿using SettlementGame;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using static System.Collections.Specialized.BitVector32;
 //Tick отвечает есть ли еда,кому дать еду,сколько дать,кому не хватило
 //Worker отвечает как интерпретировать состояние потребностей
 //Различия потребностей — это данные и реакции, а не доступ к складу
 //HungerNeed и пр. могут иметь свой базовый рост, но кто именно(рабочий/) их удовлетворил — не их дело.
 namespace SettlementGame
 {
-    //этапы: 1) старт поселения - создание рабочих начальных и приказов метополии
-    //2) запуск цикла производства и изм.состояния рабочих, их кол-ва, шкал довольства игроком, кол-ва материалов/зданий
-    //3)мб случайное событие - вкл.позже.
+    
     internal class Program
     {
          
@@ -20,8 +20,10 @@ namespace SettlementGame
             Console.WriteLine("Enter the number of workers");
             int numberOfWorkers=int.Parse(Console.ReadLine());
             DataWorld world=WorldCreator.CretateWorld();
+            WorldCreator.CreateWorkerEmploymentService(world);
             //world.WorkersList = new List<Worker>();
             WorldCreator.CreateWorkers(numberOfWorkers, world);
+            
             Console.WriteLine("workers with needs were created");
             //CreateResourses();
             //Data.WorkersList.ElementAt(0).workerNeeds.ElementAt(0).ChangePerTick(0.1);
@@ -31,23 +33,118 @@ namespace SettlementGame
             string userInput = null;
             while(userInput!= "end")
             {
-                
-                Console.WriteLine("Enter end to finish the simulation,1 for create smth,2 to manage workers");
-                userInput = Console.ReadLine();
-                if (userInput == "1") {
-                    WorldCreator.CreateNewBuilding(world);
 
-                    //WorldCreator.CreateBuilding(world, BuildingType.WoodMakery);
+                //Console.WriteLine("Enter end to finish the simulation,1 for create smth,2 to manage workers");
+                //userInput = Console.ReadLine();
+                //if (userInput == "1") {
+                //    WorldCreator.CreateNewBuilding(world);
+
+                //    //WorldCreator.CreateBuilding(world, BuildingType.WoodMakery);
+                //}
+                
+                Array values = Enum.GetValues(typeof(UsersActionType));
+
+                foreach (UsersActionType value in values)
+                {
+                    Console.WriteLine($"{(int)value} - {value}");
                 }
+                int choice = int.Parse(Console.ReadLine());
+                UsersActionType actionType = (UsersActionType)choice;
+
+                IUserAction action = null;
+                if (actionType == UsersActionType.End)
+                {
+                    userInput = "end";
+                }
+                    if (actionType == UsersActionType.CreateBuilding)
+                {
+                    WorldCreator.PrintAllPossibleBuildings(world);
+                    Console.WriteLine("Type building name:");
+
+                    string buildingInput = Console.ReadLine();
+
+                    if (!Enum.TryParse(buildingInput, true, out BuildingType buildingType))
+                        return;
+
+                    CreateBuildingContext context = new CreateBuildingContext(buildingType);
+
+                    action = UsersActionsCatalog.CreateBuildingAction(context);
+                }
+                else if (actionType == UsersActionType.Destroybuilding)
+                { //
+                    WorldCreator.PrintBuildedBuildings(world);
+                    Console.WriteLine("Type building index:");
+                    int buildingIndex = int.Parse(Console.ReadLine());
+
+                    DestroyBuildingContext context = new DestroyBuildingContext(world.BuildingList.ElementAt(buildingIndex));
+
+                    action = UsersActionsCatalog.DestroyBuildingAction(context);
+                }
+
+                else if (actionType == UsersActionType.HireWorker)
+                {
+                    WorldCreator.PrintBuildedBuildings(world);
+                    Console.WriteLine("Type building index:");
+                    int buildingIndex = int.Parse(Console.ReadLine());
+
+                    WorldCreator.PrintWorkersList(world);
+                    Console.WriteLine("Type worker index:");
+                    int workerIndex = int.Parse(Console.ReadLine());
+
+                    HireWorkerContext context =
+                        new HireWorkerContext(workerIndex, buildingIndex);
+
+                    action = UsersActionsCatalog.HireWorkerAction(context);
+                }
+
+                else if (actionType == UsersActionType.FireWorker)
+                {
+                    //WorldCreator.PrintBuildedBuildings(world);
+                    //Console.WriteLine("Type building index:");
+                    //int buildingIndex = int.Parse(Console.ReadLine());
+
+                    WorldCreator.PrintHiredWorkersList(world);
+                    Console.WriteLine("Type worker index:");
+                    int workerIndex = int.Parse(Console.ReadLine());
+                    int buildingIndex = world.BuildingList.IndexOf(world.WorkersList.ElementAt(workerIndex).WorkPlace);
+                    FireWorkerContext context =
+                        new FireWorkerContext(workerIndex, buildingIndex);
+
+                    action = UsersActionsCatalog.FireWorkerAction(context);
+                }
+
+                else if (actionType == UsersActionType.DoNothing)
+                {
+                    
+                }
+                if (action != null)
+                {
+                    action.Execute(world);
+                }
+
                 Tick(world);
                 WorldCreator.PrintState(world);
-
             }
         }
         
         public static void DateChanges(DataWorld world)
         {
             currentDate=currentDate.AddDays(1);
+        }
+        
+        public static void TempFireWorkerDirectly(DataWorld world,Building building,Worker worker)
+        {
+            IUserAction action = null;
+            
+            int buildingIndex = world.BuildingList.IndexOf(building);
+
+            int workerIndex = world.WorkersList.IndexOf(worker);
+
+            FireWorkerContext context =
+                new FireWorkerContext(workerIndex, buildingIndex);
+
+            action = UsersActionsCatalog.FireWorkerAction(context);
+            action.Execute(world);
         }
         
         public static void Tick(DataWorld world)
