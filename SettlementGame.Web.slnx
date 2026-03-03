@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SettlementGame.Domain/SettlementGame.Domain.csproj" />
+  <Project Path="SettlementGame.Web/SettlementGame.Web.csproj" />
+</Solution>

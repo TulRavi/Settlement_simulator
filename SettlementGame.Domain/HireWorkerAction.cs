@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SettlementGame
+namespace SettlementGame.Domain
 {
-    internal class HireWorkerAction : IUserAction
+    public class HireWorkerAction : IUserAction
     {   private readonly HireWorkerContext HireWorkerContext;
         
         public HireWorkerAction(HireWorkerContext HairWorkerContext)
@@ -19,8 +19,8 @@ namespace SettlementGame
             Worker worker = world.WorkersList.ElementAt(HireWorkerContext.WorkerIndex);
             Building building = world.BuildingList.ElementAt(HireWorkerContext.BuildingIndex);//todo - сделано Index was out of range при попытке
             //перензначить работника
-            world.WorkerEmploymentService.ChangeWorkingHours(world.WorkersList.ElementAt(HireWorkerContext.WorkerIndex), HireWorkerContext.StartWorkingTime, HireWorkerContext.EndWorkingTime);
-            world.WorkerEmploymentService.AssignWorker(world, worker, building);//todo - done Object reference not set to an instance of an object."
+            world.workerEmploymentService.ChangeWorkingHours(world.WorkersList.ElementAt(HireWorkerContext.WorkerIndex), HireWorkerContext.StartWorkingTime, HireWorkerContext.EndWorkingTime);
+            world.workerEmploymentService.AssignWorker(world, worker, building);//todo - done Object reference not set to an instance of an object."
             //world.WorkerEmploymentService.ChangeWorkingHours(worker, new TimeSpan(00, 09, 00), new TimeSpan(00, 17, 00));
             //при попытке назначить работника
             //if (building.HasEmployee)

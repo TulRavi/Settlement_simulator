@@ -1,5 +1,6 @@
 ﻿using SettlementGame;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -20,7 +21,8 @@ namespace SettlementGame
             Console.WriteLine("Enter the number of workers");
             int numberOfWorkers=int.Parse(Console.ReadLine());
             DataWorld world=WorldCreator.CretateWorld();
-            WorldCreator.CreateWorkerEmploymentService(world);
+            world.WorkerEmploymentService=WorldCreator.CreateWorkerEmploymentService(world);
+            WorldCreator.CreateDateTime(world);
             //world.WorkersList = new List<Worker>();
             WorldCreator.CreateWorkers(numberOfWorkers, world);
             
@@ -91,8 +93,32 @@ namespace SettlementGame
                     Console.WriteLine("Type worker index:");
                     int workerIndex = int.Parse(Console.ReadLine());
 
+                    Console.WriteLine("Please select the shift:1/2/3");
+                    int workerShift = int.Parse(Console.ReadLine());
+                    TimeSpan startWorkingTime1=new TimeSpan();
+                    TimeSpan endWorkingTime1 = new TimeSpan();
+                    if (workerShift == 1) 
+                    {
+                        startWorkingTime1 = new TimeSpan(08, 00, 01);
+                        endWorkingTime1 = new TimeSpan(15, 59, 00);
+                    }
+                    if (workerShift == 2)
+                    {
+                        startWorkingTime1 = new TimeSpan(16, 00, 01);
+                        endWorkingTime1 = new TimeSpan(23, 59, 00);
+                    }
+                    if (workerShift == 3)
+                    {
+                        startWorkingTime1 = new TimeSpan(00, 00, 01);
+                        endWorkingTime1 = new TimeSpan(08, 00, 00);
+                    }
+                    //else
+                    //{
+                    //   startWorkingTime = new TimeSpan(08, 00, 01);
+                    //     endWorkingTime = new TimeSpan(16, 00, 00);
+                    //}
                     HireWorkerContext context =
-                        new HireWorkerContext(workerIndex, buildingIndex);
+                            new HireWorkerContext(workerIndex, buildingIndex, startWorkingTime1, endWorkingTime1);
 
                     action = UsersActionsCatalog.HireWorkerAction(context);
                 }
@@ -127,49 +153,59 @@ namespace SettlementGame
             }
         }
         
-        public static void DateChanges(DataWorld world)
-        {
-            currentDate=currentDate.AddDays(1);
-        }
+        //public static void DateChanges(DataWorld world)
+        //{
+        //    currentDate=currentDate.AddDays(1);
+        //}
         
-        public static void TempFireWorkerDirectly(DataWorld world,Building building,Worker worker)
-        {
-            IUserAction action = null;
+        //public static void TempFireWorkerDirectly(DataWorld world,Building building,Worker worker)
+        //{
+        //    IUserAction action = null;
             
-            int buildingIndex = world.BuildingList.IndexOf(building);
+        //    int buildingIndex = world.BuildingList.IndexOf(building);
 
-            int workerIndex = world.WorkersList.IndexOf(worker);
+        //    int workerIndex = world.WorkersList.IndexOf(worker);
 
-            FireWorkerContext context =
-                new FireWorkerContext(workerIndex, buildingIndex);
+        //    FireWorkerContext context =
+        //        new FireWorkerContext(workerIndex, buildingIndex);
 
-            action = UsersActionsCatalog.FireWorkerAction(context);
-            action.Execute(world);
-        }
+        //    action = UsersActionsCatalog.FireWorkerAction(context);
+        //    action.Execute(world);
+        //}
         
         public static void Tick(DataWorld world)
-        {   
-            DateChanges(world);
+        {
+            world.GameTime=world.GameTime.AddHours(1);
+            world.tempHoursCounter++;
+
             //ChangeNeedsAmount(world);
-            foreach(Worker worker in world.WorkersList)
-            {
-                foreach(Need need in worker.workerNeeds)
+            if (world.tempHoursCounter == 8)
+            { 
+                foreach (Worker worker in world.WorkersList)
                 {
-                    need.ChangePerTick(world);
+                    foreach (Need need in worker.workerNeeds)
+                    {
+                        need.ChangePerTick(world);
+                    }
                 }
+                world.tempHoursCounter = 0;
             }
+
             foreach (Building building in world.BuildingList)
-            {
-                if (building.HasEmployee == true)
+            {   
+                
+                if (building.HasEmployee == true&& building.AssignedWorker.StartWorkingTime<=world.GameTime.TimeOfDay&& world.GameTime.TimeOfDay <= building.AssignedWorker.EndWorkingTime)
                 {
                     building.CreateSomething(world);
                 }
             }
             RemoveDeadWorkers(world);
+            
+
 
         }
 
-        public static void RemoveDeadWorkers(DataWorld world)
+        public static void RemoveDeadWorkers(DataWorld world) //todo: перенести в другой класс
         {
             foreach (var worker in world.WorkersList)
             {

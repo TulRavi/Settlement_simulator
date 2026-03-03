@@ -5,10 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SettlementGame
+namespace SettlementGame.Domain
 {
-    internal class Worker
+    public class Worker
     {
+        public string Position { get; set; }
+        public int Id { get; set; }
+        private string InternalId { get; set; }
         public List<Need> workerNeeds;
         //public TimeSpan startWorkingTime { get; set; }
         //public TimeSpan endWorkingTime { get; set; }
@@ -100,6 +103,8 @@ namespace SettlementGame
         public Worker(List<Need> wokerNeeds)
         {
             this.workerNeeds = wokerNeeds;
+            
+            
         }
               
         private bool isAlive;

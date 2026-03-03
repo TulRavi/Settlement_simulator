@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SettlementGame
+namespace SettlementGame.Domain
 {
-    internal class HireWorkerContext
+    public class HireWorkerContext
     {
         public int WorkerIndex { get; }
         public int BuildingIndex { get; }

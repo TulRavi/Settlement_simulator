@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SettlementGame
+namespace SettlementGame.Domain
 {
-    internal static class WorldCreator
+    public static class WorldCreator
     {
         public static DataWorld CretateWorld()
 
@@ -58,6 +58,8 @@ namespace SettlementGame
                 Worker worker = new Worker(workerNeeds);//создан рабочий с заданными потребностями
                 worker.IsAlive = true;
                 world.WorkersList.Add(worker);//рабочий с заданнами потербностями добавлен в лист рабочих
+                worker.Id = world.NextWorkerId;
+                world.NextWorkerId++;
                 worker.StartWorkingTime = new TimeSpan(00,00,01);
                 worker.EndWorkingTime = new TimeSpan(00, 00, 01);
                 
