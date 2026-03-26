@@ -12,6 +12,7 @@ namespace SettlementGame.Domain
         Food,
         Water,
         Material,
-        Money
+        Money,
+        Alcohol
     }
 }

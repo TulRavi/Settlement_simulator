@@ -12,24 +12,24 @@ namespace SettlementGame.Domain
 
         {   //List <Resource> listResource=new List <Resource>();
             DataWorld world = new DataWorld();
-            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Meat, 100));
-            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Berries, 202));
-            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.CleanWater, 500));
-            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Wood, 40));
-            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Stone, 40));
-            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Gold, 10));
-            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Doska, 0));
-            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Kirpich, 0));
-            world.ResourceList.Add(new ResourceOfSettlement(ResourceType.Moneta, 100));
+            world.SettlementResourceList.Add(new AnyResource(ResourceType.Meat, 100));
+            world.SettlementResourceList.Add(new AnyResource(ResourceType.Berries, 202));
+            world.SettlementResourceList.Add(new AnyResource(ResourceType.CleanWater, 500));
+            world.SettlementResourceList.Add(new AnyResource(ResourceType.Wood, 40));
+            world.SettlementResourceList.Add(new AnyResource(ResourceType.Stone, 40));
+            world.SettlementResourceList.Add(new AnyResource(ResourceType.Gold, 10));
+            world.SettlementResourceList.Add(new AnyResource(ResourceType.Doska, 0));
+            world.SettlementResourceList.Add(new AnyResource(ResourceType.Kirpich, 0));
+            world.SettlementResourceList.Add(new AnyResource(ResourceType.Moneta, 100));
             AddPossibleBuildings(world);
             return world;
         }
 
-        public static WorkerEmploymentService CreateWorkerEmploymentService(DataWorld world)
-        {
-            WorkerEmploymentService workerEmploymentService = new WorkerEmploymentService();
-            return workerEmploymentService;
-        }
+        //public static WorkerEmploymentService CreateWorkerEmploymentService(DataWorld world)
+        //{
+        //    WorkerEmploymentService workerEmploymentService = new WorkerEmploymentService(world);
+        //    return workerEmploymentService;
+        //}
 
         public static void CreateDateTime(DataWorld world)
         {
@@ -46,6 +46,8 @@ namespace SettlementGame.Domain
                 world.PossibleBuildingList.Add(building);
             }
         }
+
+        
         public static void CreateWorkers(int numberOfWorkers, DataWorld world)
         {
 
@@ -53,8 +55,8 @@ namespace SettlementGame.Domain
             for (int i = 0; i < numberOfWorkers; i++)
             { //Потребности добавлены в лист потребностей
                 List<Need> workerNeeds = new List<Need>();
-                workerNeeds.Add(new HungerNeed());
-                workerNeeds.Add(new ThirstNeed());
+                workerNeeds.Add(new NeedHunger());
+                workerNeeds.Add(new NeedThirst());
                 Worker worker = new Worker(workerNeeds);//создан рабочий с заданными потребностями
                 worker.IsAlive = true;
                 world.WorkersList.Add(worker);//рабочий с заданнами потербностями добавлен в лист рабочих
@@ -81,7 +83,7 @@ namespace SettlementGame.Domain
                 i++;
             }
             i = 0;
-            foreach (ResourceOfSettlement resource in world.ResourceList)
+            foreach (AnyResource resource in world.SettlementResourceList)
             {
 
 

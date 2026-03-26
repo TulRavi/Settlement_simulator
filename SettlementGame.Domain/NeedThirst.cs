@@ -6,25 +6,30 @@ using System.Threading.Tasks;
 
 namespace SettlementGame.Domain
 {
-    public class ThirstNeed:Need
+    public class NeedThirst:Need
     {
         public override bool IsCritical
         {
             get { return true; }
         }
 
-        public override void ChangePerTick(DataWorld world)
-        {
-            ChangeAmount(0.2);
+        public override int Cost { get; set; } = 0;
+        public override double LoyalityAmount { get => LoyalityAmount = 0; set => throw new NotImplementedException(); }
 
-            foreach (ResourceOfSettlement water in world.ResourceList)
+        public override bool ChangePerTick(DataWorld world)
+        {
+                        ChangeAmount(0.2);
+
+            foreach (AnyResource water in world.SettlementResourceList)
             {
                 if (water.ResourceCategory==ResourceCategory.Water && water.TryToConsume(3))
                 {
                     ChangeAmount(-0.3);
-                    break;
+                    return true;
                 }
+
             }
+            return false;
         }
         
     }

@@ -8,72 +8,128 @@ namespace SettlementGame.Domain
 {
     public class WorkerEmploymentService
     {
-        public void FireWorker(DataWorld world, Worker worker)
+
+        private readonly DataWorld world;
+
+        public WorkerEmploymentService(DataWorld world)
         {
-            if (worker.WorkPlace == null)
-                return;
-
-            Building building = worker.WorkPlace;
-
-            // 1. снять связи
-            worker.UnassignWithWorkPlace();
-            building.RemoveWorker();
-
-            // 2. выдать компенсацию
-            world.ResourceList.Find(a => a.ResourceType == ResourceType.Moneta).Increase(-3);
-
-            // 3. лог мб впоследствии
+            this.world = world;
         }
-        public void AssignWorker(DataWorld world, Worker worker, Building building)
+
+        public bool GetWorkerById(int id)
         {
-            // если здание занято — увольняем текущего
-            if (building.HasEmployee)
+            int temp = 0;
+            bool isFound = false;
+            FindWorker(id, out isFound);
+
+            if (isFound == true) { return true; } else { return false; }
+        }
+        public bool FireWorker(int id)
+        {
+            //int buildingId = world.WorkersList.Find(x => x.Id == id).WorkPlace.BuildingId;
+            Worker worker = world.WorkersList.Find(x => x.Id == id);
+            if (worker != null && worker.IsEmployed == true)
             {
-                FireWorker(world, building.AssignedWorker);
-            }
 
-            worker.AssignWithWorkPlace(building);
-            building.AssignWorker(worker);
+                FireWorkerContext fireWorkerContext = new FireWorkerContext(worker);
+
+                FireWorkerAction action = (FireWorkerAction)UsersActionsCatalog.FireWorkerAction(fireWorkerContext);
+                //context.Building = world.BuildingList.Find(x => x.BuildingId == buildingId);
+                action.Execute(world);
+                return true;
+            }
+            else return false;
         }
+
+        public bool HireWorker(int id, int BuildingId)
+        { bool isFound;
+            
+                Worker worker = world.WorkersList.Find(x => x.Id == id);
+                Building building = world.BuildingList.Find(x => x.BuildingId == BuildingId);
+            if (worker != null && building != null)
+            {
+                if (building.HasEmployee)
+                {
+                    FireWorker(building.AssignedWorker.Id);
+                }
+                HireWorkerContext hireWorkerContext = new HireWorkerContext(worker, building);
+
+                FireWorkerAction action = (FireWorkerAction)UsersActionsCatalog.HireWorkerAction(hireWorkerContext);
+                //context.Building = world.BuildingList.Find(x => x.BuildingId == buildingId);
+                action.Execute(world);
+                return true;
+            }
+            else { return false; }
+            
+        }
+
+        //    Worker worker = world.WorkersList.Find(x => x.Id == id);
+        //    if (worker != null)
+        //    {
+        //        Building building=world.BuildingList.Find(x => x.BuildingId == BuildingId);
+        //        if (building == null)
+        //            return false;
+        //        // если здание занято — увольняем текущего
+        //        
+
+        //        worker.AssignWithWorkPlace(building);
+        //        building.AssignWorker(worker);
+        //        return true;
+        //    }
+        //    else return false;
+        //}
         public void ChangeWorkingHours(Worker worker,TimeSpan startWorkingTime, TimeSpan endWorkingTime)
         {
             worker.StartWorkingTime = startWorkingTime;
             worker.EndWorkingTime = endWorkingTime;
         }
-        public void FindWorker(DataWorld world,int id,out int temp,out bool isFound)
+        public void FindWorker(int id,out bool isFound)
         {
-            temp = 0;
+            
             isFound = false;
             for (int i = 0; i < world.WorkersList.Count; i++)
             {
                 if (world.WorkersList.ElementAt(i).Id == id)
                 {
-                    temp = i;
+                    
                     isFound = true;
                     break;
                 }
             }
         }
-        public static bool DeleteWorker(DataWorld world,int id)
+        public bool DeleteWorker(int id)
         {
-            int temp = 0;
-            bool isFound = false;
-            world.workerEmploymentService.FindWorker(world, id, out temp, out isFound);
-            if (isFound == true)
-            {
-                world.WorkersList.RemoveAt(temp);
-                return true;
-            }
-            else
-            {
+            //int temp = 0;
+            Worker worker = world.WorkersList.Find(x => x.Id == id);
+            if (worker == null)
                 return false;
-            }
+
+            world.WorkersList.Remove(worker);
+            return true;
         }
-        public static void ClearWorkersList(DataWorld world)
+        public void ClearWorkersList()
         {
             world.WorkersList.Clear();
             Console.WriteLine($"Worker list was cleared");
              
+        }
+
+        public void ChangeWorkersLifeState(int id, bool isAlive) 
+        {
+            world.WorkersList.Find(x=>x.Id==id).IsAlive = isAlive;
+        }
+
+        
+        public void ChangeWorker(int id, int X,int Y, bool isAlive)
+        {
+            Worker worker = world.WorkersList.Find(x => x.Id == id);
+
+            if (worker == null)
+                return;
+
+            worker.X = X;
+            worker.Y = Y;
+            worker.IsAlive = isAlive;
         }
         //WorldService.GetWorkerDtoList(world)
     }

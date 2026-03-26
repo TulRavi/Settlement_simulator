@@ -8,15 +8,19 @@ namespace SettlementGame.Domain
 {
     public class DestroyBuildingContext
     {
-        public Building Building { get; }
+        public WorkerEmploymentService workerEmploymentService;
+        //public Building Building { get; }
         public int X { get; }
         public int Y { get; }
 
-        public DestroyBuildingContext(Building building, int x = 0, int y = 0)
+        public int Id;
+
+        public DestroyBuildingContext(int id, int x = 0, int y = 0)
         {
-            Building = building;
+            //Building = building;
             X = x;
             Y = y;
+            Id = id;
         }
     }
 }

@@ -17,17 +17,20 @@ namespace SettlementGame.Domain
         }
         public void Execute(DataWorld world)
         {
-            Worker worker = world.WorkersList.ElementAt(FireWorkerContext.WorkerIndex);
-            //Building building = world.BuildingList.ElementAt(FireWorkerContext.BuildingIndex);
-            
-            world.workerEmploymentService.FireWorker(world, worker);
-            //if (building.HasEmployee)
-            //{
-            //    building.AssignedWorker.UnassignWithWorkPlace();
-            //    building.RemoveWorker();
-            //}
+            Worker worker = FireWorkerContext.Worker;
 
+            Building building = worker.WorkPlace;
+
+            worker.UnassignWithWorkPlace();
+            building.RemoveWorker();
         }
+        //if (worker.WorkPlace != null)
+        //{
+        //    Building building = worker.WorkPlace;
+        //    worker.UnassignWithWorkPlace();
+        //    building.RemoveWorker();
+        //}
+    }
         
     }
-}
+

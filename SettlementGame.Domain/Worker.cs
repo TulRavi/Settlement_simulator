@@ -98,13 +98,24 @@ namespace SettlementGame.Domain
         public int X { get; set; }
         public int Y { get; set; }
 
+        
+        private double personalLoyality;
+
+        public double PersonalLoyality
+        {
+            get { return personalLoyality; }
+            set { personalLoyality = Math.Clamp(value, 0, 1); }
+        }
+        public void ChangePersonalLoyality(double value)
+        {
+            personalLoyality = personalLoyality + value;
+        }
+
 
 
         public Worker(List<Need> wokerNeeds)
         {
-            this.workerNeeds = wokerNeeds;
-            
-            
+            this.workerNeeds = wokerNeeds;           
         }
               
         private bool isAlive;
@@ -135,7 +146,7 @@ namespace SettlementGame.Domain
         }
 
 
-        public void RecalculateState()
+        public void RecalculateNeedsState(DataWorld world)
         {
             foreach (Need need in workerNeeds)                // Проверяем каждую потребность
             {
@@ -144,23 +155,50 @@ namespace SettlementGame.Domain
                     IsAlive = false;                    // Интерпретация состояния
                     return;
                 }
+                if (need.AmountIsMoreThanOne()==false)//если работник не умер удволетврояем все нужды за деньги
+                {
+                    
+                    if (HasEnoughMoney(need.Cost)==true)
+                    {   
+                        bool isConfirmed=need.ChangePerTick(world);
+                        if (isConfirmed == true) { ChangeMoneyAmount(need.Cost); }
+                        ChangePersonalLoyality(need.LoyalityAmount);
+                        
+                    }
+                }
             }
         }
-        //public static void CheckIfWorkerIsDead()
-        //{
-        //    //foreach (var worker in Data.WorkersList)
-        //    for(int w=0;w< Data.WorkersList.Count();w++)
-        //    {
-        //        foreach (var need in Data.WorkersList.ElementAt(w).workerNeeds)
-        //        {
-        //            if (need.NeedAmount >= 1)
-        //            {
-        //                Data.WorkersList.ElementAt(w).isAlive = false;
-        //                //Data.WorkersList.Remove(worker);
-        //            }
-        //        }
-        //    }
-        //}
+        public void RecalculateLoyality()
+        {
+            //если базовые потребности удоволтеворены, то удоплетворение доп.потребностей дает рост, если не удовлотетоврены базовые, минус.
+        }
+
+        private int PersonalMoney { get; set; }
+        
+        public bool HasEnoughMoney(int value)
+        {
+            if ((PersonalMoney - value) >= 0)
+            {
+                //PersonalMoney = PersonalMoney - value;
+                return true;
+            }
+            else return false;   
+        }
+        public void ChangeMoneyAmount(int value)
+        {
+            PersonalMoney = PersonalMoney - value;
+        }
+
+        public void Tick(DataWorld world)
+        {
+            RecalculateNeedsState(world);
+            
+
+        }
+
+
+
+
 
     }
 }

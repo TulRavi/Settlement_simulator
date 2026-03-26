@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SettlementGame.Domain
 {
-    public class ResourceOfSettlement
+    public class AnyResource
     {
         public ResourceType ResourceType { get;}
         public ResourceCategory ResourceCategory {get;}
@@ -34,7 +34,7 @@ namespace SettlementGame.Domain
             
         }
 
-        public ResourceOfSettlement(ResourceType ResourceType, int Amount)
+        public AnyResource(ResourceType ResourceType, int Amount)
         {
             this.ResourceType = ResourceType;
             ResourceCategory = ResourceCatalog.GetCategory(ResourceType);

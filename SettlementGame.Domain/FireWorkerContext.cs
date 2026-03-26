@@ -5,16 +5,23 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SettlementGame.Domain
-{
+{   
     public class FireWorkerContext
     {
-        public int WorkerIndex { get; }
-        public int BuildingIndex { get; }
+        public WorkerEmploymentService workerEmploymentService;
+        public Worker Worker { get; }
 
-        public FireWorkerContext(int workerIndex, int buildingIndex)
+        public FireWorkerContext(Worker worker)
         {
-            WorkerIndex = workerIndex;
-            BuildingIndex = buildingIndex;
+            Worker = worker;
         }
+        //public int WorkerId { get; }
+        //public int BuildingId { get; }
+
+        //public FireWorkerContext(int workerId)
+        //{
+        //    WorkerId = workerId;
+        //    BuildingId = buildingId;
+        //}
     }
 }

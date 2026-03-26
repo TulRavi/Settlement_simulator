@@ -8,20 +8,28 @@ namespace SettlementGame.Domain
 {
     public class BuildingCatalog
     {
-        public ResourceType InputResource { get; }
+        public List<ResourceAmount> Inputs { get; set; }
+        public List<ResourceAmount> Outputs { get; set; }
+        //public ResourceType InputResource { get; }
 
-        public int AmountOfInputResource { get; set; }
-        public ResourceType OutputResource { get; set; }
-        public int AmountOfOutputResource { get; set; }
+        //public int AmountOfInputResource { get; set; }
+        //public ResourceType OutputResource { get; set; }
+        //public int AmountOfOutputResource { get; set; }
 
-        public BuildingCatalog (ResourceType InputResource, int AmountOfInputResource, ResourceType OutputResource, int AmountOfOutputResource)
+        //public BuildingCatalog (ResourceType InputResource, int AmountOfInputResource, ResourceType OutputResource, int AmountOfOutputResource)
+        //{
+        //    this.InputResource = InputResource;
+        //    this.AmountOfInputResource = AmountOfInputResource;
+        //    this.OutputResource = OutputResource;
+        //    this.AmountOfOutputResource = AmountOfOutputResource;
+        //}
+        public BuildingCatalog(
+        List<ResourceAmount> inputs,
+        List<ResourceAmount> outputs)
         {
-            this.InputResource = InputResource;
-            this.AmountOfInputResource = AmountOfInputResource;
-            this.OutputResource = OutputResource;
-            this.AmountOfOutputResource = AmountOfOutputResource;
+            Inputs = inputs;
+            Outputs = outputs;
         }
-
 
 
         public static BuildingCatalog GetProductForCreation(BuildingType buildingType)
@@ -29,12 +37,25 @@ namespace SettlementGame.Domain
             switch (buildingType)
             {
                 case BuildingType.WoodMakery:
-                    return new BuildingCatalog(ResourceType.Wood,1, ResourceType.Doska,5); //найти в ресурсах мира дерево, потребить и создать доски
+                    return new BuildingCatalog(new List<ResourceAmount>{new ResourceAmount(ResourceType.Wood,1) },
+                    new List<ResourceAmount> { new ResourceAmount(ResourceType.Doska, 5) }); //найти в ресурсах мира дерево, потребить и создать доски
                     //или вернуть тип потребляемого ресурса и его кол-во, тип производимого ресурса и его кол-во.
                 case BuildingType.StoneMakery:
-                    return new BuildingCatalog(ResourceType.Stone, 1, ResourceType.Kirpich, 4);
+                    return new BuildingCatalog(new List<ResourceAmount> { new ResourceAmount(ResourceType.Stone, 1) },
+                        new List<ResourceAmount> { new ResourceAmount(ResourceType.Kirpich, 4) });
                 case BuildingType.GoldMakery:
-                        return new BuildingCatalog(ResourceType.Gold, 1, ResourceType.Moneta, 10);
+                        return new BuildingCatalog(new List<ResourceAmount> { new ResourceAmount(ResourceType.Gold, 1) },
+                            new List<ResourceAmount> { new ResourceAmount(ResourceType.Moneta, 10) });
+                case BuildingType.BeerMakery:
+                    return new BuildingCatalog(new List<ResourceAmount>
+                        {
+                        new ResourceAmount(ResourceType.CleanWater, 10),
+                        new ResourceAmount(ResourceType.Psheniza, 1),
+                        new ResourceAmount(ResourceType.Hmel, 1)
+                        },
+                        new List<ResourceAmount>{new ResourceAmount(ResourceType.Beer, 10)});
+                case BuildingType.Tavern:
+                    return new BuildingCatalog(new List<ResourceAmount>(), new List<ResourceAmount>());//в удовлетворении нужды рабочего потребление
 
                 default: throw new ArgumentOutOfRangeException();
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SettlementGame.Domain;
 using System.Reflection;
 using static SettlementGame.Domain.WorldService;
+using static System.Net.WebRequestMethods;
 
 namespace SettlementGame.Web.Controllers
 {
@@ -11,15 +12,21 @@ namespace SettlementGame.Web.Controllers
     public class WorkersController : ControllerBase
     {
         private readonly DataWorld world;
-        public WorkersController(DataWorld world) //DI-контейнер:видит, что нужен DataWorld,создаёт его(Singleton),
-                                                  //передаёт в контроллер - вместо new DataWorld().
+        private readonly WorkerEmploymentService workerEmploymentService;
+        private readonly WorldService worldService;
+        public WorkersController(DataWorld world,WorkerEmploymentService workerService, WorldService worldService)
+        //DI-контейнер:видит, что нужен DataWorld,создаёт его(Singleton),
+        //передаёт в контроллер - вместо new DataWorld().
         {
             this.world = world;
+            this.workerEmploymentService = workerService;
+            this.worldService = worldService;
         }
+
         [HttpGet]
         public IActionResult GetWorkers()
         {
-            return Ok(WorldService.GetWorkerDtoList(world));//возвращает JSON
+            return Ok(worldService.GetWorkerDtoList());//возвращает JSON
         }
 
         
@@ -30,92 +37,87 @@ namespace SettlementGame.Web.Controllers
         [HttpPost]
         public IActionResult CreateWorker([FromBody] CreateWorkerRequest request)
         {
-            WorldService.CreateWorkersByService(request.Number, world);
-            //    for (int i = 0; i < request.Number; i++)
-            //    {
-            //        //Random random = new Random();
-
-            //        List<Need> workerNeeds = new List<Need>
-            //{
-            //    new HungerNeed(),
-            //    new ThirstNeed()
-            //};
-
-            //        Worker worker = new Worker(workerNeeds);
-            //        //worker.id = random.Next(0, 999);
-            //        worker.Id = world.NextWorkerId;
-            //        world.WorkersList.Add(worker);
-            //        world.NextWorkerId++;
-            //    }
-
+            worldService.CreateWorkersByService(request.Number);
             return Ok($"New Worker(s) {request.Number} were created");
         }
         [HttpGet("{id}")]
         public IActionResult GetWorkerByID(int id)
         {
-            int temp=0;
-            bool isFound=false;
-            world.workerEmploymentService.FindWorker(world, id,out temp,out isFound);
-            //int temp=0;
-            //bool isFound = false;
-            //for (int i = 0; i < world.WorkersList.Count; i++)
-            //{
-            //    if (world.WorkersList.ElementAt(i).id == id)
-            //    {
-            //        temp = i;
-            //        isFound = true;
-            //        break;
-            //    }
-            //}
+            bool isFound = workerEmploymentService.GetWorkerById(id);
             if (isFound == true) 
             {
-                List<WorkerDto> workerDtoList= WorldService.GetWorkerDtoList(world);
-                return Ok(workerDtoList.ElementAt(temp)); } else { return NotFound(); }
-            //return NotFound();
-
+                List<WorkerDto> workerDtoList= worldService.GetWorkerDtoList();
+                return Ok(workerDtoList.Find(x=>x.Id==id)); } else { return NotFound(); 
+            }
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("/api/workers/{id}")]
         public IActionResult DeleteWorkerbyID(int id)
         {
-            bool isDeleted=WorkerEmploymentService.DeleteWorker(world, id);
+            bool isDeleted=workerEmploymentService.DeleteWorker(id);
             if (isDeleted == true) {
                 return Ok($"Worker ID {id} was removed");
             }
             else { return NotFound(); }
-            //int temp = 0;
-            //bool isFound = false;
-            //world.workerEmploymentService.FindWorker(world, id, out temp, out isFound);
-            //if (isFound == true) 
-            //{
-            //    world.WorkersList.RemoveAt(temp);
-            //    return Ok($"Worker ID {id} was removed"); } else { return NotFound();
-            //}
+            
         }
 
         [HttpDelete]
         public IActionResult ClearWorkersListByUser()
         {
-            WorkerEmploymentService.ClearWorkersList(world);  
+            workerEmploymentService.ClearWorkersList();  
          return Ok($"Worker list was cleared");
             
         }
+        //более не нужен
+        //public class ChangeWorkerStateRequest
+        //{
+        //    public bool isAlive { get; set; }
+        //}
 
-        public class ChangeWorkerStateRequest
+        //[HttpPatch("{id}")]
+        //public IActionResult ChangeWorkersLifeState(int id, ChangeWorkerStateRequest changeAliveState)
+        //{
+        //    //int temp = 0;
+        //    bool isFound = false;
+        //    workerEmploymentService.FindWorker(id, out isFound);
+        //    if (isFound == true) {
+        //        bool isAlive = changeAliveState.isAlive;
+        //        //world.WorkersList.ElementAt(temp).IsAlive = changeAliveState.isAlive;
+        //        workerEmploymentService.ChangeWorkersLifeState(id, isAlive);
+        //        return Ok($"Worker ID {id} isAliveState was changed to {changeAliveState.isAlive}"); } else { return NotFound(); }
+        //}
+
+        public class HireWorkerRequest
         {
-            public bool isAlive { get; set; }
+            public int WorkerId { get; set; }
+            public int BuildingId { get; set; }
+            
         }
 
-        [HttpPatch("{id}")]
-        public IActionResult ChangeWorkersLifeState(int id, ChangeWorkerStateRequest changeAliveState)
+        [HttpPost("{id}/hire")]
+        public IActionResult HireWorker(HireWorkerRequest hireWorkerRequest)
         {
-            int temp = 0;
-            bool isFound = false;
-            world.workerEmploymentService.FindWorker(world, id, out temp, out isFound);
-            if (isFound == true) {
-                world.WorkersList.ElementAt(temp).IsAlive = changeAliveState.isAlive;
-                return Ok($"Worker ID {id} isAliveState was changed to {changeAliveState.isAlive}"); } else { return NotFound(); }
+            bool result = workerEmploymentService.HireWorker(hireWorkerRequest.WorkerId, hireWorkerRequest.BuildingId);
+            if (result == true)
+            {
+                return Ok($"Worker ID {hireWorkerRequest.WorkerId} workPlace was changed");
+            }
+            else { return NotFound(); }
         }
+
+        
+        [HttpDelete("{id}/fire")]
+        public IActionResult FireWorker(int id)
+        {
+            bool result = workerEmploymentService.FireWorker(id);
+            if (result == true)
+            {
+                return Ok($"Worker ID {id} was fired");
+            }
+            else { return NotFound(); }
+        }
+
 
         public class ReplaceWorkerRequest
         {
@@ -129,15 +131,16 @@ namespace SettlementGame.Web.Controllers
         [HttpPut("{id}")]
         public IActionResult ChangeWorker(int id, ReplaceWorkerRequest replaceWorkerRequest)
         {
-            int temp = 0;
+            //int temp = 0;
             bool isFound = false;
-            world.workerEmploymentService.FindWorker(world, id, out temp, out isFound);
+            workerEmploymentService.FindWorker(id, out isFound);
             if (isFound == true)
             {
+                workerEmploymentService.ChangeWorker(id, replaceWorkerRequest.X, replaceWorkerRequest.Y, replaceWorkerRequest.IsAlive);
                 //world.WorkersList.ElementAt(temp).id = replaceWorkerRequest.Id;
-                world.WorkersList.ElementAt(temp).X = replaceWorkerRequest.X;
-                world.WorkersList.ElementAt(temp).Y = replaceWorkerRequest.Y;
-                world.WorkersList.ElementAt(temp).IsAlive = replaceWorkerRequest.IsAlive;
+                //world.WorkersList.ElementAt(temp).X = replaceWorkerRequest.X;
+                //world.WorkersList.ElementAt(temp).Y = replaceWorkerRequest.Y;
+                //world.WorkersList.ElementAt(temp).IsAlive = replaceWorkerRequest.IsAlive;
                 
                 //world.WorkersList.RemoveAt(temp);
                 //world.WorkersList.Insert(temp,worker);
@@ -152,7 +155,7 @@ namespace SettlementGame.Web.Controllers
                 //            prop.SetValue(world.WorkersList.ElementAt(temp), value);
                 //        }
                 //    }
-                // Результат: все объекты в списке имеют свойства как у source
+                // все объекты в списке имеют свойства как у source
 
 
                 return Ok($"Worker ID {id} was replaced/changed");

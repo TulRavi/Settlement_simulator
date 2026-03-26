@@ -6,25 +6,31 @@ using System.Threading.Tasks;
 
 namespace SettlementGame.Domain
 {
-    public class HungerNeed : Need
+    public class NeedHunger : Need
     {
+        //public int Cost = 1;
         public override bool IsCritical
         {
             get { return true; }
         }
 
-        public override void ChangePerTick(DataWorld world) //
+        public override int Cost { get; set; } = 1;
+        public override double LoyalityAmount { get => LoyalityAmount=0; set => throw new NotImplementedException(); }
+
+        public override bool ChangePerTick(DataWorld world) //
         {
             ChangeAmount(0.1);
 
-            foreach (ResourceOfSettlement food in world.ResourceList)
+            foreach (AnyResource food in world.SettlementResourceList)
             {
                 if (food.ResourceCategory == ResourceCategory.Food && food.TryToConsume(1)) //нужда отправляет запрос на потребление ресурсу
                 {
                     ChangeAmount(-0.2);
-                    break;
+                    return true;
                 }
+
             }
+            return false;
         }
 
         //set => throw new NotImplementedException(); }

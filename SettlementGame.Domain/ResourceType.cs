@@ -17,6 +17,10 @@ namespace SettlementGame.Domain
             Gold,
             Doska,
             Kirpich,
-            Moneta
+            Moneta,
+            Beer,
+            Wine,
+            Psheniza,
+            Hmel
      }
 }

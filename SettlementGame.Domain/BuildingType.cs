@@ -10,7 +10,9 @@ namespace SettlementGame.Domain
     {
             WoodMakery,
             StoneMakery,
-            GoldMakery
+            GoldMakery,
+            Tavern,
+            BeerMakery
     }
     
 }

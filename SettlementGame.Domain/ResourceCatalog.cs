@@ -22,6 +22,8 @@ namespace SettlementGame.Domain
                 case ResourceType.Doska: return ResourceCategory.Material;
                 case ResourceType.Kirpich: return ResourceCategory.Material;
                 case ResourceType.Moneta: return ResourceCategory.Money;
+                case ResourceType.Beer: return ResourceCategory.Alcohol;
+                case ResourceType.Wine: return ResourceCategory.Alcohol;
                 default: throw new ArgumentOutOfRangeException();
                
             

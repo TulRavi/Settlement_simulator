@@ -27,5 +27,10 @@ namespace SettlementGame.Domain
         {
             return new FireWorkerAction(context);
         }
+
+        //public static IUserAction TickAction(TickContext context)
+        //{
+        //    return new TickAction(context);
+        //}
     }
 }

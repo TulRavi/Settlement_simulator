@@ -16,7 +16,10 @@ namespace SettlementGame.Domain
         public void Execute(DataWorld world)
         {
             Building building = new Building(CreateBuildingContext.BuildingType);
+            building.BuildingId = world.NextBuildingId;
+            world.NextBuildingId++;
             world.BuildingList.Add(building);
+
             //CreateBuildingAction.CreateBuilding(world,buildingType);
         }
 

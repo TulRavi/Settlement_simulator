@@ -11,17 +11,19 @@ namespace SettlementGame.Web
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            
             // Add services to the container.
 
             builder.Services.AddControllers(); //подготовка к подключению контроллеров
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddAuthentication("Basic");//включает механизм входа
+            builder.Services.AddAuthorization();//включает роли для различного уровня досутупа
             builder.Services.AddSwaggerGen();
             
-
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.AddSingleton<DataWorld>();
+            builder.Services.AddScoped<WorkerEmploymentService>();
+            builder.Services.AddScoped<WorldService>();
             var app = builder.Build();//создали сервер
             if (app.Environment.IsDevelopment())
             {
