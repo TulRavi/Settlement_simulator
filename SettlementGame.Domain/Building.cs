@@ -10,11 +10,12 @@ namespace SettlementGame.Domain
 {
     public class Building
     {
-        
-        public BuildingType BuildingType { get; }
+
+        public BuildingType BuildingType { get; set; }
         //public bool HasEmployee { get; private set; }
         public int BuildingId { get; set; }
-
+        public int X { get; set; }
+        public int Y { get; set; }
         public Worker AssignedWorker { get; private set; }
 
         internal void AssignWorker(Worker worker)
@@ -28,7 +29,7 @@ namespace SettlementGame.Domain
         }
 
         public bool HasEmployee => AssignedWorker != null;
-        
+
         //private bool hasEmployee;
 
         //public bool HasEmployee
@@ -52,59 +53,63 @@ namespace SettlementGame.Domain
             this.BuildingType = BuildingType;
         }
 
+
+
+        public void Tick(DataWorld world)//тут здание должно отправлять запрос на создание ресурсу
+        {
+            BuildingCatalog buildingCatalog = BuildingCatalog.GetProductForCreation(BuildingType);//забираем экземпляр класса каталог строительства
+
+            bool canProduce = true;
+
+            foreach (var input in buildingCatalog.Inputs)
+            {
+                var resource = world.SettlementResourceList
+                    .Find(r => r.ResourceType == input.ResourceType);
+
+                if (resource == null || resource.Amount < input.Amount)
+                {
+                    canProduce = false;
+                    break;
+                }
+            }
+            if (canProduce == true)
+            {
+
+                for (int x = 0; x < buildingCatalog.Outputs.Count(); x++)
+                {
+                    foreach (AnyResource resource1 in world.SettlementResourceList)
+                        if (resource1.ResourceType == buildingCatalog.Outputs.ElementAt(x).ResourceType)
+                        {
+                            resource1.Increase(buildingCatalog.Outputs.ElementAt(x).Amount);
+                        }
+                }
+            }
+        }
+
+
         //public void CreateSomethingold(DataWorld world)//тут здание должно отправлять запрос на создание ресурсу
-        //{   
+        //{
         //    BuildingCatalog buildingCatalog = BuildingCatalog.GetProductForCreation(BuildingType);//забираем экземпляр класса каталог строительства
-        //    foreach(ResourceOfSettlement resource in world.ResourceList)
+        //    foreach (ResourceOfSettlement resource in world.ResourceList)
         //    {
-        //        if(resource.ResourceType== buildingCatalog.InputResource) {
-        //            if (resource.TryToConsume(buildingCatalog.AmountOfInputResource) == true) {
+        //        if (resource.ResourceType == buildingCatalog.InputResource)
+        //        {
+        //            if (resource.TryToConsume(buildingCatalog.AmountOfInputResource) == true)
+        //            {
         //                foreach (ResourceOfSettlement resource1 in world.ResourceList)
         //                    if (resource1.ResourceType == buildingCatalog.OutputResource)
         //                    {
         //                        resource1.Increase(buildingCatalog.AmountOfOutputResource);
         //                    }
-        //                    }
+        //            }
         //        }
         //    }
-            
+
         //}
 
-        
-        public void  Tick(DataWorld world)//тут здание должно отправлять запрос на создание ресурсу
-        {
-            BuildingCatalog buildingCatalog = BuildingCatalog.GetProductForCreation(BuildingType);//забираем экземпляр класса каталог строительства
-            
-                bool canProduce = true;
-
-                foreach (var input in buildingCatalog.Inputs)
-                {
-                    var resource = world.SettlementResourceList
-                        .Find(r => r.ResourceType == input.ResourceType);
-
-                    if (resource == null || resource.Amount < input.Amount)
-                    {
-                        canProduce = false;
-                        break;
-                    }
-                }
-             if (canProduce == true)
-                {
-                    
-                    for (int x = 0; x < buildingCatalog.Outputs.Count(); x++)
-                    {
-                        foreach (AnyResource resource1 in world.SettlementResourceList)
-                            if (resource1.ResourceType == buildingCatalog.Outputs.ElementAt(x).ResourceType)
-                            {
-                                resource1.Increase(buildingCatalog.Outputs.ElementAt(x).Amount);
-                            }
-                    }
-                }
-                }
-            }
-
-        }
-
-
+    }
+}
     
+
+
 

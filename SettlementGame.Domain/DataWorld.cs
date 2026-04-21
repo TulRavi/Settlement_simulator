@@ -32,14 +32,17 @@ namespace SettlementGame.Domain
         {
             get { return crownLoyaity; }
             set { crownLoyaity = Math.Clamp(value, 0, 1); }
-            }
-        
-        private double peopleloyality;
+        }
+
+        bool IsGameLost => CrownLoyaity <= 0;
+        bool IsGameWon => CrownLoyaity >= 1;
+
+        private double peopleLoyality;//=worker.PesonalLoyality/WorkersList.Count()
 
         public double Peopleloyality
         {
-            get { return peopleloyality; }
-            set { peopleloyality = Math.Clamp(value, 0, 1); }
+            get { return peopleLoyality; }
+            set { peopleLoyality = Math.Clamp(value, 0, 1); }
         }
         
         

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -13,12 +14,16 @@ namespace SettlementGame.Domain
     {
 
         private readonly DataWorld world;
+        private readonly WorldCreator _worldCreator;
+        private readonly GameDbContext _dbContext;
         public BuildingType BuildingType { get; }
 
 
-        public WorldService(DataWorld world)
+        public WorldService(DataWorld world, WorldCreator worldCreator, GameDbContext dbContext)
         {
             this.world = world;
+            this._worldCreator = worldCreator;
+            this._dbContext = dbContext;
         }
         public DataWorld CreateWorld(int numberOfWorkers=3)
     {   
@@ -33,13 +38,13 @@ namespace SettlementGame.Domain
         world.SettlementResourceList.Add(new AnyResource(ResourceType.Kirpich, 0));
         world.SettlementResourceList.Add(new AnyResource(ResourceType.Moneta, 100));
         
-        WorldCreator.AddPossibleBuildings(world);
+        _worldCreator.AddPossibleBuildings(world);
 
-        WorldCreator.CreateDateTime(world);
+        _worldCreator.CreateDateTime(world);
         
         //world.workerEmploymentService = WorldCreator.CreateWorkerEmploymentService(world);
         
-        WorldCreator.CreateWorkers(numberOfWorkers, world);
+        _worldCreator.CreateWorkers(numberOfWorkers, world);
 
         return world;
     }
@@ -55,30 +60,79 @@ namespace SettlementGame.Domain
             //public TimeSpan EndWorkingTime { get; set; }
         }
 
-        public List<Building> GetBuildings()
+        public List<WorkerDto> GetWorkerDtoList()
         {
-            return world.BuildingList;
+            List<WorkerDto> workerDtoList = new List<WorkerDto>();
+            foreach (WorkerEntity workerEntity in _dbContext.Workers)
+            {
+                Worker worker = WorkerMapper.ToDomain(workerEntity);
+                WorkerDto workerDto = new WorkerDto();
+                workerDto.Id = worker.Id;
+                workerDto.X = worker.X;
+                workerDto.Y = worker.Y;
+                workerDto.IsAlive = worker.IsAlive;
+                workerDtoList.Add(workerDto);
+            }
+            return workerDtoList;
         }
 
-        public List<string> GetAvailibleBuildings()
+        public class BuildingDto
+        {
+            public int Id { get; set; }
+            public BuildingType BuildingType { get; set; }
+            public bool HasEmployee { get; set; }
+            public int X { get; set; }
+            public int Y { get; set; }
+        }
+
+        public List<BuildingDto> GetBuildingDtoList()
+        {
+            List<BuildingDto> BuildingDtoList = new List<BuildingDto>();
+
+            //foreach (Building building in _dbContext.BuildedBuildings)
+            //{
+            //    BuildingDto buildingDto = new BuildingDto();
+            //    buildingDto.Id = building.BuildingId;
+            //    buildingDto.X = building.X;
+            //    buildingDto.Y = building.Y;
+            //    buildingDto.HasEmployee = building.HasEmployee;
+            //    buildingDto.BuildingType = building.BuildingType;
+            //    BuildingDtoList.Add(buildingDto);
+            //}
+            foreach (BuildingEntity entity in _dbContext.BuildedBuildings)
+            {
+                Building building = BuildingMapper.ToDomain(entity);
+
+                BuildingDto buildingDto = new BuildingDto
+                {
+                    Id = building.BuildingId,
+                    X = building.X,
+                    Y = building.Y,
+                    HasEmployee = building.HasEmployee,
+                    BuildingType = building.BuildingType
+                };
+
+                BuildingDtoList.Add(buildingDto);
+            }
+            return BuildingDtoList;
+        }
+
+
+        //public List<Building> GetBuildings()
+        //{
+        //    return world.BuildingList;
+        //}
+
+        public List<BuildingType> GetPossibleBuildings()
         {
 
-            //List<Building> AvailibleBuildingList = world.BuildingList.Where( x=> x.IsOpenedForUser == true).ToList();
-            List<BuildingType> AvailibleBuildingList = world.PossibleBuildingList;
-            
-            Array buildingTypes = Enum.GetValues(typeof(BuildingType));
-
-            List<string> buildingNames1 = new List<string>();
-            foreach (BuildingType buildingType in Enum.GetValues(typeof(BuildingType)))
-            {
-                string temp = ($"Name: {buildingType}, Value: {(int)buildingType}");
-                buildingNames1.Add(temp);
-            }
-            return buildingNames1;
+            return Enum.GetValues(typeof(BuildingType))
+              .Cast<BuildingType>()//приводим enum к изначальным значеням
+              .ToList();
         }
 
         public bool CreateBuilding(BuildingType buildingType) {
-            CreateBuildingContext createBuildingContext = new CreateBuildingContext(buildingType);
+            CreateBuildingContext createBuildingContext = new CreateBuildingContext(buildingType,_dbContext);
             bool exists = Enum.IsDefined(typeof(BuildingType), createBuildingContext.BuildingType);
 
             {
@@ -93,30 +147,37 @@ namespace SettlementGame.Domain
             }
         }
         public void RemoveBuilding(int buildingId)
-        {   
-            DestroyBuildingContext destroyBuildingContext = new DestroyBuildingContext(buildingId);
+        {
+            var entity = _dbContext.BuildedBuildings.FirstOrDefault(x => x.BuildingId == buildingId);
+            if (entity == null)
+                return;
+            var building = BuildingMapper.ToDomain(entity);
+            //Building building = _dbContext.BuildedBuildings.FirstOrDefault(x => x.BuildingId== buildingId);
+            DestroyBuildingContext destroyBuildingContext = new DestroyBuildingContext(building,_dbContext);
+            if (building!=null&&building.HasEmployee == true)
+            {
+                destroyBuildingContext.workerEmploymentService.FireWorker(building.AssignedWorker.Id);
+                //DestroyBuildingContext.Building.
+                //Program.TempFireWorkerDirectly(world, DestroyBuildingContext.Building, DestroyBuildingContext.Building.AssignedWorker);
+            }
+            
             DestroyBuildingAction action = (DestroyBuildingAction)UsersActionsCatalog.DestroyBuildingAction(destroyBuildingContext);
             //context.Building = world.BuildingList.Find(x => x.BuildingId == buildingId);
             action.Execute(world);
         }
-        public List<WorkerDto> GetWorkerDtoList()
+
+        public void PrintAllPossibleBuildings(DataWorld world)
         {
-            List<WorkerDto> workerDtoList = new List<WorkerDto>();
-            foreach (Worker worker in world.WorkersList)
+            foreach (BuildingType building in world.PossibleBuildingList)
             {
-                WorkerDto workerDto = new WorkerDto();
-                workerDto.Id = worker.Id;
-                workerDto.X = worker.X;
-                workerDto.Y = worker.Y;
-                workerDto.IsAlive = worker.IsAlive;
-                workerDtoList.Add(workerDto);
+                Console.WriteLine($"{building.ToString()}");
             }
-            return workerDtoList;
         }
+
 
         public void CreateWorkersByService(int numberOfWorkers)
         {
-            WorldCreator.CreateWorkers(numberOfWorkers, world);
+            _worldCreator.CreateWorkers(numberOfWorkers, world);
         }
 
         public void Tick(DataWorld world) 
@@ -129,23 +190,25 @@ namespace SettlementGame.Domain
 
         private void UpdateWorkers(DataWorld world)
         {
-            foreach (var worker in world.WorkersList)
+            foreach (var workerEntity in _dbContext.Workers)
             {
+                Worker worker = WorkerMapper.ToDomain(workerEntity);
                 worker.Tick(world);
             }
         }
 
         public void UpdateBuildings(DataWorld world)
         {
-            foreach (var building in world.BuildingList)
+            foreach (var entity in _dbContext.BuildedBuildings)
             {
+                var building = BuildingMapper.ToDomain(entity);
                 building.Tick(world);
             }
         }
 
         private void UpdateLoyalty(DataWorld world)
         { double tempLoyality = 0;
-            foreach (var worker in world.WorkersList)
+            foreach (var worker in _dbContext.Workers)
             {
                 tempLoyality= tempLoyality+worker.PersonalLoyality;
             }

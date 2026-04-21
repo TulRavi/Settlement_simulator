@@ -32,6 +32,7 @@ namespace SettlementGame.Domain
         {
             return Amount >= 1;                       
         }
+        
 
     }
 }

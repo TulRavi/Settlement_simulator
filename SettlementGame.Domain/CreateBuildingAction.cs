@@ -9,17 +9,26 @@ namespace SettlementGame.Domain
     public sealed class CreateBuildingAction: IUserAction//модификатор sealed запрещает наследование - взять на вооружение
     {
         private readonly CreateBuildingContext CreateBuildingContext;
+        
         public CreateBuildingAction(CreateBuildingContext CreateBuildingContext)
         {
             this.CreateBuildingContext = CreateBuildingContext;
+            //this._dbContext= dbContext;
         }
         public void Execute(DataWorld world)
         {
             Building building = new Building(CreateBuildingContext.BuildingType);
-            building.BuildingId = world.NextBuildingId;
-            world.NextBuildingId++;
-            world.BuildingList.Add(building);
 
+            var entity = BuildingMapper.ToEntity(building);
+
+            CreateBuildingContext._dbContext.BuildedBuildings.Add(entity);
+            CreateBuildingContext._dbContext.SaveChanges();
+            //Building building = new Building(CreateBuildingContext.BuildingType);
+            //убираем счетчик, ибо DB сама считает айди
+            //building.BuildingId = world.NextBuildingId;
+            //world.NextBuildingId++;
+            //CreateBuildingContext._dbContext.BuildedBuildings.Add(building);
+            //CreateBuildingContext._dbContext.SaveChanges();
             //CreateBuildingAction.CreateBuilding(world,buildingType);
         }
 

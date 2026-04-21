@@ -24,7 +24,7 @@ namespace SettlementGame.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetWorkers()
+        public IActionResult GetWorkersDtoList()
         {
             return Ok(worldService.GetWorkerDtoList());//возвращает JSON
         }
@@ -40,18 +40,20 @@ namespace SettlementGame.Web.Controllers
             worldService.CreateWorkersByService(request.Number);
             return Ok($"New Worker(s) {request.Number} were created");
         }
+        
+
         [HttpGet("{id}")]
-        public IActionResult GetWorkerByID(int id)
+        public IActionResult GetWorkerById(int id)
         {
-            bool isFound = workerEmploymentService.GetWorkerById(id);
-            if (isFound == true) 
-            {
-                List<WorkerDto> workerDtoList= worldService.GetWorkerDtoList();
-                return Ok(workerDtoList.Find(x=>x.Id==id)); } else { return NotFound(); 
-            }
+            var worker = workerEmploymentService.GetWorkerById(id);
+
+            if (worker == null)
+                return NotFound();
+
+            return Ok(worker);
         }
 
-        [HttpDelete("/api/workers/{id}")]
+        [HttpDelete("{id}")]
         public IActionResult DeleteWorkerbyID(int id)
         {
             bool isDeleted=workerEmploymentService.DeleteWorker(id);
@@ -95,7 +97,7 @@ namespace SettlementGame.Web.Controllers
             
         }
 
-        [HttpPost("{id}/hire")]
+        [HttpPost("hire")]
         public IActionResult HireWorker(HireWorkerRequest hireWorkerRequest)
         {
             bool result = workerEmploymentService.HireWorker(hireWorkerRequest.WorkerId, hireWorkerRequest.BuildingId);

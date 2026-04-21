@@ -8,7 +8,7 @@ namespace SettlementGame.Domain
 {   
     public class FireWorkerContext
     {
-        public WorkerEmploymentService workerEmploymentService;
+        //public WorkerEmploymentService workerEmploymentService;
         public Worker Worker { get; }
 
         public FireWorkerContext(Worker worker)

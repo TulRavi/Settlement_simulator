@@ -25,7 +25,7 @@ namespace SettlementGame.Web.Controllers
         // GET: BuildingController
         public ActionResult GetBuildings()
         {
-            return Ok(worldService.GetBuildings());//todo: перенести в ВорлдСервис-done
+            return Ok(worldService.GetBuildingDtoList());//todo: перенести в ВорлдСервис-done
         }
 
         public class CreateBuildingRequest
@@ -41,7 +41,7 @@ namespace SettlementGame.Web.Controllers
             ;
             
         }
-        [HttpDelete("/api/buildings/id")]
+        [HttpDelete("/api/buildings/{id}")]
         public IActionResult RemoveBuilding([FromBody] int id)
         {
             worldService.RemoveBuilding(id);
@@ -54,7 +54,7 @@ namespace SettlementGame.Web.Controllers
         // GET: BuildingController
         public ActionResult GetAvailibleBuildings()
         {
-            return Ok(worldService.GetAvailibleBuildings());
+            return Ok(worldService.GetPossibleBuildings());
         }
     }
 }

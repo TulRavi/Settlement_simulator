@@ -9,7 +9,7 @@ namespace SettlementGame.Domain
 {
     public class Worker
     {
-        public string Position { get; set; }
+        //public string Position { get; set; }
         public int Id { get; set; }
         private string InternalId { get; set; }
         public List<Need> workerNeeds;
@@ -111,6 +111,14 @@ namespace SettlementGame.Domain
             personalLoyality = personalLoyality + value;
         }
 
+        public static List<Need> CreateDefaultNeeds()
+        {
+            List<Need> workerNeeds = new List<Need>();
+            workerNeeds.Add(new NeedHunger());
+            workerNeeds.Add(new NeedThirst());
+            workerNeeds.Add(new NeedAlcohol());
+            return workerNeeds;
+        }
 
 
         public Worker(List<Need> wokerNeeds)

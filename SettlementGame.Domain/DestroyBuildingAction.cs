@@ -23,16 +23,14 @@ namespace SettlementGame.Domain
 
             //DestroyBuildingContext.Building.AssignedWorker.UnassignWithWorkPlace();
             //DestroyBuildingContext.Building.RemoveWorker();
-            Building building = world.BuildingList.Find(x => x.BuildingId == DestroyBuildingContext.Id);
-            if (building.HasEmployee==true)
-            {
-                DestroyBuildingContext.workerEmploymentService.FireWorker(building.AssignedWorker.Id);
-                //DestroyBuildingContext.Building.
-                //Program.TempFireWorkerDirectly(world, DestroyBuildingContext.Building, DestroyBuildingContext.Building.AssignedWorker);
-            }
-            world.BuildingList.Remove(building);
-            //DestroyBuildingContext.Building.HasEmployee = false; //todo: вызвать FireworkerAction
-            //CreateBuildingAction.CreateBuilding(world,buildingType);
+            Building building = DestroyBuildingContext._building;
+            var entity = BuildingMapper.ToEntity(building);
+            DestroyBuildingContext._dbContext.BuildedBuildings.Remove(entity);
+            DestroyBuildingContext._dbContext.SaveChanges();
+
+            
+
+            
         }
     }
 }

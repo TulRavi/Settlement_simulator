@@ -32,16 +32,22 @@ namespace SettlementGame.Web.Controllers
         //    return Ok(response);
         //}
 
-        [HttpPost]
+        [HttpPost("create")]
         [Authorize(Roles = "Admin")]
         public IActionResult CreateWorld([FromBody]int numberOfWorkers)
         {
             worldService.CreateWorld(numberOfWorkers);
-            return Ok(world);
+            //return Ok(world);
+
+            return Ok(new
+            {
+                Workers = worldService.GetWorkerDtoList(),
+                Buildings = worldService.GetBuildingDtoList()
+            });
         }
 
-        [HttpPost]
-        [Authorize(Roles = "User")]
+        [HttpPost("tick")]
+        [Authorize(Roles = "User,Admin")]
         public IActionResult Tick()
         {
             worldService.Tick(world);

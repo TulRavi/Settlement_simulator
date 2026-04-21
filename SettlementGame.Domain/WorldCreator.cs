@@ -6,9 +6,15 @@ using System.Threading.Tasks;
 
 namespace SettlementGame.Domain
 {
-    public static class WorldCreator
+    public class WorldCreator
     {
-        public static DataWorld CretateWorld()
+        private readonly GameDbContext _dbContext;//новый нэйминг , запомнить
+
+        public WorldCreator(GameDbContext dbContext)
+        {
+            _dbContext = dbContext; //получили контекст базы данных чз консструктор
+        }
+        public DataWorld CretateWorld()
 
         {   //List <Resource> listResource=new List <Resource>();
             DataWorld world = new DataWorld();
@@ -31,51 +37,50 @@ namespace SettlementGame.Domain
         //    return workerEmploymentService;
         //}
 
-        public static void CreateDateTime(DataWorld world)
+        public void CreateDateTime(DataWorld world)
         {
             DateTime gameTime = new DateTime(0001, 01, 31, 08, 00, 0);
             world.GameTime = gameTime;
         }
 
-        public static void AddPossibleBuildings(DataWorld world)
+        public void AddPossibleBuildings(DataWorld world)
         {
             Array buildingTypes = Enum.GetValues(typeof(BuildingType));
 
-            foreach (BuildingType building in buildingTypes)
+            foreach (BuildingType buildingType in buildingTypes)
             {
-                world.PossibleBuildingList.Add(building);
+                world.PossibleBuildingList.Add(buildingType);
             }
         }
 
         
-        public static void CreateWorkers(int numberOfWorkers, DataWorld world)
+        public void CreateWorkers(int numberOfWorkers, DataWorld world)
         {
-
-
             for (int i = 0; i < numberOfWorkers; i++)
             { //Потребности добавлены в лист потребностей
                 List<Need> workerNeeds = new List<Need>();
                 workerNeeds.Add(new NeedHunger());
                 workerNeeds.Add(new NeedThirst());
+                workerNeeds.Add(new NeedAlcohol());
                 Worker worker = new Worker(workerNeeds);//создан рабочий с заданными потребностями
                 worker.IsAlive = true;
-                world.WorkersList.Add(worker);//рабочий с заданнами потербностями добавлен в лист рабочих
+                //world.WorkersList.Add(worker);//рабочий с заданнами потербностями добавлен в лист рабочих
+                //вместо листа доабвляем в БД
+                _dbContext.Workers.Add(WorkerMapper.ToEntity(worker));
                 worker.Id = world.NextWorkerId;
                 world.NextWorkerId++;
                 worker.StartWorkingTime = new TimeSpan(00,00,01);
                 worker.EndWorkingTime = new TimeSpan(00, 00, 01);
-                
-
             }
+            _dbContext.SaveChanges();
         }
-        public static void PrintState(DataWorld world)
+        public void PrintState(DataWorld world)
         {
             int i = 0;
             Console.WriteLine($"{world.GameTime}");
-            foreach (Worker worker in world.WorkersList)
+            foreach (WorkerEntity workerEntity in _dbContext.Workers)
             {
-
-
+                Worker worker = WorkerMapper.ToDomain(workerEntity);
                 foreach (Need need in worker.workerNeeds)
                 {
                     Console.WriteLine($"worker {i} {need.ToString()} {need.Amount} workingTimeFrom:{worker.StartWorkingTime} to:{worker.EndWorkingTime}");
@@ -85,23 +90,37 @@ namespace SettlementGame.Domain
             i = 0;
             foreach (AnyResource resource in world.SettlementResourceList)
             {
-
-
-                Console.WriteLine($"{resource} {resource.ResourceType.ToString()} {resource.Amount}");
-
-
+             Console.WriteLine($"{resource} {resource.ResourceType.ToString()} {resource.Amount}");
             }
         }
 
-        public static void PrintBuildedBuildings(DataWorld world)
+        public void PrintBuildedBuildings(DataWorld world)
         {
             foreach (Building building in world.BuildingList)
             {
-                
-                    Console.WriteLine($"{building.GetType().ToString()} index of building:{world.BuildingList.IndexOf(building)} has Employee {building.HasEmployee}");
-                
+                Console.WriteLine($"{building.GetType().ToString()} index of building:{world.BuildingList.IndexOf(building)} has Employee {building.HasEmployee}");
             }
         }
+
+        public void PrintWorkersList()
+        {
+            foreach (WorkerEntity worker in _dbContext.Workers)
+            {
+                Console.WriteLine($"index of a worker:{_dbContext.Workers.Find(worker)} if employeed {worker.IsEmployed}");
+            }
+        }
+
+        public void PrintHiredWorkersList(DataWorld world)
+        {
+            foreach (WorkerEntity workerEntity in _dbContext.Workers)
+            {
+                if (workerEntity.IsEmployed == true)
+                {
+                    Console.WriteLine($"index of a worker:{_dbContext.Workers.Find(workerEntity)} is working in {workerEntity.WorkPlaceId.ToString()}");
+                }
+            }
+        }
+
         //public static void CreateNewBuilding(DataWorld world)
         //{
         //    WorldCreator.PrintAllPossibleBuildings(world);
@@ -123,24 +142,7 @@ namespace SettlementGame.Domain
         //    }
         //}
 
-        public static void PrintWorkersList(DataWorld world)
-        {
-            foreach (Worker worker in world.WorkersList)
-            {
-                Console.WriteLine($"index of a worker:{world.WorkersList.IndexOf(worker)} if employeed {worker.IsEmployed}");
-            }
-        }
 
-        public static void PrintHiredWorkersList(DataWorld world)
-        {
-            foreach (Worker worker in world.WorkersList)
-            {
-                if (worker.IsEmployed == true)
-                {
-                    Console.WriteLine($"index of a worker:{world.WorkersList.IndexOf(worker)} is working in {worker.WorkPlace.BuildingType.ToString()} {world.BuildingList.IndexOf(worker.WorkPlace)}");
-                }
-            }
-        }
 
 
         //public static void ManageWorkers(DataWorld world)
@@ -197,14 +199,6 @@ namespace SettlementGame.Domain
         //    building.RemoveWorker();
         //}
 
-        public static void PrintAllPossibleBuildings(DataWorld world)
-        {
-            foreach (BuildingType building in world.PossibleBuildingList)
-            {
-                    Console.WriteLine($"{building.ToString()}");
-            }
 
-
-        }
     }
 }
