@@ -127,6 +127,8 @@ namespace SettlementGame.Web.Controllers
             public int X { get; set; }
             public int Y { get; set; }
             public bool IsAlive { get; set; }
+            public bool IsEmployed { get; set; }
+            public double PersonalLoaylity { get; set; }
             //public bool IsEmployed { get; set; }
         }
 
@@ -135,30 +137,11 @@ namespace SettlementGame.Web.Controllers
         {
             //int temp = 0;
             bool isFound = false;
-            workerEmploymentService.FindWorker(id, out isFound);
+            workerEmploymentService.FindWorker(id);
             if (isFound == true)
             {
-                workerEmploymentService.ChangeWorker(id, replaceWorkerRequest.X, replaceWorkerRequest.Y, replaceWorkerRequest.IsAlive);
-                //world.WorkersList.ElementAt(temp).id = replaceWorkerRequest.Id;
-                //world.WorkersList.ElementAt(temp).X = replaceWorkerRequest.X;
-                //world.WorkersList.ElementAt(temp).Y = replaceWorkerRequest.Y;
-                //world.WorkersList.ElementAt(temp).IsAlive = replaceWorkerRequest.IsAlive;
+                workerEmploymentService.ChangeWorker(id, replaceWorkerRequest.X, replaceWorkerRequest.Y, replaceWorkerRequest.IsAlive,replaceWorkerRequest.IsEmployed,replaceWorkerRequest.PersonalLoaylity);
                 
-                //world.WorkersList.RemoveAt(temp);
-                //world.WorkersList.Insert(temp,worker);
-
-                //PropertyInfo[] properties = typeof(Worker).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-                //    foreach (var prop in properties)
-                //    {
-                //        if (prop.CanWrite) // Проверяем, можно ли записать в свойство
-                //        {
-                //            var value = prop.GetValue(worker);
-                //            prop.SetValue(world.WorkersList.ElementAt(temp), value);
-                //        }
-                //    }
-                // все объекты в списке имеют свойства как у source
-
 
                 return Ok($"Worker ID {id} was replaced/changed");
             }

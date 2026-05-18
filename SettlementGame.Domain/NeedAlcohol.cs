@@ -12,8 +12,11 @@ namespace SettlementGame.Domain
             get { return false; }
         }
 
-        public override double LoyalityAmount { get => LoyalityAmount = 0.1; set => throw new NotImplementedException(); }
-
+        //public override double LoyalityAmount { get => LoyalityAmount; set => throw new NotImplementedException(); }
+        public override double LoyalityAmount
+        {
+            get { return +0.05; }
+        }
         public override bool ChangePerTick(DataWorld world) //
         {
             ChangeAmount(0.3);

@@ -16,14 +16,16 @@ namespace SettlementGame.Domain
         private readonly DataWorld world;
         private readonly WorldCreator _worldCreator;
         private readonly GameDbContext _dbContext;
+        private readonly WorkerEmploymentService _workerEmploymentService;
         public BuildingType BuildingType { get; }
 
 
-        public WorldService(DataWorld world, WorldCreator worldCreator, GameDbContext dbContext)
+        public WorldService(DataWorld world, WorldCreator worldCreator, GameDbContext dbContext, WorkerEmploymentService workerEmploymentService)
         {
             this.world = world;
             this._worldCreator = worldCreator;
             this._dbContext = dbContext;
+            this._workerEmploymentService = workerEmploymentService;
         }
         public DataWorld CreateWorld(int numberOfWorkers=3)
     {   
@@ -52,6 +54,7 @@ namespace SettlementGame.Domain
         public class WorkerDto
         {
             public int Id { get; set; }
+            public int WorkPlaceId { get; set; }
 
             public bool IsAlive { get; set; }
             public int X { get; set; }
@@ -68,6 +71,7 @@ namespace SettlementGame.Domain
                 Worker worker = WorkerMapper.ToDomain(workerEntity);
                 WorkerDto workerDto = new WorkerDto();
                 workerDto.Id = worker.Id;
+                workerDto.WorkPlaceId= (int)worker.WorkPlaceId;
                 workerDto.X = worker.X;
                 workerDto.Y = worker.Y;
                 workerDto.IsAlive = worker.IsAlive;
@@ -78,7 +82,7 @@ namespace SettlementGame.Domain
 
         public class BuildingDto
         {
-            public int Id { get; set; }
+            public int? Id { get; set; }
             public BuildingType BuildingType { get; set; }
             public bool HasEmployee { get; set; }
             public int X { get; set; }
@@ -132,7 +136,7 @@ namespace SettlementGame.Domain
         }
 
         public bool CreateBuilding(BuildingType buildingType) {
-            CreateBuildingContext createBuildingContext = new CreateBuildingContext(buildingType,_dbContext);
+            CreateBuildingContext createBuildingContext = new CreateBuildingContext(buildingType);
             bool exists = Enum.IsDefined(typeof(BuildingType), createBuildingContext.BuildingType);
 
             {
@@ -141,29 +145,41 @@ namespace SettlementGame.Domain
                     CreateBuildingAction action = (CreateBuildingAction)UsersActionsCatalog.CreateBuildingAction(createBuildingContext);
                     //context.Building = world.BuildingList.Find(x => x.BuildingId == buildingId);
                     action.Execute(world);
+
+                    //будем тут добалвять в БД, чтобы избежать связки работы с конекртной БД в доменной части
+                    var entity = BuildingMapper.ToEntity(createBuildingContext.CreatingBuilding);
+                    _dbContext.BuildedBuildings.Add(entity);
+                    _dbContext.SaveChanges();
+
+
                     return true;
                 }
                 else { return false; }
             }
         }
-        public void RemoveBuilding(int buildingId)
-        {
+        public bool RemoveBuilding(int buildingId)
+        {   
             var entity = _dbContext.BuildedBuildings.FirstOrDefault(x => x.BuildingId == buildingId);
             if (entity == null)
-                return;
+                return false;
             var building = BuildingMapper.ToDomain(entity);
             //Building building = _dbContext.BuildedBuildings.FirstOrDefault(x => x.BuildingId== buildingId);
-            DestroyBuildingContext destroyBuildingContext = new DestroyBuildingContext(building,_dbContext);
-            if (building!=null&&building.HasEmployee == true)
+            //DestroyBuildingContext destroyBuildingContext = new DestroyBuildingContext(building, _workerEmploymentService);
+            if (building.HasEmployee == true)
             {
-                destroyBuildingContext.workerEmploymentService.FireWorker(building.AssignedWorker.Id);
+                _workerEmploymentService.FireWorker(building.AssignedWorker.Id);
                 //DestroyBuildingContext.Building.
                 //Program.TempFireWorkerDirectly(world, DestroyBuildingContext.Building, DestroyBuildingContext.Building.AssignedWorker);
             }
             
-            DestroyBuildingAction action = (DestroyBuildingAction)UsersActionsCatalog.DestroyBuildingAction(destroyBuildingContext);
+            //DestroyBuildingAction action = (DestroyBuildingAction)UsersActionsCatalog.DestroyBuildingAction(destroyBuildingContext);
             //context.Building = world.BuildingList.Find(x => x.BuildingId == buildingId);
-            action.Execute(world);
+            //action.Execute(world);
+            //entity = BuildingMapper.ToEntity(destroyBuildingContext.DestroyingBuilding,WorkerEmploymentService);
+
+            _dbContext.BuildedBuildings.Remove(entity);
+            _dbContext.SaveChanges();
+            return true;
         }
 
         public void PrintAllPossibleBuildings(DataWorld world)
@@ -175,7 +191,7 @@ namespace SettlementGame.Domain
         }
 
 
-        public void CreateWorkersByService(int numberOfWorkers)
+        public void CreateWorkersByService(int numberOfWorkers=3)
         {
             _worldCreator.CreateWorkers(numberOfWorkers, world);
         }
@@ -194,7 +210,14 @@ namespace SettlementGame.Domain
             {
                 Worker worker = WorkerMapper.ToDomain(workerEntity);
                 worker.Tick(world);
+                workerEntity.IsAlive = worker.IsAlive;
+                workerEntity.X = worker.X;
+                workerEntity.Y = worker.Y;
+                workerEntity.IsEmployed = worker.IsEmployed;
+                workerEntity.PersonalLoyality = worker.PersonalLoyality;
+
             }
+            _dbContext.SaveChanges();
         }
 
         public void UpdateBuildings(DataWorld world)
@@ -202,7 +225,7 @@ namespace SettlementGame.Domain
             foreach (var entity in _dbContext.BuildedBuildings)
             {
                 var building = BuildingMapper.ToDomain(entity);
-                building.Tick(world);
+                if (building.HasEmployee== true) { building.Tick(world); }
             }
         }
 

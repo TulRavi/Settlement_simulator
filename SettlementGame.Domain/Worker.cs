@@ -11,6 +11,15 @@ namespace SettlementGame.Domain
     {
         //public string Position { get; set; }
         public int Id { get; set; }
+        private int workPlaceId;
+
+        public int WorkPlaceId
+        {
+            get { return workPlaceId=-1; }
+            set { workPlaceId = value; }
+        }
+
+        //public int?WorkPlaceId { get; set; }
         private string InternalId { get; set; }
         public List<Need> workerNeeds;
         //public TimeSpan startWorkingTime { get; set; }
@@ -99,7 +108,7 @@ namespace SettlementGame.Domain
         public int Y { get; set; }
 
         
-        private double personalLoyality;
+        private double personalLoyality=0.5;
 
         public double PersonalLoyality
         {
@@ -108,7 +117,7 @@ namespace SettlementGame.Domain
         }
         public void ChangePersonalLoyality(double value)
         {
-            personalLoyality = personalLoyality + value;
+            personalLoyality = PersonalLoyality + value;
         }
 
         public static List<Need> CreateDefaultNeeds()
@@ -125,7 +134,12 @@ namespace SettlementGame.Domain
         {
             this.workerNeeds = wokerNeeds;           
         }
-              
+
+        public Worker()
+        {
+            workerNeeds = new List<Need>();
+        }
+
         private bool isAlive;
         public bool IsAlive
         {
@@ -137,13 +151,14 @@ namespace SettlementGame.Domain
 
 
         public bool IsEmployed => WorkPlace != null;
-        private Building workPlace;
+        //private Building? workPlace;
 
-        public Building WorkPlace { get; private set; }
+        public Building? WorkPlace { get;  set; }
 
         internal void AssignWithWorkPlace(Building building)
         {
             WorkPlace = building;
+            WorkPlaceId = (int)building.BuildingId;
             //building.HasEmployee = true;
             
         }
@@ -151,6 +166,7 @@ namespace SettlementGame.Domain
         internal void UnassignWithWorkPlace()
         {
             WorkPlace = null;
+            WorkPlaceId = -1;
         }
 
 
@@ -160,18 +176,34 @@ namespace SettlementGame.Domain
             {
                 if (need.IsCritical && need.AmountIsMoreThanOne())
                 {
-                    IsAlive = false;                    // Интерпретация состояния
+                    IsAlive = false;                    // Интерпретация состояния - если значение кол-ва нужды превысило единицу, работник умер
                     return;
                 }
-                if (need.AmountIsMoreThanOne()==false)//если работник не умер удволетврояем все нужды за деньги
+                if (need.AmountIsMoreThanOne()==false)//если работник не умер, удволетврояем все нужды за деньги
                 {
                     
-                    if (HasEnoughMoney(need.Cost)==true)
+                    if (HasEnoughMoney(need.Cost)==true)//убеждаемся, что денег хватает
                     {   
                         bool isConfirmed=need.ChangePerTick(world);
-                        if (isConfirmed == true) { ChangeMoneyAmount(need.Cost); }
-                        ChangePersonalLoyality(need.LoyalityAmount);
-                        
+                        if (isConfirmed)
+                        {
+                            ChangeMoneyAmount(need.Cost);
+
+                            // бонус только за небазовые нужды
+                            if (need.IsCritical == false)
+                            {
+                                ChangePersonalLoyality(need.LoyalityAmount);
+                            }
+                        }
+                        else
+                        {
+                            // штраф только за базовые нужды
+                            if (need.IsCritical)
+                            {
+                                ChangePersonalLoyality(-need.LoyalityAmount);
+                            }
+                        }
+
                     }
                 }
             }
@@ -200,7 +232,8 @@ namespace SettlementGame.Domain
         public void Tick(DataWorld world)
         {
             RecalculateNeedsState(world);
-            
+            RecalculateLoyality();
+
 
         }
 

@@ -4,4 +4,5 @@
   </Folder>
   <Project Path="SettlementGame.Domain/SettlementGame.Domain.csproj" />
   <Project Path="SettlementGame.Web/SettlementGame.Web.csproj" />
+  <Project Path="WinFormsApp1/WinFormsAppUI.csproj" Id="c52f0264-c057-411d-aac7-d43cf7e51d42" />
 </Solution>

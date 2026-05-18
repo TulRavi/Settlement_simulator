@@ -14,10 +14,12 @@ namespace SettlementGame.Domain
         {
             _dbContext = dbContext; //получили контекст базы данных чз консструктор
         }
-        public DataWorld CretateWorld()
+        public DataWorld CreateWorld()
 
         {   //List <Resource> listResource=new List <Resource>();
+
             DataWorld world = new DataWorld();
+
             world.SettlementResourceList.Add(new AnyResource(ResourceType.Meat, 100));
             world.SettlementResourceList.Add(new AnyResource(ResourceType.Berries, 202));
             world.SettlementResourceList.Add(new AnyResource(ResourceType.CleanWater, 500));
@@ -64,11 +66,18 @@ namespace SettlementGame.Domain
                 workerNeeds.Add(new NeedAlcohol());
                 Worker worker = new Worker(workerNeeds);//создан рабочий с заданными потребностями
                 worker.IsAlive = true;
+                worker.WorkPlaceId = -1;
                 //world.WorkersList.Add(worker);//рабочий с заданнами потербностями добавлен в лист рабочих
-                //вместо листа доабвляем в БД
-                _dbContext.Workers.Add(WorkerMapper.ToEntity(worker));
-                worker.Id = world.NextWorkerId;
-                world.NextWorkerId++;
+                
+                //worker.Id = world.NextWorkerId;
+                worker.X = 0;
+                worker.Y = 0;
+                //worker.WorkPlace = null;
+                //worker.IsEmployed = false;
+                worker.PersonalLoyality = 0.5;
+                _dbContext.Workers.Add(WorkerMapper.ToEntity(worker)); //вместо листа доабвляем в БД
+
+                //world.NextWorkerId++;
                 worker.StartWorkingTime = new TimeSpan(00,00,01);
                 worker.EndWorkingTime = new TimeSpan(00, 00, 01);
             }

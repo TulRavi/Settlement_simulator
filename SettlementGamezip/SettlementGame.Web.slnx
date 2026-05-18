@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Элементы решения/">
+    <File Path="SettlementGame/PlansAndComments.txt" />
+  </Folder>
+  <Project Path="SettlementGame.Domain/SettlementGame.Domain.csproj" />
+  <Project Path="SettlementGame.Web/SettlementGame.Web.csproj" />
+  <Project Path="Windows Forms App/Windows Forms App.csproj" Id="5e345845-d5da-48c0-97aa-d21f40a63526" />
+</Solution>

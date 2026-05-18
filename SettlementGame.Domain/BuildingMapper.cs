@@ -9,7 +9,7 @@ namespace SettlementGame.Domain
         public static Building ToDomain(BuildingEntity entity)
         {
             var building = new Building(entity.BuildingType);
-
+            building.AssignedWorkerId = entity.AssignedWorkerId;
             building.X = entity.X;
             building.Y = entity.Y;
             building.BuildingId = entity.BuildingId;
@@ -22,7 +22,9 @@ namespace SettlementGame.Domain
             {
                 BuildingType = domain.BuildingType,
                 X = domain.X,
-                Y = domain.Y
+                Y = domain.Y,
+                BuildingId = (int)domain.BuildingId,
+                AssignedWorkerId = domain.AssignedWorkerId
             };
         }
     }

@@ -14,7 +14,10 @@ namespace SettlementGame.Domain
         }
 
         public override int Cost { get; set; } = 0;
-        public override double LoyalityAmount { get => LoyalityAmount = 0; set => throw new NotImplementedException(); }
+        public override double LoyalityAmount
+        {
+            get { return -0.1; }
+        }
 
         public override bool ChangePerTick(DataWorld world)
         {

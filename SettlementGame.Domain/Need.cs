@@ -20,7 +20,7 @@ namespace SettlementGame.Domain
             private set { amount = Math.Clamp(value, 0, 1); }
         }
         public abstract int Cost { get; set; }
-        public abstract double LoyalityAmount { get; set; }
+        public abstract double LoyalityAmount { get; }
         public abstract bool IsCritical { get; }
         //public abstract double delta { get; }
         public void ChangeAmount(double delta)

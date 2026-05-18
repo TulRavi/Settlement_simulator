@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SettlementGame.Domain
+namespace SettlementGame
 {
-    public class DestroyBuildingAction:IUserAction
+    internal class DestroyBuildingAction:IUserAction
     {
         private readonly DestroyBuildingContext DestroyBuildingContext;
         
@@ -23,14 +23,15 @@ namespace SettlementGame.Domain
 
             //DestroyBuildingContext.Building.AssignedWorker.UnassignWithWorkPlace();
             //DestroyBuildingContext.Building.RemoveWorker();
-            Building building = DestroyBuildingContext._building;
-            var entity = BuildingMapper.ToEntity(building);
-            DestroyBuildingContext._dbContext.BuildedBuildings.Remove(entity);
-            DestroyBuildingContext._dbContext.SaveChanges();
-
-            
-
-            
+            if (DestroyBuildingContext.Building.HasEmployee==true)
+            {
+                world.WorkerEmploymentService.FireWorker(world, DestroyBuildingContext.Building.AssignedWorker);
+                //DestroyBuildingContext.Building.
+                //Program.TempFireWorkerDirectly(world, DestroyBuildingContext.Building, DestroyBuildingContext.Building.AssignedWorker);
+            }
+            world.BuildingList.Remove(DestroyBuildingContext.Building);
+            //DestroyBuildingContext.Building.HasEmployee = false; //todo: вызвать FireworkerAction
+            //CreateBuildingAction.CreateBuilding(world,buildingType);
         }
     }
 }
