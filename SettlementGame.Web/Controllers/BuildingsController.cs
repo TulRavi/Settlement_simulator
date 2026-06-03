@@ -20,7 +20,7 @@ namespace SettlementGame.Web.Controllers
             this.workerEmploymentService = workerEmploymentService;
             this.worldService = worldService;
         }
-        [HttpGet("/api/buildings")]
+        [HttpGet("GetBuildings")]
         
 
         // GET: BuildingController
@@ -34,7 +34,7 @@ namespace SettlementGame.Web.Controllers
             public BuildingType BuildingType { get; set; }
         }
         
-        [HttpPost("/api/buildings")]
+        [HttpPost("CreateBuilding")]
         public IActionResult CreateBuilding([FromBody] CreateBuildingRequest createBuildingRequest)
         {
             bool result=worldService.CreateBuilding(createBuildingRequest.BuildingType);
@@ -42,8 +42,8 @@ namespace SettlementGame.Web.Controllers
             ;
             
         }
-        [HttpDelete("/api/buildings/{id}")]
-        public IActionResult RemoveBuilding([FromBody] int id)
+        [HttpDelete("{id}")]
+        public IActionResult RemoveBuilding(int id)
         {
             bool result = worldService.RemoveBuilding(id);
             

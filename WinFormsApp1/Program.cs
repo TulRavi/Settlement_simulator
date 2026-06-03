@@ -16,7 +16,7 @@ namespace WinFormsApp1
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             HttpClient client = new HttpClient();//1 на всё приложение
-            client.Timeout = TimeSpan.FromMinutes(5);
+            client.Timeout = TimeSpan.FromMinutes(15);
             client.BaseAddress = new Uri("http://localhost:5126/");
             AuthService authService = new AuthService(client);
             // создаём сервис авторизации

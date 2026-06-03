@@ -27,8 +27,8 @@ namespace SettlementGame.Domain
             //CreateBuildingContext._dbContext.SaveChanges();
             //Building building = new Building(CreateBuildingContext.BuildingType);
             //убираем счетчик, ибо DB сама считает айди
-            //building.BuildingId = world.NextBuildingId;
-            //world.NextBuildingId++;
+            //building.Id = world.NextId;
+            //world.NextId++;
             //CreateBuildingContext._dbContext.BuildedBuildings.Add(building);
             //CreateBuildingContext._dbContext.SaveChanges();
             //CreateBuildingAction.CreateBuilding(world,buildingType);

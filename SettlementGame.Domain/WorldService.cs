@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static SettlementGame.Domain.WorldService;
 
 
 namespace SettlementGame.Domain
@@ -28,24 +29,26 @@ namespace SettlementGame.Domain
             this._workerEmploymentService = workerEmploymentService;
         }
         public DataWorld CreateWorld(int numberOfWorkers=3)
-    {   
-        //DataWorld world = new DataWorld();
-        world.SettlementResourceList.Add(new AnyResource(ResourceType.Meat, 100));
-        world.SettlementResourceList.Add(new AnyResource(ResourceType.Berries, 202));
-        world.SettlementResourceList.Add(new AnyResource(ResourceType.CleanWater, 500));
-        world.SettlementResourceList.Add(new AnyResource(ResourceType.Wood, 40));
-        world.SettlementResourceList.Add(new AnyResource(ResourceType.Stone, 40));
-        world.SettlementResourceList.Add(new AnyResource(ResourceType.Gold, 10));
-        world.SettlementResourceList.Add(new AnyResource(ResourceType.Doska, 0));
-        world.SettlementResourceList.Add(new AnyResource(ResourceType.Kirpich, 0));
-        world.SettlementResourceList.Add(new AnyResource(ResourceType.Moneta, 100));
-        
-        _worldCreator.AddPossibleBuildings(world);
+    {
+            //DataWorld world=_worldCreator.CreateWorld();
+            //DataWorld world = new DataWorld();
 
-        _worldCreator.CreateDateTime(world);
-        
-        //world.workerEmploymentService = WorldCreator.CreateWorkerEmploymentService(world);
-        
+            //world.SettlementResourceList.Add(new AnyResource(ResourceType.Meat, 100));
+            //world.SettlementResourceList.Add(new AnyResource(ResourceType.Berries, 202));
+            //world.SettlementResourceList.Add(new AnyResource(ResourceType.CleanWater, 500));
+            //world.SettlementResourceList.Add(new AnyResource(ResourceType.Wood, 40));
+            //world.SettlementResourceList.Add(new AnyResource(ResourceType.Stone, 40));
+            //world.SettlementResourceList.Add(new AnyResource(ResourceType.Gold, 10));
+            //world.SettlementResourceList.Add(new AnyResource(ResourceType.Doska, 0));
+            //world.SettlementResourceList.Add(new AnyResource(ResourceType.Kirpich, 0));
+            //world.SettlementResourceList.Add(new AnyResource(ResourceType.Moneta, 100));
+
+            //_worldCreator.AddPossibleBuildings(world);
+
+            //_worldCreator.CreateDateTime(world);
+
+            //world.workerEmploymentService = WorldCreator.CreateWorkerEmploymentService(world);
+            _worldCreator.CreateWorld();
         _worldCreator.CreateWorkers(numberOfWorkers, world);
 
         return world;
@@ -59,8 +62,11 @@ namespace SettlementGame.Domain
             public bool IsAlive { get; set; }
             public int X { get; set; }
             public int Y { get; set; }
+            public double PersonalLoyality { get; set; }
+            public int PersonalMoney { get; set; }
             //public TimeSpan StartWorkingTime { get; set; }
             //public TimeSpan EndWorkingTime { get; set; }
+
         }
 
         public List<WorkerDto> GetWorkerDtoList()
@@ -75,6 +81,8 @@ namespace SettlementGame.Domain
                 workerDto.X = worker.X;
                 workerDto.Y = worker.Y;
                 workerDto.IsAlive = worker.IsAlive;
+                workerDto.PersonalLoyality = worker.PersonalLoyality;
+                workerDto.PersonalMoney = worker.PersonalMoney;
                 workerDtoList.Add(workerDto);
             }
             return workerDtoList;
@@ -87,6 +95,8 @@ namespace SettlementGame.Domain
             public bool HasEmployee { get; set; }
             public int X { get; set; }
             public int Y { get; set; }
+
+            public int? AssignedWorkerId { get; set; }
         }
 
         public List<BuildingDto> GetBuildingDtoList()
@@ -96,7 +106,7 @@ namespace SettlementGame.Domain
             //foreach (Building building in _dbContext.BuildedBuildings)
             //{
             //    BuildingDto buildingDto = new BuildingDto();
-            //    buildingDto.Id = building.BuildingId;
+            //    buildingDto.Id = building.Id;
             //    buildingDto.X = building.X;
             //    buildingDto.Y = building.Y;
             //    buildingDto.HasEmployee = building.HasEmployee;
@@ -109,11 +119,12 @@ namespace SettlementGame.Domain
 
                 BuildingDto buildingDto = new BuildingDto
                 {
-                    Id = building.BuildingId,
+                    Id = building.Id,
                     X = building.X,
                     Y = building.Y,
                     HasEmployee = building.HasEmployee,
-                    BuildingType = building.BuildingType
+                    BuildingType = building.BuildingType,
+                    AssignedWorkerId=building.AssignedWorkerId
                 };
 
                 BuildingDtoList.Add(buildingDto);
@@ -143,7 +154,7 @@ namespace SettlementGame.Domain
                 if (exists == true)
                 {
                     CreateBuildingAction action = (CreateBuildingAction)UsersActionsCatalog.CreateBuildingAction(createBuildingContext);
-                    //context.Building = world.BuildingList.Find(x => x.BuildingId == buildingId);
+                    //context.Building = world.BuildingList.Find(x => x.Id == Id);
                     action.Execute(world);
 
                     //будем тут добалвять в БД, чтобы избежать связки работы с конекртной БД в доменной части
@@ -157,15 +168,22 @@ namespace SettlementGame.Domain
                 else { return false; }
             }
         }
-        public bool RemoveBuilding(int buildingId)
+
+        public int FindBuilding(int Id)
+        {
+            var entity = _dbContext.BuildedBuildings.FirstOrDefault(x => x.Id == Id);
+            if (entity == null) { return -1; } else { return (int)entity.Id; }
+                
+        }
+        public bool RemoveBuilding(int Id)
         {   
-            var entity = _dbContext.BuildedBuildings.FirstOrDefault(x => x.BuildingId == buildingId);
+            var entity = _dbContext.BuildedBuildings.FirstOrDefault(x => x.Id == Id);
             if (entity == null)
                 return false;
             var building = BuildingMapper.ToDomain(entity);
-            //Building building = _dbContext.BuildedBuildings.FirstOrDefault(x => x.BuildingId== buildingId);
+            //Building building = _dbContext.BuildedBuildings.FirstOrDefault(x => x.Id== Id);
             //DestroyBuildingContext destroyBuildingContext = new DestroyBuildingContext(building, _workerEmploymentService);
-            if (building.HasEmployee == true)
+            if (building.HasEmployee == true&&building.AssignedWorkerId!=null)
             {
                 _workerEmploymentService.FireWorker(building.AssignedWorker.Id);
                 //DestroyBuildingContext.Building.
@@ -173,7 +191,7 @@ namespace SettlementGame.Domain
             }
             
             //DestroyBuildingAction action = (DestroyBuildingAction)UsersActionsCatalog.DestroyBuildingAction(destroyBuildingContext);
-            //context.Building = world.BuildingList.Find(x => x.BuildingId == buildingId);
+            //context.Building = world.BuildingList.Find(x => x.Id == Id);
             //action.Execute(world);
             //entity = BuildingMapper.ToEntity(destroyBuildingContext.DestroyingBuilding,WorkerEmploymentService);
 
@@ -198,6 +216,7 @@ namespace SettlementGame.Domain
 
         public void Tick(DataWorld world) 
         {
+            int temp = world.GetHashCode();
             UpdateWorkers(world);
             UpdateBuildings(world);
             //UpdateResources();
@@ -208,6 +227,7 @@ namespace SettlementGame.Domain
         {
             foreach (var workerEntity in _dbContext.Workers)
             {
+                int temp = world.GetHashCode();
                 Worker worker = WorkerMapper.ToDomain(workerEntity);
                 worker.Tick(world);
                 workerEntity.IsAlive = worker.IsAlive;
@@ -235,7 +255,7 @@ namespace SettlementGame.Domain
             {
                 tempLoyality= tempLoyality+worker.PersonalLoyality;
             }
-            world.Peopleloyality= tempLoyality / world.WorkersList.Count;
+            world.Peopleloyality= tempLoyality / _dbContext.Workers.Count();
             
         }
 

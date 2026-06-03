@@ -31,7 +31,8 @@ namespace SettlementGame.Domain
             if (!response.IsSuccessStatusCode)
             {
                 return null;
-                // можно бросать исключение, но для UI проще null
+                //
+                //todo: переписать на мэссэджбокс с ошибкой и повторить ввод
             }
 
             string token = await response.Content.ReadAsStringAsync();

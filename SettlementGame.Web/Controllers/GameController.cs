@@ -18,13 +18,13 @@ namespace SettlementGame.Web.Controllers
     
     public class GameController : ControllerBase
     {
-        private readonly DataWorld world;
-        private readonly WorldService worldService;
+        private readonly DataWorld _world;
+        private readonly WorldService _worldService;
         private string JwtKey { get; set; }
         public GameController(DataWorld world, WorldService worldService)
         {
-            this.world = world;
-            this.worldService = worldService;
+            this._world = world;
+            this._worldService = worldService;
         }
         //это пока уберем за ненадобностью
         //[HttpGet]
@@ -41,7 +41,8 @@ namespace SettlementGame.Web.Controllers
 
         [HttpPost("create")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        public IActionResult CreateWorld([FromBody]int numberOfWorkers)
+        //public IActionResult CreateWorld([FromBody]int numberOfWorkers)
+        public IActionResult CreateWorld()
         {
             //foreach (var h in Request.Headers)
             //{
@@ -50,14 +51,17 @@ namespace SettlementGame.Web.Controllers
 
             var auth = Request.Headers.Authorization.ToString();
             //return Ok(world);
-            worldService.CreateWorld();
+            _worldService.CreateWorld();
+            
             //worldService.CreateWorkersByService(numberOfWorkers);
-
+            int temp=_world.GetHashCode();
             return Ok(new
             {
+                
+                Workers = _worldService.GetWorkerDtoList(),
+                Buildings = _worldService.GetBuildingDtoList(),
 
-                Workers = worldService.GetWorkerDtoList(),
-                Buildings = worldService.GetBuildingDtoList()
+               
             });
         }
 
@@ -69,9 +73,12 @@ namespace SettlementGame.Web.Controllers
         //[Authorize(Roles = "Admin")]
         public IActionResult Tick()
         {
-            worldService.Tick(world);
+            int temp = _world.GetHashCode();
+            _worldService.Tick(_world);
             return Ok();
         }
+
+        
 
         [HttpPost("login")]
         public IActionResult Login(LoginRequest request)

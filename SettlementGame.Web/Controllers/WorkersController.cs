@@ -11,25 +11,25 @@ namespace SettlementGame.Web.Controllers
     [Route("api/workers")] //пишем адрес
     public class WorkersController : ControllerBase
     {
-        private readonly DataWorld world;
-        private readonly WorkerEmploymentService workerEmploymentService;
-        private readonly WorldService worldService;
+        private readonly DataWorld _world;
+        private readonly WorkerEmploymentService _workerEmploymentService;
+        private readonly WorldService _worldService;
         public WorkersController(DataWorld world,WorkerEmploymentService workerService, WorldService worldService)
         //DI-контейнер:видит, что нужен DataWorld,создаёт его(Singleton),
         //передаёт в контроллер - вместо new DataWorld().
         {
-            this.world = world;
-            this.workerEmploymentService = workerService;
-            this.worldService = worldService;
+            this._world = world;
+            this._workerEmploymentService = workerService;
+            this._worldService = worldService;
         }
 
-        [HttpGet]
-        public IActionResult GetWorkersDtoList()
+        [HttpGet("GetWorkers")]
+        public IActionResult GetWorkers()
         {
-            return Ok(worldService.GetWorkerDtoList());//возвращает JSON
+            return Ok(_worldService.GetWorkerDtoList()); // ASP превращает List в JSON
         }
 
-        
+
         public class CreateWorkerRequest
         {
             public int Number { get; set; }
@@ -37,7 +37,7 @@ namespace SettlementGame.Web.Controllers
         [HttpPost]
         public IActionResult CreateWorker([FromBody] CreateWorkerRequest request)
         {
-            worldService.CreateWorkersByService(request.Number);
+            _worldService.CreateWorkersByService(request.Number);
             return Ok($"New Worker(s) {request.Number} were created");
         }
         
@@ -45,7 +45,7 @@ namespace SettlementGame.Web.Controllers
         [HttpGet("{id}")]
         public IActionResult GetWorkerById(int id)
         {
-            var worker = workerEmploymentService.GetWorkerById(id);
+            var worker = _workerEmploymentService.GetWorkerById(id);
 
             if (worker == null)
                 return NotFound();
@@ -56,7 +56,7 @@ namespace SettlementGame.Web.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeleteWorkerbyID(int id)
         {
-            bool isDeleted=workerEmploymentService.DeleteWorker(id);
+            bool isDeleted=_workerEmploymentService.DeleteWorker(id);
             if (isDeleted == true) {
                 return Ok($"Worker ID {id} was removed");
             }
@@ -67,7 +67,7 @@ namespace SettlementGame.Web.Controllers
         [HttpDelete]
         public IActionResult ClearWorkersListByUser()
         {
-            workerEmploymentService.ClearWorkersList();  
+            _workerEmploymentService.ClearWorkersList();  
          return Ok($"Worker list was cleared");
             
         }
@@ -93,14 +93,14 @@ namespace SettlementGame.Web.Controllers
         public class HireWorkerRequest
         {
             public int WorkerId { get; set; }
-            public int BuildingId { get; set; }
+            public int Id { get; set; }
             
         }
 
-        [HttpPost("hire")]
+        [HttpPut("hire")]
         public IActionResult HireWorker(HireWorkerRequest hireWorkerRequest)
         {
-            bool result = workerEmploymentService.HireWorker(hireWorkerRequest.WorkerId, hireWorkerRequest.BuildingId);
+            bool result = _workerEmploymentService.HireWorker(hireWorkerRequest.WorkerId, hireWorkerRequest.Id);
             if (result == true)
             {
                 return Ok($"Worker ID {hireWorkerRequest.WorkerId} workPlace was changed");
@@ -109,10 +109,10 @@ namespace SettlementGame.Web.Controllers
         }
 
         
-        [HttpDelete("{id}/fire")]
+        [HttpPut("{id}/fire")]
         public IActionResult FireWorker(int id)
-        {
-            bool result = workerEmploymentService.FireWorker(id);
+        {   
+            bool result = _workerEmploymentService.FireWorker(id);
             if (result == true)
             {
                 return Ok($"Worker ID {id} was fired");
@@ -137,10 +137,10 @@ namespace SettlementGame.Web.Controllers
         {
             //int temp = 0;
             bool isFound = false;
-            workerEmploymentService.FindWorker(id);
+            _workerEmploymentService.FindWorker(id);
             if (isFound == true)
             {
-                workerEmploymentService.ChangeWorker(id, replaceWorkerRequest.X, replaceWorkerRequest.Y, replaceWorkerRequest.IsAlive,replaceWorkerRequest.IsEmployed,replaceWorkerRequest.PersonalLoaylity);
+                _workerEmploymentService.ChangeWorker(id, replaceWorkerRequest.X, replaceWorkerRequest.Y, replaceWorkerRequest.IsAlive,replaceWorkerRequest.IsEmployed,replaceWorkerRequest.PersonalLoaylity);
                 
 
                 return Ok($"Worker ID {id} was replaced/changed");

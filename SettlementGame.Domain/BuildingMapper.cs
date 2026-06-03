@@ -12,7 +12,8 @@ namespace SettlementGame.Domain
             building.AssignedWorkerId = entity.AssignedWorkerId;
             building.X = entity.X;
             building.Y = entity.Y;
-            building.BuildingId = entity.BuildingId;
+            building.Id = entity.Id;
+            //building.AssignedWorkerId = entity.AssignedWorkerId;
 
             return building;
         }
@@ -23,7 +24,7 @@ namespace SettlementGame.Domain
                 BuildingType = domain.BuildingType,
                 X = domain.X,
                 Y = domain.Y,
-                BuildingId = (int)domain.BuildingId,
+                Id = domain.Id,
                 AssignedWorkerId = domain.AssignedWorkerId
             };
         }

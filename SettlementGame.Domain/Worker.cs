@@ -13,10 +13,10 @@ namespace SettlementGame.Domain
         public int Id { get; set; }
         private int workPlaceId;
 
-        public int WorkPlaceId
+        public int ? WorkPlaceId
         {
-            get { return workPlaceId=-1; }
-            set { workPlaceId = value; }
+            get { return workPlaceId; }
+            set { workPlaceId = (int)value; }
         }
 
         //public int?WorkPlaceId { get; set; }
@@ -150,7 +150,7 @@ namespace SettlementGame.Domain
         }
 
 
-        public bool IsEmployed => WorkPlace != null;
+        public bool IsEmployed => WorkPlaceId != null || WorkPlaceId != -1;
         //private Building? workPlace;
 
         public Building? WorkPlace { get;  set; }
@@ -158,7 +158,7 @@ namespace SettlementGame.Domain
         internal void AssignWithWorkPlace(Building building)
         {
             WorkPlace = building;
-            WorkPlaceId = (int)building.BuildingId;
+            WorkPlaceId = (int)building.Id;
             //building.HasEmployee = true;
             
         }
@@ -200,7 +200,7 @@ namespace SettlementGame.Domain
                             // штраф только за базовые нужды
                             if (need.IsCritical)
                             {
-                                ChangePersonalLoyality(-need.LoyalityAmount);
+                                ChangePersonalLoyality(need.LoyalityAmount);
                             }
                         }
 
@@ -213,7 +213,7 @@ namespace SettlementGame.Domain
             //если базовые потребности удоволтеворены, то удоплетворение доп.потребностей дает рост, если не удовлотетоврены базовые, минус.
         }
 
-        private int PersonalMoney { get; set; }
+        public int PersonalMoney { get; set; }
         
         public bool HasEnoughMoney(int value)
         {

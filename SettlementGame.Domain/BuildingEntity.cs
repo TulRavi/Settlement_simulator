@@ -8,7 +8,7 @@ namespace SettlementGame.Domain
     public class BuildingEntity
     {
         [Key]
-        public int BuildingId { get; set; }
+        public int ?Id { get; set; }
 
         public BuildingType BuildingType { get; set; }
 

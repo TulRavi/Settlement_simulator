@@ -24,7 +24,7 @@ namespace SettlementGame.Domain
 
         public List<WorkerEntity> GetAllWorkers()
         {
-            return _dbContext.Workers.ToList(); // из бд-таблицы лист преобразуем
+            return _dbContext.Workers.ToList(); // из бд-таблицы в лист преобразуем
         }
 
         public WorkerEntity GetWorkerById(int id)
@@ -50,20 +50,33 @@ namespace SettlementGame.Domain
         //}
         public bool FireWorker(int id)
         {
-            //int buildingId = _dbContext.Workers.FirstOrDefault(x => x.Id == id).WorkPlace.BuildingId;
+            //int Id = _dbContext.Workers.FirstOrDefault(x => x.Id == id).WorkPlace.Id;
             WorkerEntity workerEntity = _dbContext.Workers.FirstOrDefault(x => x.Id == id);
+            int?buildingId = workerEntity.WorkPlaceId;
+            BuildingEntity buildingEntity = _dbContext.BuildedBuildings.FirstOrDefault(x => x.Id == buildingId);
             var worker = WorkerMapper.ToDomain(workerEntity);
+            var building= BuildingMapper.ToDomain(buildingEntity);
             if (worker != null && worker.IsEmployed == true)
             {
 
-                FireWorkerContext fireWorkerContext = new FireWorkerContext(worker);
+                FireWorkerContext fireWorkerContext = new FireWorkerContext(worker,building);
 
                 FireWorkerAction action = (FireWorkerAction)UsersActionsCatalog.FireWorkerAction(fireWorkerContext);
-                //context.Building = world.BuildingList.Find(x => x.BuildingId == buildingId);
+                //context.Building = world.BuildingList.Find(x => x.Id == Id);
                 action.Execute(world);
 
-                workerEntity = WorkerMapper.ToEntity(fireWorkerContext.Worker);
-                _dbContext.Workers.Remove(workerEntity);
+                //workerEntity = WorkerMapper.ToEntity(fireWorkerContext.Worker);
+                //_dbContext.Workers.Update(workerEntity);
+                //buildingEntity = BuildingMapper.ToEntity(fireWorkerContext.Building);
+                //_dbContext.BuildedBuildings.Update(buildingEntity);
+                workerEntity.WorkPlaceId =
+        fireWorkerContext.Worker.WorkPlaceId;
+
+                workerEntity.IsEmployed =
+                    fireWorkerContext.Worker.IsEmployed;
+
+                buildingEntity.AssignedWorkerId =
+                    fireWorkerContext.Building.AssignedWorkerId;
                 _dbContext.SaveChanges();
 
                 return true;
@@ -71,10 +84,10 @@ namespace SettlementGame.Domain
             else return false;
         }
 
-        public bool HireWorker(int id, int BuildingId)
+        public bool HireWorker(int id, int Id)
         {
             var workerEntity = _dbContext.Workers.FirstOrDefault(x => x.Id == id);
-            var buildingEntity = _dbContext.BuildedBuildings.FirstOrDefault(x => x.BuildingId == BuildingId);
+            var buildingEntity = _dbContext.BuildedBuildings.FirstOrDefault(x => x.Id == Id);
 
             if (workerEntity == null || buildingEntity == null)
                 return false;
@@ -83,10 +96,11 @@ namespace SettlementGame.Domain
             var worker = WorkerMapper.ToDomain(workerEntity);//добавили маппер
             var building = BuildingMapper.ToDomain(buildingEntity);
 
-            if (building.HasEmployee)
-            {
-                FireWorker(building.AssignedWorker.Id);
-            }
+            //if (building.AssignedWorkerId != -1 || building.AssignedWorkerId != null)
+            //{
+            //    FireWorker(building.AssignedWorker.Id);
+            //}
+            //todo:поправить и включить позже
 
             var hireWorkerContext = new HireWorkerContext(worker, building);
 
@@ -96,13 +110,15 @@ namespace SettlementGame.Domain
             //var tempWorkerEntity = WorkerMapper.ToEntity(hireWorkerContext.Worker);
             //var tempWorker = WorkerMapper.ToDomain(tempWorkerEntity);
             workerEntity.IsEmployed = hireWorkerContext.Worker.IsEmployed;
-            workerEntity.WorkPlaceId = hireWorkerContext.Worker.WorkPlace?.BuildingId;
+            workerEntity.WorkPlaceId = hireWorkerContext.Worker.WorkPlace?.Id;
+            
+            buildingEntity.AssignedWorkerId = hireWorkerContext.Worker.Id;
             _dbContext.SaveChanges();
             return true;
             //bool isFound;
 
             //    Worker worker = _dbContext.Workers.FirstOrDefault(x => x.Id == id);
-            //    Building building = _dbContext.BuildedBuildings.FirstOrDefault(x => x.BuildingId == BuildingId);
+            //    Building building = _dbContext.BuildedBuildings.FirstOrDefault(x => x.Id == Id);
             //if (worker != null && building != null)
             //{
             //    if (building.HasEmployee)
@@ -112,7 +128,7 @@ namespace SettlementGame.Domain
             //    HireWorkerContext hireWorkerContext = new HireWorkerContext(worker, building);
 
             //    FireWorkerAction action = (FireWorkerAction)UsersActionsCatalog.HireWorkerAction(hireWorkerContext);
-            //    //context.Building = world.BuildingList.Find(x => x.BuildingId == buildingId);
+            //    //context.Building = world.BuildingList.Find(x => x.Id == Id);
             //    action.Execute(world);
             //    return true;
             //}
@@ -123,7 +139,7 @@ namespace SettlementGame.Domain
         //    Worker worker = _dbContext.Workers.FirstOrDefault(x => x.Id == id);
         //    if (worker != null)
         //    {
-        //        Building building=world.BuildingList.Find(x => x.BuildingId == BuildingId);
+        //        Building building=world.BuildingList.Find(x => x.Id == Id);
         //        if (building == null)
         //            return false;
         //        // если здание занято — увольняем текущего

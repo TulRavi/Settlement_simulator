@@ -11,14 +11,16 @@ namespace SettlementGame.Domain
             var needs = Worker.CreateDefaultNeeds(); // временно?
 
             var worker = new Worker(needs);
-            worker.WorkPlaceId = (int)entity.WorkPlaceId; 
+            worker.WorkPlaceId = entity.WorkPlaceId; 
             //worker.WorkPlace = null;
             worker.Id = entity.Id;
             worker.X = entity.X;
             worker.Y = entity.Y;
             worker.IsAlive = entity.IsAlive;
             worker.PersonalLoyality = entity.PersonalLoyality;
-            
+            worker.PersonalMoney= entity.PersonalMoney;
+
+
             return worker;
         }
         public static WorkerEntity ToEntity(Worker domainWorker)
@@ -35,7 +37,8 @@ namespace SettlementGame.Domain
                 IsAlive = domainWorker.IsAlive,
                 WorkPlaceId = domainWorker.WorkPlaceId,
                 IsEmployed = domainWorker.IsEmployed,
-                PersonalLoyality = domainWorker.PersonalLoyality
+                PersonalLoyality = domainWorker.PersonalLoyality,
+                PersonalMoney= domainWorker.PersonalMoney
             };
         }
     }

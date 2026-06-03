@@ -9,9 +9,9 @@ namespace SettlementGame.Domain
 {
     public  class DataWorld
     {
-        public  List<Worker> WorkersList=new  List<Worker>();
+        //public  List<Worker> WorkersList=new  List<Worker>();
         public  List<AnyResource> SettlementResourceList = new List<AnyResource>();
-        public List<Building> BuildingList = new List<Building>();
+        //public List<Building> BuildingList = new List<Building>();
         public List<BuildingType> PossibleBuildingList = new List<BuildingType>();
         //public WorkerEmploymentService workerEmploymentService { get; set; }
         public DateTime GameTime { get; set; }
@@ -20,7 +20,7 @@ namespace SettlementGame.Domain
         public TimeSpan endWorkingDay = new TimeSpan(18, 0, 0);
         public int tempHoursCounter;
         public int NextWorkerId { get; set; }
-        public int NextBuildingId { get; set; }
+        public int NextId { get; set; }
         public DataWorld()
         {
             GameTime = new DateTime(1, 1, 1);

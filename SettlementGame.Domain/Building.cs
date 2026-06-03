@@ -13,7 +13,7 @@ namespace SettlementGame.Domain
 
         public BuildingType BuildingType { get; set; }
         //public bool HasEmployee { get; private set; }
-        public int? BuildingId { get; set; }
+        public int? Id { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
         public Worker AssignedWorker { get; private set; }
@@ -32,7 +32,7 @@ namespace SettlementGame.Domain
             AssignedWorkerId = -1;
         }
 
-        public bool HasEmployee => AssignedWorkerId != -1;
+        public bool HasEmployee => AssignedWorkerId != -1 || AssignedWorkerId != null;
 
         //private bool hasEmployee;
 

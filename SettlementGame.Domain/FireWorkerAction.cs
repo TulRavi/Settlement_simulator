@@ -13,14 +13,14 @@ namespace SettlementGame.Domain
         public FireWorkerAction(FireWorkerContext FireWorkerContext)
         {
             this.FireWorkerContext = FireWorkerContext;
-            
+                        
         }
         public void Execute(DataWorld world)
         {
             Worker worker = FireWorkerContext.Worker;
-
-            Building building = worker.WorkPlace;
-
+            
+            Building building = FireWorkerContext.Building;
+            
             worker.UnassignWithWorkPlace();
             building.RemoveWorker();
         }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,28 +10,80 @@ namespace SettlementGame.Domain
     public class WorldCreator
     {
         private readonly GameDbContext _dbContext;//новый нэйминг , запомнить
+        private readonly DataWorld _world;
 
-        public WorldCreator(GameDbContext dbContext)
+        public WorldCreator(
+            GameDbContext dbContext,
+            DataWorld world)
         {
-            _dbContext = dbContext; //получили контекст базы данных чз консструктор
+            _dbContext = dbContext;
+            _world = world;
         }
+        //public WorldCreator(GameDbContext dbContext)
+        //{
+        //    _dbContext = dbContext; //получили контекст базы данных чз консструктор
+        //}
         public DataWorld CreateWorld()
+            
 
         {   //List <Resource> listResource=new List <Resource>();
 
-            DataWorld world = new DataWorld();
+            //DataWorld world = new DataWorld();
+            //в-1 работает нестабильно
+            //_dbContext.Database.EnsureDeleted();
+            //_dbContext.Database.EnsureCreated();//видимо,нужно закрывать соединение для пересоздвания
 
-            world.SettlementResourceList.Add(new AnyResource(ResourceType.Meat, 100));
-            world.SettlementResourceList.Add(new AnyResource(ResourceType.Berries, 202));
-            world.SettlementResourceList.Add(new AnyResource(ResourceType.CleanWater, 500));
-            world.SettlementResourceList.Add(new AnyResource(ResourceType.Wood, 40));
-            world.SettlementResourceList.Add(new AnyResource(ResourceType.Stone, 40));
-            world.SettlementResourceList.Add(new AnyResource(ResourceType.Gold, 10));
-            world.SettlementResourceList.Add(new AnyResource(ResourceType.Doska, 0));
-            world.SettlementResourceList.Add(new AnyResource(ResourceType.Kirpich, 0));
-            world.SettlementResourceList.Add(new AnyResource(ResourceType.Moneta, 100));
-            AddPossibleBuildings(world);
-            return world;
+            //в-2 не работает 
+            // Удаляем все записи из таблицы (перечислить все нужные таблицы)
+            //string tableName = "Workers"; // Имя таблицы
+            //_dbContext.Database.ExecuteSqlRaw("DELETE FROM {0}", tableName);
+            //_dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE {0}", tableName);
+            //string tableName2 = "BuildedBuildings"; // Имя таблицы
+            //_dbContext.Database.ExecuteSqlRaw("DELETE FROM {0}", tableName2);
+            //_dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE {0}", tableName2);
+
+            //в-3 не работает
+            //var entityTypes = _dbContext.Model.GetEntityTypes();
+
+            //foreach (var entityType in entityTypes)
+            //{
+            //    var tableName = entityType.GetTableName();
+            //    if (tableName != null)
+            //    {
+            //        // Выполняем SQL-запрос на удаление всех строк для каждой таблицы
+            //        _dbContext.Database.ExecuteSqlRawAsync($"DELETE FROM {tableName}");
+            //    }
+            //}
+            //в-4
+            ResetDatabase();
+
+
+            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Meat, 100));
+            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Berries, 202));
+            _world.SettlementResourceList.Add(new AnyResource(ResourceType.CleanWater, 500));
+            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Wood, 40));
+            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Stone, 40));
+            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Gold, 10));
+            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Doska, 0));
+            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Kirpich, 0));
+            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Moneta, 100));
+            AddPossibleBuildings(_world);
+            CreateDateTime(_world);
+            return _world;
+        }
+
+        public void ResetDatabase()
+        {
+            _dbContext.Workers.RemoveRange(_dbContext.Workers); // при ошибке типа нет поля ХХ как костыль вручную удаляем файл
+            _dbContext.BuildedBuildings.RemoveRange(_dbContext.BuildedBuildings);
+
+            _dbContext.SaveChanges();
+
+            _dbContext.Database.ExecuteSqlRaw(
+                "DELETE FROM sqlite_sequence WHERE name='Workers';");
+
+            _dbContext.Database.ExecuteSqlRaw(
+                "DELETE FROM sqlite_sequence WHERE name='BuildedBuildings';");
         }
 
         //public static WorkerEmploymentService CreateWorkerEmploymentService(DataWorld world)
@@ -75,6 +128,7 @@ namespace SettlementGame.Domain
                 //worker.WorkPlace = null;
                 //worker.IsEmployed = false;
                 worker.PersonalLoyality = 0.5;
+                worker.PersonalMoney = 30;
                 _dbContext.Workers.Add(WorkerMapper.ToEntity(worker)); //вместо листа доабвляем в БД
 
                 //world.NextWorkerId++;
@@ -105,9 +159,9 @@ namespace SettlementGame.Domain
 
         public void PrintBuildedBuildings(DataWorld world)
         {
-            foreach (Building building in world.BuildingList)
+            foreach (BuildingEntity buildingEntity in _dbContext.BuildedBuildings)
             {
-                Console.WriteLine($"{building.GetType().ToString()} index of building:{world.BuildingList.IndexOf(building)} has Employee {building.HasEmployee}");
+                Console.WriteLine($"{buildingEntity.GetType().ToString()} index of building:{buildingEntity.Id} has Employee {buildingEntity.AssignedWorkerId}");
             }
         }
 
