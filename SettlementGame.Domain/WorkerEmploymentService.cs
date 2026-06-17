@@ -49,8 +49,8 @@ namespace SettlementGame.Domain
         //    if (isFound == true) { return true; } else { return false; }
         //}
         public bool FireWorker(int id)
-        {
-            //int Id = _dbContext.Workers.FirstOrDefault(x => x.Id == id).WorkPlace.Id;
+        {   if(_dbContext.Workers.FirstOrDefault(x => x.Id == id).WorkPlaceId==-1|| _dbContext.Workers.FirstOrDefault(x => x.Id == id).WorkPlaceId == null) { return false; }
+            
             WorkerEntity workerEntity = _dbContext.Workers.FirstOrDefault(x => x.Id == id);
             int?buildingId = workerEntity.WorkPlaceId;
             BuildingEntity buildingEntity = _dbContext.BuildedBuildings.FirstOrDefault(x => x.Id == buildingId);
@@ -95,12 +95,17 @@ namespace SettlementGame.Domain
             //var worker = workerEntity; // пока без WorkerMapper
             var worker = WorkerMapper.ToDomain(workerEntity);//добавили маппер
             var building = BuildingMapper.ToDomain(buildingEntity);
+            if (worker.WorkPlaceId == building.AssignedWorkerId) { return false; }
+            if (worker.WorkPlaceId!=-1&&worker.WorkPlaceId!=null)
+            {
+                FireWorker(worker.Id);
+            }
+            if (building.AssignedWorkerId != -1&& building.AssignedWorkerId !=null)
+            {
+                FireWorker(building.AssignedWorker.Id);
+            }
 
-            //if (building.AssignedWorkerId != -1 || building.AssignedWorkerId != null)
-            //{
-            //    FireWorker(building.AssignedWorker.Id);
-            //}
-            //todo:поправить и включить позже
+            //todo:поправить и включить позже - done
 
             var hireWorkerContext = new HireWorkerContext(worker, building);
 

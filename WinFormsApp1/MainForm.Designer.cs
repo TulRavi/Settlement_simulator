@@ -44,12 +44,19 @@ namespace WinFormsApp1
             comboBoxChooseWorker = new ComboBox();
             comboBoxChooseBuildingForWorker = new ComboBox();
             btnFireWorker = new Button();
+            textSettlementResourcesState = new TextBox();
+            LabelWorkers = new Label();
+            LabelBuildings = new Label();
+            LabelSettlementresources = new Label();
+            progressBarPeopleLoyality = new ProgressBar();
+            labelLoyality = new Label();
+            textCurrentCrownTask = new TextBox();
             ((System.ComponentModel.ISupportInitialize)buildingCatalogBindingSource).BeginInit();
             SuspendLayout();
             // 
             // btnTick
             // 
-            btnTick.Location = new Point(39, 125);
+            btnTick.Location = new Point(33, 227);
             btnTick.Name = "btnTick";
             btnTick.Size = new Size(229, 145);
             btnTick.TabIndex = 0;
@@ -59,7 +66,7 @@ namespace WinFormsApp1
             // 
             // btnCreateWorld
             // 
-            btnCreateWorld.Location = new Point(39, 31);
+            btnCreateWorld.Location = new Point(33, 133);
             btnCreateWorld.Name = "btnCreateWorld";
             btnCreateWorld.Size = new Size(229, 75);
             btnCreateWorld.TabIndex = 1;
@@ -69,23 +76,23 @@ namespace WinFormsApp1
             // 
             // textWorkersState
             // 
-            textWorkersState.Location = new Point(657, 31);
+            textWorkersState.Location = new Point(657, 83);
             textWorkersState.Multiline = true;
             textWorkersState.Name = "textWorkersState";
-            textWorkersState.Size = new Size(234, 600);
+            textWorkersState.Size = new Size(234, 638);
             textWorkersState.TabIndex = 2;
             // 
             // textBuildingsState
             // 
-            textBuildingsState.Location = new Point(917, 31);
+            textBuildingsState.Location = new Point(909, 83);
             textBuildingsState.Multiline = true;
             textBuildingsState.Name = "textBuildingsState";
-            textBuildingsState.Size = new Size(234, 600);
+            textBuildingsState.Size = new Size(234, 638);
             textBuildingsState.TabIndex = 3;
             // 
             // btnCreateBuilding
             // 
-            btnCreateBuilding.Location = new Point(39, 297);
+            btnCreateBuilding.Location = new Point(33, 399);
             btnCreateBuilding.Name = "btnCreateBuilding";
             btnCreateBuilding.Size = new Size(229, 107);
             btnCreateBuilding.TabIndex = 4;
@@ -95,19 +102,12 @@ namespace WinFormsApp1
             // 
             // comboBoxBuildingType
             // 
-            comboBoxBuildingType.DataSource = new BuildingType[]
-    {
-    BuildingType.WoodMakery,
-    BuildingType.StoneMakery,
-    BuildingType.GoldMakery,
-    BuildingType.Tavern,
-    BuildingType.BeerMakery
-    };
             comboBoxBuildingType.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxBuildingType.FormattingEnabled = true;
-            //comboBoxBuildingType.Items.AddRange(new object[] { BuildingType.WoodMakery, BuildingType.StoneMakery, BuildingType.GoldMakery, BuildingType.Tavern, BuildingType.BeerMakery });
-            //todo: ошибка System.ArgumentException: "Изменение коллекции элементов невозможно, если задано свойство DataSource."
-            comboBoxBuildingType.Location = new Point(39, 422);
+            //comboBoxBuildingType.Items.AddRange(new object[] { BuildingType.DoskaMakery, BuildingType.KirpichMakery, BuildingType.GoldMakery, BuildingType.Tavern, BuildingType.BeerMakery });
+            //вот тут надо подумать как не напрямую добалвять, мб чз источник данных
+            
+            comboBoxBuildingType.Location = new Point(33, 524);
             comboBoxBuildingType.Name = "comboBoxBuildingType";
             comboBoxBuildingType.Size = new Size(229, 45);
             comboBoxBuildingType.TabIndex = 5;
@@ -116,11 +116,11 @@ namespace WinFormsApp1
             // 
             // buildingCatalogBindingSource
             // 
-            buildingCatalogBindingSource.DataSource = typeof(BuildingCatalog);
+            //buildingCatalogBindingSource.DataSource = typeof(BuildingCatalog);
             // 
             // btnDestroyBuilding
             // 
-            btnDestroyBuilding.Location = new Point(289, 300);
+            btnDestroyBuilding.Location = new Point(283, 402);
             btnDestroyBuilding.Name = "btnDestroyBuilding";
             btnDestroyBuilding.Size = new Size(231, 104);
             btnDestroyBuilding.TabIndex = 6;
@@ -131,7 +131,7 @@ namespace WinFormsApp1
             // comboBoxDestroyType
             // 
             comboBoxDestroyType.FormattingEnabled = true;
-            comboBoxDestroyType.Location = new Point(291, 422);
+            comboBoxDestroyType.Location = new Point(285, 524);
             comboBoxDestroyType.Name = "comboBoxDestroyType";
             comboBoxDestroyType.Size = new Size(229, 45);
             comboBoxDestroyType.TabIndex = 7;
@@ -140,7 +140,7 @@ namespace WinFormsApp1
             // 
             // btnHireWorker
             // 
-            btnHireWorker.Location = new Point(39, 484);
+            btnHireWorker.Location = new Point(33, 586);
             btnHireWorker.Name = "btnHireWorker";
             btnHireWorker.Size = new Size(229, 52);
             btnHireWorker.TabIndex = 8;
@@ -151,7 +151,7 @@ namespace WinFormsApp1
             // comboBoxChooseWorker
             // 
             comboBoxChooseWorker.FormattingEnabled = true;
-            comboBoxChooseWorker.Location = new Point(166, 542);
+            comboBoxChooseWorker.Location = new Point(160, 644);
             comboBoxChooseWorker.Name = "comboBoxChooseWorker";
             comboBoxChooseWorker.Size = new Size(228, 45);
             comboBoxChooseWorker.TabIndex = 9;
@@ -160,7 +160,7 @@ namespace WinFormsApp1
             // comboBoxChooseBuildingForWorker
             // 
             comboBoxChooseBuildingForWorker.FormattingEnabled = true;
-            comboBoxChooseBuildingForWorker.Location = new Point(39, 593);
+            comboBoxChooseBuildingForWorker.Location = new Point(33, 695);
             comboBoxChooseBuildingForWorker.Name = "comboBoxChooseBuildingForWorker";
             comboBoxChooseBuildingForWorker.Size = new Size(228, 45);
             comboBoxChooseBuildingForWorker.TabIndex = 10;
@@ -168,20 +168,86 @@ namespace WinFormsApp1
             // 
             // btnFireWorker
             // 
-            btnFireWorker.Location = new Point(291, 484);
+            btnFireWorker.Location = new Point(285, 586);
             btnFireWorker.Name = "btnFireWorker";
             btnFireWorker.Size = new Size(229, 52);
             btnFireWorker.TabIndex = 11;
             btnFireWorker.Text = "FireWorker";
             btnFireWorker.UseVisualStyleBackColor = true;
             btnFireWorker.Click += btnFireWorker_Click;
-            
+            // 
+            // textSettlementResourcesState
+            // 
+            textSettlementResourcesState.Location = new Point(1162, 83);
+            textSettlementResourcesState.Multiline = true;
+            textSettlementResourcesState.Name = "textSettlementResourcesState";
+            textSettlementResourcesState.Size = new Size(234, 638);
+            textSettlementResourcesState.TabIndex = 12;
+            // 
+            // LabelWorkers
+            // 
+            LabelWorkers.AutoSize = true;
+            LabelWorkers.Location = new Point(657, 31);
+            LabelWorkers.Name = "LabelWorkers";
+            LabelWorkers.Size = new Size(113, 37);
+            LabelWorkers.TabIndex = 13;
+            LabelWorkers.Text = "Workers";
+            // 
+            // LabelBuildings
+            // 
+            LabelBuildings.AutoSize = true;
+            LabelBuildings.Location = new Point(909, 31);
+            LabelBuildings.Name = "LabelBuildings";
+            LabelBuildings.Size = new Size(126, 37);
+            LabelBuildings.TabIndex = 14;
+            LabelBuildings.Text = "Buildings";
+            // 
+            // LabelSettlementresources
+            // 
+            LabelSettlementresources.AutoSize = true;
+            LabelSettlementresources.Location = new Point(1162, 31);
+            LabelSettlementresources.Name = "LabelSettlementresources";
+            LabelSettlementresources.Size = new Size(263, 37);
+            LabelSettlementresources.TabIndex = 15;
+            LabelSettlementresources.Text = "Settlement resources";
+            // 
+            // progressBarPeopleLoyality
+            // 
+            progressBarPeopleLoyality.Location = new Point(454, 83);
+            progressBarPeopleLoyality.Name = "progressBarPeopleLoyality";
+            progressBarPeopleLoyality.Size = new Size(197, 52);
+            progressBarPeopleLoyality.TabIndex = 16;
+            // 
+            // labelLoyality
+            // 
+            labelLoyality.AutoSize = true;
+            labelLoyality.Location = new Point(454, 31);
+            labelLoyality.Name = "labelLoyality";
+            labelLoyality.Size = new Size(197, 37);
+            labelLoyality.TabIndex = 17;
+            labelLoyality.Text = "People Loyality";
+            // 
+            // textCurrentCrownTask
+            // 
+            textCurrentCrownTask.Location = new Point(33, 31);
+            textCurrentCrownTask.Multiline = true;
+            textCurrentCrownTask.Name = "textCurrentCrownTask";
+            textCurrentCrownTask.Size = new Size(415, 96);
+            textCurrentCrownTask.TabIndex = 18;
+            textCurrentCrownTask.TextChanged += textBox1_TextChanged;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(15F, 37F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1311, 739);
+            ClientSize = new Size(1594, 788);
+            Controls.Add(textCurrentCrownTask);
+            Controls.Add(labelLoyality);
+            Controls.Add(progressBarPeopleLoyality);
+            Controls.Add(LabelSettlementresources);
+            Controls.Add(LabelBuildings);
+            Controls.Add(LabelWorkers);
+            Controls.Add(textSettlementResourcesState);
             Controls.Add(btnFireWorker);
             Controls.Add(comboBoxChooseBuildingForWorker);
             Controls.Add(comboBoxChooseWorker);
@@ -217,5 +283,12 @@ namespace WinFormsApp1
         private ComboBox comboBoxChooseWorker;
         private ComboBox comboBoxChooseBuildingForWorker;
         private Button btnFireWorker;
+        private TextBox textSettlementResourcesState;
+        private Label LabelWorkers;
+        private Label LabelBuildings;
+        private Label LabelSettlementresources;
+        private ProgressBar progressBarPeopleLoyality;
+        private Label labelLoyality;
+        private TextBox textCurrentCrownTask;
     }
 }

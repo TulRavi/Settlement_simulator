@@ -19,8 +19,27 @@ namespace SettlementGame.Domain
         public TimeSpan startWorkingDay = new TimeSpan(9, 0, 0);
         public TimeSpan endWorkingDay = new TimeSpan(18, 0, 0);
         public int tempHoursCounter;
-        public int NextWorkerId { get; set; }
-        public int NextId { get; set; }
+        private int gameState;
+
+        public int GameState
+        {
+            get { return gameState; }
+            set { gameState = value; }
+        }
+
+        bool CrownTaskIsCompleted = false;
+        //private CrownsTask currentCrownTask;
+        private CrownTask currentCrownTask;
+
+        public CrownTask CurrentCrownTask
+        {
+            get { return currentCrownTask; }
+            set { currentCrownTask = value; }
+        }
+
+
+        //public int NextWorkerId { get; set; }
+        //public int NextId { get; set; }
         public DataWorld()
         {
             GameTime = new DateTime(1, 1, 1);
@@ -34,6 +53,7 @@ namespace SettlementGame.Domain
             set { crownLoyaity = Math.Clamp(value, 0, 1); }
         }
 
+        
         bool IsGameLost => CrownLoyaity <= 0;
         bool IsGameWon => CrownLoyaity >= 1;
 

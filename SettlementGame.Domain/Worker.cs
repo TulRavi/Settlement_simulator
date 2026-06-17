@@ -128,7 +128,7 @@ namespace SettlementGame.Domain
             workerNeeds.Add(new NeedAlcohol());
             return workerNeeds;
         }
-
+        
 
         public Worker(List<Need> wokerNeeds)
         {

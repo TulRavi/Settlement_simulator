@@ -1,6 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
+using System.Runtime.CompilerServices;
 using System.Text;
 using static SettlementGame.Domain.WorldService;
 
@@ -14,7 +17,7 @@ namespace SettlementGame.Domain
     public class WorldService
     {
 
-        private readonly DataWorld world;
+        private readonly DataWorld _world;
         private readonly WorldCreator _worldCreator;
         private readonly GameDbContext _dbContext;
         private readonly WorkerEmploymentService _workerEmploymentService;
@@ -23,7 +26,7 @@ namespace SettlementGame.Domain
 
         public WorldService(DataWorld world, WorldCreator worldCreator, GameDbContext dbContext, WorkerEmploymentService workerEmploymentService)
         {
-            this.world = world;
+            this._world = world;
             this._worldCreator = worldCreator;
             this._dbContext = dbContext;
             this._workerEmploymentService = workerEmploymentService;
@@ -49,9 +52,11 @@ namespace SettlementGame.Domain
 
             //world.workerEmploymentService = WorldCreator.CreateWorkerEmploymentService(world);
             _worldCreator.CreateWorld();
-        _worldCreator.CreateWorkers(numberOfWorkers, world);
+        _worldCreator.CreateWorkers(numberOfWorkers, _world);
+            _world.CurrentCrownTask=CrownTask.CreateNewCrownTack(_world,_dbContext);
+            
 
-        return world;
+        return _world;
     }
 
         public class WorkerDto
@@ -99,6 +104,34 @@ namespace SettlementGame.Domain
             public int? AssignedWorkerId { get; set; }
         }
 
+        public class CrownTaskDto
+        {
+            public string ResourceType { get; set; }
+            public int Amount { get; set; }
+            public int NumberOfTicks { get; set; }
+            public double LoyalityCounter { get; set; }
+        }
+
+        public CrownTaskDto GetCurrentCrownTaskDto()
+        {
+            var task = _world.CurrentCrownTask;
+
+            if (task == null)
+                return null;
+
+            return new CrownTaskDto
+            {
+                ResourceType = task.Resource.ResourceType.ToString(),
+                Amount = task.Resource.Amount,
+                NumberOfTicks = task.NumberOfTicks,
+                LoyalityCounter = task.LoyalityCounter
+            };
+        }
+
+        public List<SettlementGame.Domain.AnyResource> GetSettlementResourceList()
+        {
+            return _world.SettlementResourceList;
+        }
         public List<BuildingDto> GetBuildingDtoList()
         {
             List<BuildingDto> BuildingDtoList = new List<BuildingDto>();
@@ -146,6 +179,11 @@ namespace SettlementGame.Domain
               .ToList();
         }
 
+        public CrownTask GetCurrentCrownTask()
+        {
+            return _world.CurrentCrownTask;
+        }
+
         public bool CreateBuilding(BuildingType buildingType) {
             CreateBuildingContext createBuildingContext = new CreateBuildingContext(buildingType);
             bool exists = Enum.IsDefined(typeof(BuildingType), createBuildingContext.BuildingType);
@@ -155,7 +193,7 @@ namespace SettlementGame.Domain
                 {
                     CreateBuildingAction action = (CreateBuildingAction)UsersActionsCatalog.CreateBuildingAction(createBuildingContext);
                     //context.Building = world.BuildingList.Find(x => x.Id == Id);
-                    action.Execute(world);
+                    action.Execute(_world);
 
                     //будем тут добалвять в БД, чтобы избежать связки работы с конекртной БД в доменной части
                     var entity = BuildingMapper.ToEntity(createBuildingContext.CreatingBuilding);
@@ -208,20 +246,29 @@ namespace SettlementGame.Domain
             }
         }
 
+        public double GetPeopleLoyality()
+        {
+            return _world.Peopleloyality;
+        }
+
 
         public void CreateWorkersByService(int numberOfWorkers=3)
         {
-            _worldCreator.CreateWorkers(numberOfWorkers, world);
+            _worldCreator.CreateWorkers(numberOfWorkers, _world);
         }
 
-        public void Tick(DataWorld world) 
+        public void Tick() 
         {
-            int temp = world.GetHashCode();
-            UpdateWorkers(world);
-            UpdateBuildings(world);
+            int temp = _world.GetHashCode();
+            UpdateWorkers(_world);
+            UpdateBuildings(_world);
             //UpdateResources();
-            UpdateLoyalty(world);
+            UpdateLoyalty(_world);
+            UpdateCrownTask(_world, _dbContext);
+            //updateGameState(_world);
         }
+
+        
 
         private void UpdateWorkers(DataWorld world)
         {
@@ -240,6 +287,27 @@ namespace SettlementGame.Domain
             _dbContext.SaveChanges();
         }
 
+        public void UpdateCrownTask(DataWorld world,GameDbContext dbContext)
+        {
+            if (CrownTask.IsCompleted(world) == true)
+            {
+                CrownTask task = world.CurrentCrownTask;
+                AnyResource reqAnyResource = task.Resource;
+                world.SettlementResourceList.Find(x => x.ResourceType == reqAnyResource.ResourceType).Amount = world.SettlementResourceList.Find(x => x.ResourceType == reqAnyResource.ResourceType).Amount - reqAnyResource.Amount;
+                world.CurrentCrownTask=CrownTask.CreateNewCrownTack(world, dbContext);
+            }
+            else
+            { 
+                world.CurrentCrownTask.NumberOfTicks--;
+                if (world.CurrentCrownTask.NumberOfTicks <= 0) 
+                {
+                    world.CrownLoyaity = world.CrownLoyaity - 0.1;
+                    world.CurrentCrownTask = CrownTask.CreateNewCrownTack(world, dbContext);
+                }
+            }
+            ;
+        }
+
         public void UpdateBuildings(DataWorld world)
         {
             foreach (var entity in _dbContext.BuildedBuildings)
@@ -248,6 +316,19 @@ namespace SettlementGame.Domain
                 if (building.HasEmployee== true) { building.Tick(world); }
             }
         }
+        public int updateGameState(DataWorld world) 
+        {
+            if (world.CrownLoyaity <= 0)
+            {
+                return world.GameState = -1;
+            }
+            if(world.CrownLoyaity >= 1) 
+            {
+                return world.GameState = 1;
+            }
+            return 0;
+        }
+               
 
         private void UpdateLoyalty(DataWorld world)
         { double tempLoyality = 0;

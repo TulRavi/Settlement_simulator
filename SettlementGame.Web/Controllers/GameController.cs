@@ -38,9 +38,49 @@ namespace SettlementGame.Web.Controllers
         //    };
         //    return Ok(response);
         //}
+        [HttpGet("getSettlementresourcesList")]
+        public IActionResult getSettlementresourcesList()
+        {
+            
+            //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
+            return Ok(_worldService.GetSettlementResourceList());
+        }
+
+        [HttpGet("getPeopleLoayliy")]
+        public IActionResult getPeopleLoayliy()
+        {
+            //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
+            return Ok(_worldService.GetPeopleLoyality());
+        }
+
+        [HttpGet("getCurrentCrownTask")]
+        public IActionResult getCurrentCrownTask()
+        {
+            //int temp = _world.GetHashCode();
+            //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
+
+            //CrownTask crownTask = _worldService.GetCurrentCrownTask();
+            //return Ok(crownTask);
+            return Ok(_worldService.GetCurrentCrownTaskDto());
+
+            //var task = _worldService.GetCurrentCrownTask();
+
+            //return Ok(new
+            //{
+            //    Exists = task != null
+            //});
+        }
+
+        [HttpGet("getCurrentGameState")]
+        public IActionResult getCurrentGameState()
+        {
+            return Ok(_worldService.updateGameState(_world));
+
+        }
 
         [HttpPost("create")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+
         //public IActionResult CreateWorld([FromBody]int numberOfWorkers)
         public IActionResult CreateWorld()
         {
@@ -67,14 +107,35 @@ namespace SettlementGame.Web.Controllers
 
 
 
-        [HttpPost("tick")]
+        [HttpPut("tick")]
         [Authorize]
         //[Authorize(Roles = "User")]
         //[Authorize(Roles = "Admin")]
         public IActionResult Tick()
         {
-            int temp = _world.GetHashCode();
-            _worldService.Tick(_world);
+            //int temp = _world.GetHashCode();
+            try
+            {
+                _worldService.Tick();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.ToString());
+            }
+            try {  
+            getCurrentCrownTask();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.ToString());
+            }
+            try{
+                getCurrentGameState();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.ToString());
+            }
             return Ok();
         }
 

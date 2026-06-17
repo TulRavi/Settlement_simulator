@@ -56,20 +56,54 @@ namespace SettlementGame.Domain
             //}
             //в-4
             ResetDatabase();
+            foreach (ResourceType resourceType in Enum.GetValues(typeof(ResourceType)))
+            {
+                AnyResource resource = new AnyResource(resourceType, 0);
+                // Здесь можно выполнить проверку или изменить значение
+                _world.SettlementResourceList.Add(resource);
+            }
 
+            AddOrUpdateItem(ResourceType.Meat, 100);
+            AddOrUpdateItem(ResourceType.Berries, 202);
+            AddOrUpdateItem(ResourceType.CleanWater, 500);
+            AddOrUpdateItem(ResourceType.Wood, 40);
+            AddOrUpdateItem(ResourceType.Stone, 40);
+            AddOrUpdateItem(ResourceType.Gold, 10);
+            AddOrUpdateItem(ResourceType.Moneta, 100);
+            AddOrUpdateItem(ResourceType.Psheniza, 10);
+            AddOrUpdateItem(ResourceType.Hmel, 10);
+            
 
-            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Meat, 100));
-            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Berries, 202));
-            _world.SettlementResourceList.Add(new AnyResource(ResourceType.CleanWater, 500));
-            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Wood, 40));
-            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Stone, 40));
-            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Gold, 10));
-            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Doska, 0));
-            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Kirpich, 0));
-            _world.SettlementResourceList.Add(new AnyResource(ResourceType.Moneta, 100));
+            //_world.SettlementResourceList.Add(new AnyResource(ResourceType.Meat, 100));
+            //_world.SettlementResourceList.Add(new AnyResource(ResourceType.Berries, 202));
+            //_world.SettlementResourceList.Add(new AnyResource(ResourceType.CleanWater, 500));
+            //_world.SettlementResourceList.Add(new AnyResource(ResourceType.Wood, 40));
+            //_world.SettlementResourceList.Add(new AnyResource(ResourceType.Stone, 40));
+            //_world.SettlementResourceList.Add(new AnyResource(ResourceType.Gold, 10));
+            //_world.SettlementResourceList.Add(new AnyResource(ResourceType.Doska, 0));
+            //_world.SettlementResourceList.Add(new AnyResource(ResourceType.Kirpich, 0));
+            //_world.SettlementResourceList.Add(new AnyResource(ResourceType.Moneta, 100));
+            //_world.SettlementResourceList.Add(new AnyResource(ResourceType.Psheniza, 10));
+            //_world.SettlementResourceList.Add(new AnyResource(ResourceType.Hmel, 10));
             AddPossibleBuildings(_world);
             CreateDateTime(_world);
+            _world.GameState = 0;
+            _world.CrownLoyaity = 0.5;
             return _world;
+        }
+
+        private void AddOrUpdateItem(ResourceType resourceType, int amount)
+        {
+            var existingItem = _world.SettlementResourceList.Find(x => x.ResourceType == resourceType);
+
+            if (existingItem != null)
+            {
+                existingItem.Amount += amount; // Обновляем количество
+            }
+            else
+            {
+                _world.SettlementResourceList.Add(new AnyResource(resourceType, amount));
+            }
         }
 
         public void ResetDatabase()
@@ -136,6 +170,10 @@ namespace SettlementGame.Domain
                 worker.EndWorkingTime = new TimeSpan(00, 00, 01);
             }
             _dbContext.SaveChanges();
+        }
+        public void CreateCrownTask()
+        {
+           
         }
         public void PrintState(DataWorld world)
         {

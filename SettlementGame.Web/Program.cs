@@ -108,7 +108,7 @@ namespace SettlementGame.Web
             //    await next();
             //});
 
-
+            app.UseDeveloperExceptionPage();//чтобы пон€ть причину 500 ошибки добавим аока что
             app.MapControllers();// Ч подключили все классы с [ApiController] к маршрутам
             //≈сли убрать Ч контроллеры не будут вызыватьс€
 

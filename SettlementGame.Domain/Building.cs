@@ -32,7 +32,7 @@ namespace SettlementGame.Domain
             AssignedWorkerId = -1;
         }
 
-        public bool HasEmployee => AssignedWorkerId != -1 || AssignedWorkerId != null;
+        public bool HasEmployee => AssignedWorkerId != -1 && AssignedWorkerId != null;
 
         //private bool hasEmployee;
 
@@ -79,12 +79,23 @@ namespace SettlementGame.Domain
             if (canProduce == true)
             {
 
-                for (int x = 0; x < buildingCatalog.Outputs.Count(); x++)
+                for (int x = 0; x < buildingCatalog.Outputs.Count(); x++)//добалвяем произведнный ресурс в ресурсы поседения
                 {
                     foreach (AnyResource resource1 in world.SettlementResourceList)
                         if (resource1.ResourceType == buildingCatalog.Outputs.ElementAt(x).ResourceType)
-                        {
+                        {   
                             resource1.Increase(buildingCatalog.Outputs.ElementAt(x).Amount);
+                            continue;
+                        }
+                    
+                }
+                for (int y = 0; y < buildingCatalog.Inputs.Count(); y++)//меняем кол-во материалов в поселении, убирая затраченные 
+                {
+                    foreach (AnyResource resource2 in world.SettlementResourceList)
+                        if (resource2.ResourceType == buildingCatalog.Inputs.ElementAt(y).ResourceType)
+                        {
+                            resource2.Decrease(buildingCatalog.Inputs.ElementAt(y).Amount);
+                            continue;
                         }
                 }
             }

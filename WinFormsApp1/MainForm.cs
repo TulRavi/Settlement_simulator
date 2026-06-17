@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static SettlementGame.Domain.WorldService;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace WinFormsApp1
@@ -58,20 +59,6 @@ namespace WinFormsApp1
         //    catch (Exception ex) { MessageBox.Show(ex.Message); }
         //}
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private async void anyButtonClicked(object sender, EventArgs e)
-        {
-            HttpResponseMessage response =
-            await _httpClient.GetAsync(
-                "api/world/GetWorkersInfo");
-            //textState.Text = response.ToString();
-            string text = await response.Content.ReadAsStringAsync();
-            textWorkersState.Text = text;
-        }
 
         private async Task RefreshDestroyBuildingsComboBox()
         {
@@ -112,6 +99,26 @@ namespace WinFormsApp1
                 comboBoxDestroyType.SelectedIndex = -1;
                 comboBoxDestroyType.SelectedIndexChanged += comboBoxDestroyType_SelectedIndexChanged;
             }
+        }
+
+        private async Task RefreshLoayalityBrogressBar()
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getPeopleLoayliy"); // запрос к API
+            //[HttpGet("getSettlementresourcesList")]
+            if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            {
+                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
+                //временно полный json вид
+                json = json.Replace(".", ",");
+                progressBarPeopleLoyality.Value = (int)(double.Parse(json) * 100);
+
+            }
+            else // если ошибка запроса
+            {
+                MessageBox.Show("${response.StatusCode.ToString()}"); // показываем код ошибки
+            }
+
+
         }
 
         private async Task RefreshWorkersInfo() // метод обновления информации о рабочих
@@ -230,6 +237,141 @@ namespace WinFormsApp1
             }
         }
 
+        private async Task RefreshPossibleBuildings()
+        {
+            HttpResponseMessage response =
+                await _httpClient.GetAsync(
+                    "api/buildings/GetPossibleBuildings");
+
+            string json =
+                await response.Content.ReadAsStringAsync();
+
+            List<BuildingType>? buildings =
+                JsonSerializer.Deserialize<List<BuildingType>>(
+                    json,
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+            if (buildings == null)
+                return;
+
+            comboBoxBuildingType.DataSource = buildings;
+        }
+
+        private async Task RefreshSettlementResourcesInfo() // метод обновления информации о рабочих
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getSettlementresourcesList"); // запрос к API
+            //[HttpGet("getSettlementresourcesList")]
+            if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            {
+                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
+                //временно полный json вид
+                //textSettlementResourcesState.Clear();
+                //textSettlementResourcesState.Text = json;
+
+                JsonDocument SettlementResourcesTreeContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
+                //JsonDocument — это контейнер дерева
+                JsonElement SettlementResourcesTree = SettlementResourcesTreeContainer.RootElement; // корневой элемент (он же массив)
+
+                
+
+                foreach (JsonElement SettlementResources in SettlementResourcesTree.EnumerateArray()) // идем по всем элементам массива
+                {
+                    int resourceTypeValue = SettlementResources.GetProperty("resourceType").GetInt32(); // внутри JSON найди поле id и т.д.
+                    int amount = SettlementResources.GetProperty("amount").GetInt32();
+
+
+                    ResourceType resourceType = (ResourceType)resourceTypeValue;
+
+                    textSettlementResourcesState.AppendText($"{resourceType} {amount}\r\n"); // выводим строку
+                    //MessageBox.Show(textSettlementResourcesState.ToString());
+                }
+            }
+            else // если ошибка запроса
+            {
+                textSettlementResourcesState.Text = response.StatusCode.ToString(); // показываем код ошибки
+            }
+        }
+
+        private async Task RefreshGameState() // метод обновления информации о рабочих
+        {
+            try
+            {
+                HttpResponseMessage response = await _httpClient.GetAsync("api/world/getCurrentGameState");
+            if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            {
+                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
+                //временно полный json вид
+                //textCurrentCrownTask.Clear();
+                int result = int.Parse(json);
+                if (result == -1) {
+                        ShowEnd("Simulation failed");
+                    }
+
+                if (result == 1)
+                {
+                        ShowEnd("Simulation is successful");
+                }
+
+
+            }
+            else // если ошибка запроса
+            {
+                 MessageBox.Show(response.StatusCode.ToString()); // показываем код ошибки
+            }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void ShowEnd(string message)
+        {
+            MessageBox.Show(message, "Info");
+
+            // важно: через UI thread безопасно
+            BeginInvoke(new Action(() =>
+            {
+                Application.Exit();
+            }));
+        }
+
+        private async Task RefreshCrownTaskInfo() // метод обновления информации о рабочих
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getCurrentCrownTask");
+            if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            {   
+                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
+                //временно полный json вид
+                textCurrentCrownTask.Clear();
+                textCurrentCrownTask.Text = json;
+
+                //JsonDocument SettlementResourcesTreeContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
+                //JsonDocument — это контейнер дерева
+                //JsonElement SettlementResourcesTree = SettlementResourcesTreeContainer.RootElement; // корневой элемент (он же массив)
+
+                //textSettlementResourcesState.Clear();
+
+                //foreach (JsonElement SettlementResources in SettlementResourcesTree.EnumerateArray()) // идем по всем элементам массива
+                //{
+                //    int resourceTypeValue = SettlementResources.GetProperty("resourceType").GetInt32(); // внутри JSON найди поле id и т.д.
+                //    int amount = SettlementResources.GetProperty("amount").GetInt32();
+
+
+                //    ResourceType resourceType = (ResourceType)resourceTypeValue;
+
+                //    textSettlementResourcesState.AppendText($"{resourceType} {amount}\r\n"); // выводим строку
+                //}
+            }
+            else // если ошибка запроса
+            {
+                textCurrentCrownTask.Text = response.StatusCode.ToString(); // показываем код ошибки
+            }
+        }
+
 
 
 
@@ -265,6 +407,9 @@ namespace WinFormsApp1
             {
                 await RefreshWorkersInfo();
                 await RefreshBuildingsInfo();
+                await RefreshSettlementResourcesInfo();
+                await RefreshPossibleBuildings();
+                await RefreshCrownTaskInfo();
 
                 //MessageBox.Show("Мир создан");
 
@@ -277,19 +422,35 @@ namespace WinFormsApp1
 
         private async void btnTick_Click(object sender, EventArgs e)
         {
-            HttpResponseMessage response = await _httpClient.PostAsync("api/world/tick", null);
+            HttpResponseMessage response = await _httpClient.PutAsync("api/world/tick", null);
+            //MessageBox.Show(response.StatusCode.ToString());
             //todo: System.Threading.Tasks.TaskCanceledException: "The request was canceled due to the configured HttpClient.Timeout of 100 seconds elapsing."
+            //передал на подольше
             //пошла авторизация
             if (response.IsSuccessStatusCode)
             {
                 await RefreshWorkersInfo();
+                //MessageBox.Show("Workers OK");
                 await RefreshBuildingsInfo();
+                //MessageBox.Show("Buildings OK");
 
-                MessageBox.Show("Tick выполнен");
+                await RefreshSettlementResourcesInfo();
+                //MessageBox.Show("Resources OK");
+                await RefreshLoayalityBrogressBar();
+                //MessageBox.Show("Loyality OK");
+                await RefreshCrownTaskInfo();
+                //MessageBox.Show("Task OK");
+                await RefreshGameState();
+                //MessageBox.Show("GameState OK");
+
+
+                //MessageBox.Show("Tick выполнен");
             }
             else
             {
-                MessageBox.Show("Ошибка запроса");
+                string error = await response.Content.ReadAsStringAsync();
+
+                MessageBox.Show(error);
             }
         }
 
@@ -313,7 +474,7 @@ namespace WinFormsApp1
 
         private async void btnHireWorker_Click(object sender, EventArgs e)
         {
-            isFireMode = false ;
+            isFireMode = false;
             isHireMode = true;
             userActionChooseWorker = false;
             comboBoxChooseWorker.Visible = true;
@@ -377,7 +538,7 @@ namespace WinFormsApp1
 
         private async void comboBoxChooseWorker_SelectedIndexChanged(object sender, EventArgs e)
         {
-            
+
             //if (!isHireMode)
             //    return;
 
@@ -420,7 +581,7 @@ namespace WinFormsApp1
             {
                 isFireMode = false;
                 comboBoxChooseWorker.Visible = false;
-                
+
                 //формируем JSON
                 string json =
                     $"{{chosenWorkerId}}";
@@ -600,6 +761,7 @@ namespace WinFormsApp1
             if (response.IsSuccessStatusCode)
             {
                 await RefreshBuildingsInfo();
+                await RefreshSettlementResourcesInfo();
                 MessageBox.Show("Здание построено");
             }
 
@@ -663,7 +825,7 @@ namespace WinFormsApp1
 
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void textBox1_TextChanged(object sender, EventArgs e)
         {
 
         }

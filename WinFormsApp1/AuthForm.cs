@@ -45,18 +45,29 @@ namespace WinFormsAppUI
 
             if (token == null)
             {
-                MessageBox.Show("Ошибка авторизации");
+
+                //MessageBox.Show("Ошибка авторизации");
+                DialogResult result = MessageBox.Show(
+    "Введите логин и пароль заново",
+    "Ошибка авторизации",
+    MessageBoxButtons.OK);
+                if (result == DialogResult.OK)
+                {
+                    this.Activate();
+                    txtLogin.Focus();
+                }
                 
             }
-
+            if (token != null) { 
             Token = token;
             // сохраняем токен
 
             DialogResult = DialogResult.OK;
             // сигнал Program.cs
-            
+
             Close();
             // закрываем форму
+        }
         }
 
     }

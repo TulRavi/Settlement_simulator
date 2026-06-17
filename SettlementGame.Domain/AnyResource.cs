@@ -8,14 +8,14 @@ namespace SettlementGame.Domain
 {
     public class AnyResource
     {
-        public ResourceType ResourceType { get;}
+        public ResourceType ResourceType { get; set; } //добавили set для создаия ресурса при создании мира
         public ResourceCategory ResourceCategory {get;}
         
         protected int amount;
         public int Amount
         {
             get { return amount; }
-            protected set { amount = Math.Clamp(value, 0, 1000); }
+            set { amount = Math.Clamp(value, 0, 1000); } //убрали протектид для создаия ресурса при создании мира
         }
 
 
@@ -31,8 +31,12 @@ namespace SettlementGame.Domain
         public void Increase(int value)
         {
             amount = amount + value;
-            
         }
+        public void Decrease(int value)
+        {
+            amount = amount - value;
+        }
+
 
         public AnyResource(ResourceType ResourceType, int Amount)
         {

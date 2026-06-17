@@ -41,8 +41,8 @@ namespace SettlementGame.Domain
         //set => throw new NotImplementedException(); }
 
         //    public override double delta
-        //    {   if(Resourses.Food>=1){
-        //        Resourses.Food=Resourses.Food-1;
+        //    {   if(resources.Food>=1){
+        //        resources.Food=resources.Food-1;
         //        get{return 0.0}
 
         //}else

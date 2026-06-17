@@ -29,6 +29,12 @@ namespace SettlementGame.Web.Controllers
             return Ok(worldService.GetBuildingDtoList());//todo: перенести в ВорлдСервис-done
         }
 
+        [HttpGet("GetPossibleBuildings")]
+        public IActionResult GetPossibleBuildings()
+        {
+            return Ok(worldService.GetPossibleBuildings());
+        }
+
         public class CreateBuildingRequest
         {
             public BuildingType BuildingType { get; set; }

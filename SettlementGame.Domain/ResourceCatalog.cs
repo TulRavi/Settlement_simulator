@@ -24,6 +24,8 @@ namespace SettlementGame.Domain
                 case ResourceType.Moneta: return ResourceCategory.Money;
                 case ResourceType.Beer: return ResourceCategory.Alcohol;
                 case ResourceType.Wine: return ResourceCategory.Alcohol;
+                case ResourceType.Psheniza: return ResourceCategory.Material;
+                case ResourceType.Hmel: return ResourceCategory.Material;
                 default: throw new ArgumentOutOfRangeException();
                
             

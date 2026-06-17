@@ -30,7 +30,6 @@
         {
             txtPassword = new TextBox();
             btnLogin = new Button();
-            
             txtLogin = new TextBox();
             SuspendLayout();
             // 
@@ -68,8 +67,7 @@
             Controls.Add(btnLogin);
             Controls.Add(txtPassword);
             Name = "AuthForm";
-            Text = "Form2";
-            //Load += AuthForm_Load;
+            Text = "AuthForm";
             ResumeLayout(false);
             PerformLayout();
         }

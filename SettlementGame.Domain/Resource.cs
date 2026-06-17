@@ -19,7 +19,7 @@ namespace SettlementGame.Domain
         }
 
 
-        //protected void ChangeResourseAmount(int delta)
+        //protected void ChangeresourceAmount(int delta)
         //{
         //    Amount = Amount + delta;
         //}
