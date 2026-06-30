@@ -1,3 +1,4 @@
+using Microsoft.Identity.Client;
 using SettlementGame.Domain;
 using System;
 using System.Collections.Generic;
@@ -9,8 +10,10 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static SettlementGame.Domain.DataWorld;
 using static SettlementGame.Domain.WorldService;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
 namespace WinFormsApp1
@@ -28,6 +31,7 @@ namespace WinFormsApp1
         private bool userActionChooseBuilding = false;
         private bool isHireMode = false;
         private bool isFireMode = false;
+        private bool isAksForNewWorker = false;
         private int chosenWorkerId;
         // используем тот же HttpClient (с токеном)
         //private System.Windows.Forms.Button btnTick;
@@ -91,8 +95,11 @@ namespace WinFormsApp1
                 // источник данных комбобокса
                 comboBoxDestroyType.DataSource = buildings;
 
+                
                 // что показывать пользователю
-                comboBoxDestroyType.DisplayMember = "Id";
+                comboBoxDestroyType.DisplayMember = "info".ToString();
+
+
 
                 // что считать значением
                 comboBoxDestroyType.ValueMember = "Id";
@@ -101,7 +108,7 @@ namespace WinFormsApp1
             }
         }
 
-        private async Task RefreshLoayalityBrogressBar()
+        private async Task RefreshPeopleLoayalityBrogressBar()
         {
             HttpResponseMessage response = await _httpClient.GetAsync("api/world/getPeopleLoayliy"); // запрос к API
             //[HttpGet("getSettlementresourcesList")]
@@ -117,8 +124,23 @@ namespace WinFormsApp1
             {
                 MessageBox.Show("${response.StatusCode.ToString()}"); // показываем код ошибки
             }
+        }
 
-
+        private async Task RefreshCrownLoayalityBrogressBar()
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getCrownLoayliy"); // запрос к API
+            //[HttpGet("getSettlementresourcesList")]
+            if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            {
+                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
+                //временно полный json вид
+                json = json.Replace(".", ",");
+                progressBarCrownLoyality.Value = (int)(double.Parse(json) * 100);
+            }
+            else // если ошибка запроса
+            {
+                MessageBox.Show("${response.StatusCode.ToString()}"); // показываем код ошибки
+            }
         }
 
         private async Task RefreshWorkersInfo() // метод обновления информации о рабочих
@@ -275,7 +297,7 @@ namespace WinFormsApp1
                 //JsonDocument — это контейнер дерева
                 JsonElement SettlementResourcesTree = SettlementResourcesTreeContainer.RootElement; // корневой элемент (он же массив)
 
-                
+
 
                 foreach (JsonElement SettlementResources in SettlementResourcesTree.EnumerateArray()) // идем по всем элементам массива
                 {
@@ -300,27 +322,28 @@ namespace WinFormsApp1
             try
             {
                 HttpResponseMessage response = await _httpClient.GetAsync("api/world/getCurrentGameState");
-            if (response.IsSuccessStatusCode) // проверяем успешность ответа
-            {
-                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
-                //временно полный json вид
-                //textCurrentCrownTask.Clear();
-                int result = int.Parse(json);
-                if (result == -1) {
+                if (response.IsSuccessStatusCode) // проверяем успешность ответа
+                {
+                    string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
+                                                                              //временно полный json вид
+                                                                              //textCurrentCrownTask.Clear();
+                    int result = int.Parse(json);
+                    if (result == -1)
+                    {
                         ShowEnd("Simulation failed");
                     }
 
-                if (result == 1)
-                {
+                    if (result == 1)
+                    {
                         ShowEnd("Simulation is successful");
+                    }
+
+
                 }
-
-
-            }
-            else // если ошибка запроса
-            {
-                 MessageBox.Show(response.StatusCode.ToString()); // показываем код ошибки
-            }
+                else // если ошибка запроса
+                {
+                    MessageBox.Show(response.StatusCode.ToString()); // показываем код ошибки
+                }
             }
             catch (Exception ex)
             {
@@ -336,35 +359,44 @@ namespace WinFormsApp1
             BeginInvoke(new Action(() =>
             {
                 Application.Exit();
-            }));
+                //мы не останавливаем весь сервер из-за 1 человека, закрываем онли его винформс 
+            }
+
+            ));
+
         }
 
         private async Task RefreshCrownTaskInfo() // метод обновления информации о рабочих
         {
             HttpResponseMessage response = await _httpClient.GetAsync("api/world/getCurrentCrownTask");
             if (response.IsSuccessStatusCode) // проверяем успешность ответа
-            {   
+            {
                 string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
-                //временно полный json вид
+                
                 textCurrentCrownTask.Clear();
-                textCurrentCrownTask.Text = json;
 
-                //JsonDocument SettlementResourcesTreeContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
-                //JsonDocument — это контейнер дерева
-                //JsonElement SettlementResourcesTree = SettlementResourcesTreeContainer.RootElement; // корневой элемент (он же массив)
+                //временно полный json вид
+                //textCurrentCrownTask.Text = json;
 
-                //textSettlementResourcesState.Clear();
+                JsonDocument SettlementTaskTreeContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
 
-                //foreach (JsonElement SettlementResources in SettlementResourcesTree.EnumerateArray()) // идем по всем элементам массива
-                //{
-                //    int resourceTypeValue = SettlementResources.GetProperty("resourceType").GetInt32(); // внутри JSON найди поле id и т.д.
-                //    int amount = SettlementResources.GetProperty("amount").GetInt32();
+                JsonElement SettlementTaskTree = SettlementTaskTreeContainer.RootElement; // корневой элемент (он же массив)
+
+                JsonElement resourceType = SettlementTaskTree.GetProperty("resourceType");
 
 
-                //    ResourceType resourceType = (ResourceType)resourceTypeValue;
+                int amount = SettlementTaskTree.GetProperty("amount").GetInt32();
 
-                //    textSettlementResourcesState.AppendText($"{resourceType} {amount}\r\n"); // выводим строку
-                //}
+                int ticks = SettlementTaskTree.GetProperty("numberOfTicks").GetInt32();
+
+
+                //textCurrentCrownTask.AppendText($"{resourceType} {amount} ticks:{ticks}\r\n");
+                textCurrentCrownTask.Text = $"{resourceType} {amount} ticks:{ticks}\r\n";
+
+                //трайнем получить из ДТО данные - не срабатывает дессериалзация, возвр.к прошлому варинату.
+                //CrownTaskDto? task = JsonSerializer.Deserialize<CrownTaskDto>(json);
+                //textCurrentCrownTask.Text = $"{task.ResourceType} {task.Amount} ticks:{task.NumberOfTicks}";
+
             }
             else // если ошибка запроса
             {
@@ -436,14 +468,16 @@ namespace WinFormsApp1
 
                 await RefreshSettlementResourcesInfo();
                 //MessageBox.Show("Resources OK");
-                await RefreshLoayalityBrogressBar();
-                //MessageBox.Show("Loyality OK");
+                await RefreshPeopleLoayalityBrogressBar();
+                //MessageBox.Show("PeopleLoyality OK");
+                RefreshCrownLoayalityBrogressBar();
+                //MessageBox.Show("CrownLoyality OK");
                 await RefreshCrownTaskInfo();
                 //MessageBox.Show("Task OK");
                 await RefreshGameState();
                 //MessageBox.Show("GameState OK");
-
-
+                RefreshTicksTillNewWorkers();
+                //MessageBox.Show("TicksTillNewWorkersComeInfo OK");
                 //MessageBox.Show("Tick выполнен");
             }
             else
@@ -509,8 +543,8 @@ namespace WinFormsApp1
                         await response.Content.ReadAsStringAsync();
 
                 // превращаем JSON в список объектов
-                List<WorldService.WorkerDto>? workers =
-                    JsonSerializer.Deserialize<List<WorldService.WorkerDto>>(
+                List<WorldService.WorkerDTO>? workers =
+                    JsonSerializer.Deserialize<List<WorldService.WorkerDTO>>(
                         json,
                         new JsonSerializerOptions
                         {
@@ -527,7 +561,7 @@ namespace WinFormsApp1
                 comboBoxChooseWorker.DataSource = workers;
 
                 // что показывать пользователю
-                comboBoxChooseWorker.DisplayMember = "Id";
+                comboBoxChooseWorker.DisplayMember = "info";
 
                 // что считать значением
                 comboBoxChooseWorker.ValueMember = "Id";
@@ -659,8 +693,8 @@ namespace WinFormsApp1
                 comboBoxChooseBuildingForWorker.DataSource = buildings;
 
                 // что показывать пользователю
-                comboBoxChooseBuildingForWorker.DisplayMember = "Id";
-
+                comboBoxChooseBuildingForWorker.DisplayMember = "info".ToString();
+                
                 // что считать значением
                 comboBoxChooseBuildingForWorker.ValueMember = "Id";
                 comboBoxChooseBuildingForWorker.SelectedIndex = -1;
@@ -819,15 +853,119 @@ namespace WinFormsApp1
                 await _httpClient.DeleteAsync($"api/buildings/{id}");
             comboBoxDestroyType.Visible = false;
             if (response.IsSuccessStatusCode)
+            {
+                await RefreshWorkersInfo();
+                await RefreshBuildingsInfo();
                 MessageBox.Show("Здание уничтожено");
+            }
             else
                 MessageBox.Show(await response.Content.ReadAsStringAsync());
 
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
+        private async void btnAskForNewWorkers_Click(object sender, EventArgs e)
         {
-
+            //isFireMode = false;
+            isAksForNewWorker = true;
+            comboBoxAmountOfWorkers.Visible = true;
+            await ChooseAmountOfNewWorkers();
+            
         }
+
+        private async Task ChooseAmountOfNewWorkers()
+        {
+            int[] numbers = new int[9]; // создаем массив на 9 элементов
+
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                numbers[i] = i + 1; // записываем числа от 1 до 9
+            }
+            //comboBoxAmountOfWorkers.Items.AddRange(numbers); плохо - не работает с инт, нуждно в объект преобразовывать?
+
+            comboBoxAmountOfWorkers.Items.Clear();
+
+            for (int i = 1; i <= 9; i++)
+            {
+                comboBoxAmountOfWorkers.Items.Add(i);
+            }
+
+            comboBoxAmountOfWorkers.SelectedIndexChanged += comboBoxAmountOfWorkers_SelectedIndexChanged;
+         }
+
+        private async void comboBoxAmountOfWorkers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // если мы не в режиме строительства — ничего не делаем. можно и изящнее сделать, ну да ладно
+            if (!isAksForNewWorker)
+                return;
+
+            // получаем выбранный тип
+            int number = (int)comboBoxAmountOfWorkers.SelectedItem;
+
+            // выключаем режим 
+            isAksForNewWorker = false;
+
+                 
+            // формируем JSON
+            string json =
+                $"{{\"Number\":{number}}}";
+
+            StringContent content =
+                new StringContent(json, Encoding.UTF8, "application/json");
+
+            // отправляем запрос
+            HttpResponseMessage response =
+                await _httpClient.PostAsync("api/workers/CreateOrderForNewWorkers", content);
+
+
+            if (response.IsSuccessStatusCode)
+            {
+                //await RefreshBuildingsInfo();
+                //await RefreshSettlementResourcesInfo();
+                MessageBox.Show("Работники заказаны");
+                RefreshTicksTillNewWorkers();
+
+
+                comboBoxAmountOfWorkers.Visible = false;
+            }
+
+            else
+                MessageBox.Show(await response.Content.ReadAsStringAsync());
+        }
+
+        private async Task RefreshTicksTillNewWorkers() // метод обновления информации о рабочих
+        {
+            HttpResponseMessage response = await _httpClient.GetAsync("api/workers/GetTicksTillNewWorkers"); // запрос к API
+
+            if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            {
+                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
+
+                JsonDocument WorkerOrderContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
+                JsonElement WorkerOrderTree = WorkerOrderContainer.RootElement; // корневой элемент (он же массив)
+
+                textTicksTillNewWorkers.Clear();
+                //textTicksTillNewWorkers.Text = json;
+
+                foreach (JsonElement workerOrder in WorkerOrderTree.EnumerateArray()) // идем по всем элементам массива
+                {
+                    int amount = workerOrder.GetProperty("amount").GetInt32(); // внутри JSON найди поле id и т.д.
+                    int ticks = workerOrder.GetProperty("ticksLeft").GetInt32(); //очень тупо искать по имени, которое 10 раз поменяется, но оставим пока так
+
+                    //textWorkersState.AppendText($"Id:{id} X:{x} Y:{y} Alive:{isAlive}\r\n"); // выводим строку
+                    textTicksTillNewWorkers.AppendText($"{amount} in:{ticks}\r\n");
+
+                    //}
+                }
+            }
+            else // если ошибка запроса
+            {
+                textWorkersState.Text = response.StatusCode.ToString(); // показываем код ошибки
+            }
+        }
+
+
+
+
+
     }
 }

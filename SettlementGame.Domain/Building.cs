@@ -18,7 +18,10 @@ namespace SettlementGame.Domain
         public int Y { get; set; }
         public Worker AssignedWorker { get; private set; }
 
-        public int?AssignedWorkerId { get; set; }
+        public int? AssignedWorkerId { get; set; }
+
+        public string info => $"id:{Id} {BuildingType} workerId{AssignedWorkerId}";
+        
 
         internal void AssignWorker(Worker worker)
         {

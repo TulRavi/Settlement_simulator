@@ -14,7 +14,7 @@ namespace SettlementGame.Domain
             building.Y = entity.Y;
             building.Id = entity.Id;
             //building.AssignedWorkerId = entity.AssignedWorkerId;
-
+            //building.info = entity.info;
             return building;
         }
         public static BuildingEntity ToEntity(Building domain)
@@ -25,7 +25,8 @@ namespace SettlementGame.Domain
                 X = domain.X,
                 Y = domain.Y,
                 Id = domain.Id,
-                AssignedWorkerId = domain.AssignedWorkerId
+                AssignedWorkerId = domain.AssignedWorkerId,
+                //info = domain.info
             };
         }
     }

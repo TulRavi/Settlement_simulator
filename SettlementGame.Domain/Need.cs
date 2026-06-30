@@ -17,7 +17,7 @@ namespace SettlementGame.Domain
         public double Amount
         {
             get { return amount; }                      
-            private set { amount = Math.Clamp(value, 0, 1); }
+            protected set { amount = Math.Clamp(value, -1, 1); }
         }
         public abstract int Cost { get; set; }
         public abstract double LoyalityAmount { get; }
@@ -32,7 +32,11 @@ namespace SettlementGame.Domain
         {
             return Amount >= 1;                       
         }
-        
+        public bool AmountIsMoreThanNull()
+        {
+            return Amount >= 0;
+        }
+
 
     }
 }

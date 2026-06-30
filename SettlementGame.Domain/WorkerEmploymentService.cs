@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using Microsoft.OpenApi;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static SettlementGame.Domain.WorldService;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SettlementGame.Domain
 {
@@ -16,10 +18,12 @@ namespace SettlementGame.Domain
 
         //новая верися с ббазой данных
         private readonly GameDbContext _dbContext;
+        private readonly DataWorld _world;
 
-        public WorkerEmploymentService(GameDbContext dbContext)
+        public WorkerEmploymentService(GameDbContext dbContext,DataWorld world)
         {
             this._dbContext = dbContext;
+            this._world = world;
         }
 
         public List<WorkerEntity> GetAllWorkers()
@@ -84,6 +88,69 @@ namespace SettlementGame.Domain
             else return false;
         }
 
+        public bool CreateOrderForNewWorkers(int number, DataWorld world)
+        //проверяем, что есть деньги на найм(равен бюджету работника)
+        {
+            int amountOfMoneta = world.SettlementResourceList.Find(x => x.ResourceType == ResourceType.Moneta).Amount;
+            int reqMoney = number * 30;
+            if (reqMoney <= amountOfMoneta)
+            { 
+                world.SettlementResourceList.Find(x => x.ResourceType == ResourceType.Moneta).Amount -= reqMoney;
+                world.WorkerOrders.Add(new DataWorld.WorkerOrder { Amount = number, TicksLeft = world.TicksToRoad });
+                return true;
+            }
+            else { return false; }
+        } 
+
+        public void UpdateWorkerOrders(DataWorld world)
+        {
+            foreach (var order in world.WorkerOrders)
+            {
+                order.TicksLeft--;
+            }
+
+            var completedOrders =
+                world.WorkerOrders
+                     .Where(x => x.TicksLeft <= 0)
+                     .ToList();
+
+            foreach (var order in completedOrders)
+            {   
+                CreateWorkers(order.Amount, world);
+
+                world.WorkerOrders.Remove(order);
+            }
+        }
+
+        public void CreateWorkers(int numberOfWorkers, DataWorld world)
+        {
+            for (int i = 0; i < numberOfWorkers; i++)
+            { //Потребности добавлены в лист потребностей
+                List<Need> workerNeeds = new List<Need>();
+                workerNeeds.Add(new NeedHunger());
+                workerNeeds.Add(new NeedThirst());
+                workerNeeds.Add(new NeedAlcohol());
+                Worker worker = new Worker(workerNeeds);//создан рабочий с заданными потребностями
+                worker.IsAlive = true;
+                worker.WorkPlaceId = -1;
+                //world.WorkersList.Add(worker);//рабочий с заданнами потербностями добавлен в лист рабочих
+
+                //worker.Id = world.NextWorkerId;
+                worker.X = 0;
+                worker.Y = 0;
+                //worker.WorkPlace = null;
+                //worker.IsEmployed = false;
+                worker.PersonalLoyality = 0.5;
+                worker.PersonalMoney = 30;
+                _dbContext.Workers.Add(WorkerMapper.ToEntity(worker)); //вместо листа доабвляем в БД
+
+                //world.NextWorkerId++;
+                worker.StartWorkingTime = new TimeSpan(00, 00, 01);
+                worker.EndWorkingTime = new TimeSpan(00, 00, 01);
+            }
+            _dbContext.SaveChanges();
+        }
+
         public bool HireWorker(int id, int Id)
         {
             var workerEntity = _dbContext.Workers.FirstOrDefault(x => x.Id == id);
@@ -102,7 +169,7 @@ namespace SettlementGame.Domain
             }
             if (building.AssignedWorkerId != -1&& building.AssignedWorkerId !=null)
             {
-                FireWorker(building.AssignedWorker.Id);
+                FireWorker((int)building.AssignedWorkerId);
             }
 
             //todo:поправить и включить позже - done
@@ -220,6 +287,10 @@ namespace SettlementGame.Domain
 
        
         _dbContext.SaveChanges();
+        }
+        public List<DataWorld.WorkerOrder> GetTicksTillNewWorkers()
+        {
+            return _world.WorkerOrders;
         }
         //WorldService.GetWorkerDtoList(world)
     }

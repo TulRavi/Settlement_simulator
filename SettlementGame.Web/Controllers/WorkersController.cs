@@ -29,18 +29,32 @@ namespace SettlementGame.Web.Controllers
             return Ok(_worldService.GetWorkerDtoList()); // ASP превращает List в JSON
         }
 
+        [HttpGet("GetTicksTillNewWorkers")]
+        public IActionResult GetTicksForNewWorkers()
+        {
+            return Ok(_workerEmploymentService.GetTicksTillNewWorkers()); // ASP превращает List в JSON
+        }
+
 
         public class CreateWorkerRequest
         {
             public int Number { get; set; }
         }
         [HttpPost]
-        public IActionResult CreateWorker([FromBody] CreateWorkerRequest request)
+        public IActionResult CreateWorker(CreateWorkerRequest request)
         {
             _worldService.CreateWorkersByService(request.Number);
             return Ok($"New Worker(s) {request.Number} were created");
         }
-        
+
+        [HttpPost("CreateOrderForNewWorkers")]
+        public IActionResult CreateOrderForNewWorkers([FromBody] CreateWorkerRequest request)
+        {
+            bool isAsked=_workerEmploymentService.CreateOrderForNewWorkers(request.Number,_world);
+
+            if (isAsked == true) { return Ok($"New Worker(s) {request.Number} were req"); } else return BadRequest("not enough money");
+        }
+
 
         [HttpGet("{id}")]
         public IActionResult GetWorkerById(int id)

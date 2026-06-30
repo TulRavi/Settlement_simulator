@@ -89,6 +89,8 @@ namespace SettlementGame.Domain
             CreateDateTime(_world);
             _world.GameState = 0;
             _world.CrownLoyaity = 0.5;
+            _world.denominator = 30;
+            _world.standartSalary = 10;
             return _world;
         }
 
@@ -110,7 +112,7 @@ namespace SettlementGame.Domain
         {
             _dbContext.Workers.RemoveRange(_dbContext.Workers); // при ошибке типа нет поля ХХ как костыль вручную удаляем файл
             _dbContext.BuildedBuildings.RemoveRange(_dbContext.BuildedBuildings);
-
+            
             _dbContext.SaveChanges();
 
             _dbContext.Database.ExecuteSqlRaw(
@@ -143,8 +145,8 @@ namespace SettlementGame.Domain
         }
 
         
-        public void CreateWorkers(int numberOfWorkers, DataWorld world)
-        {
+        public void CreateDefaultWorkers(int numberOfWorkers, DataWorld world)
+        {   
             for (int i = 0; i < numberOfWorkers; i++)
             { //Потребности добавлены в лист потребностей
                 List<Need> workerNeeds = new List<Need>();

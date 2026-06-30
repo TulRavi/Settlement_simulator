@@ -1,5 +1,7 @@
 # Aider / AI tools
 .aider.*
+AIDER.md
+AI_NOTES.md
 
 # Databases (SQLite / local db)
 *.db

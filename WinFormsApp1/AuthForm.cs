@@ -48,9 +48,9 @@ namespace WinFormsAppUI
 
                 //MessageBox.Show("Ошибка авторизации");
                 DialogResult result = MessageBox.Show(
-    "Введите логин и пароль заново",
-    "Ошибка авторизации",
-    MessageBoxButtons.OK);
+                "Введите логин и пароль заново",
+                "Ошибка авторизации",
+                MessageBoxButtons.OK);
                 if (result == DialogResult.OK)
                 {
                     this.Activate();

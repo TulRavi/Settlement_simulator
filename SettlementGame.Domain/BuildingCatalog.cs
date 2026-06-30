@@ -44,8 +44,12 @@ namespace SettlementGame.Domain
                     return new BuildingCatalog(new List<ResourceAmount> { new ResourceAmount(ResourceType.Stone, 1) },
                         new List<ResourceAmount> { new ResourceAmount(ResourceType.Kirpich, 4) });
                 case BuildingType.GoldMakery:
-                        return new BuildingCatalog(new List<ResourceAmount> { new ResourceAmount(ResourceType.Gold, 1) },
-                            new List<ResourceAmount> { new ResourceAmount(ResourceType.Moneta, 10) });
+                        return new BuildingCatalog(new List<ResourceAmount>(),
+                            new List<ResourceAmount> { new ResourceAmount(ResourceType.Gold, 3) });
+
+                case BuildingType.MonetaMakery:
+                    return new BuildingCatalog(new List<ResourceAmount> { new ResourceAmount(ResourceType.Gold, 1) },
+                        new List<ResourceAmount> { new ResourceAmount(ResourceType.Moneta, 10) });
                 case BuildingType.BeerMakery:
                     return new BuildingCatalog(new List<ResourceAmount>
                         {

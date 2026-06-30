@@ -86,6 +86,27 @@ namespace SettlementGame.Web
             {
                 var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
                 db.Database.EnsureCreated();
+                //пока оставим создание юезров в коде, после надо бы отд.утилиту по добавлению в БД сделать
+                if (!db.Users.Any())
+                {
+                    db.Users.Add(new UserEntity
+                    {
+                        Email = "Admin",
+                        PasswordHash =
+                            BCrypt.Net.BCrypt.HashPassword("321"),
+                        Role = "Admin"
+                    });
+
+                    db.Users.Add(new UserEntity
+                    {
+                        Email = "User",
+                        PasswordHash =
+                            BCrypt.Net.BCrypt.HashPassword("123"),
+                        Role = "User"
+                    });
+
+                    db.SaveChanges();
+                }
             }
             if (app.Environment.IsDevelopment())
             {

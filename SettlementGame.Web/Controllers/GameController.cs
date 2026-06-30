@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SettlementGame.Domain;
 using System.IdentityModel.Tokens.Jwt;
@@ -20,11 +21,15 @@ namespace SettlementGame.Web.Controllers
     {
         private readonly DataWorld _world;
         private readonly WorldService _worldService;
+        private readonly IHostApplicationLifetime _lifetime;
+        private readonly GameDbContext _dbContext;
         private string JwtKey { get; set; }
-        public GameController(DataWorld world, WorldService worldService)
+        public GameController(DataWorld world, WorldService worldService, IHostApplicationLifetime lifetime, GameDbContext dbContext)
         {
             this._world = world;
             this._worldService = worldService;
+            this._lifetime = lifetime; // для завершения раьоты сервера ASP
+            this._dbContext = dbContext;//для считывания логина-пароля из БД
         }
         //это пока уберем за ненадобностью
         //[HttpGet]
@@ -51,6 +56,15 @@ namespace SettlementGame.Web.Controllers
         {
             //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
             return Ok(_worldService.GetPeopleLoyality());
+        }
+
+
+
+        [HttpGet("getCrownLoayliy")]
+        public IActionResult getCrownLoayliy()
+        {
+            //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
+            return Ok(_worldService.GetCrownLoyality());
         }
 
         [HttpGet("getCurrentCrownTask")]
@@ -145,13 +159,29 @@ namespace SettlementGame.Web.Controllers
         public IActionResult Login(LoginRequest request)
         {
             JwtKey = Program.JwtKey;
-            if (request.Email == "Admin" && request.Password == "321")
+
+            UserEntity user =_dbContext.Users.FirstOrDefault(x => x.Email == request.Email);
+
+            if (user == null)
             {
-                //return Ok("token321");
-                var claims = new[]
+                return Unauthorized();
+            }
+
+            bool passwordCorrect = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+
+            if (!passwordCorrect)
+            {
+                return Unauthorized();
+            }
+            //переходим на хранение в БД
+            //if (request.Email == "Admin" && request.Password == "321")
+            //{
+            //return Ok("token321");
+            var claims = new[]
         {
             new Claim(ClaimTypes.Email, request.Email),
-            new Claim(ClaimTypes.Role, "Admin")
+            new Claim(ClaimTypes.Role, user.Role)            
+            //new Claim(ClaimTypes.Role, "Admin")
         };
 
                     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtKey));
@@ -161,7 +191,7 @@ namespace SettlementGame.Web.Controllers
                     issuer: "game",
                     audience: "game_client",
                     claims: claims,
-                    expires: DateTime.Now.AddHours(9),
+                    expires: DateTime.Now.AddHours(9),//не будем выбивать человека каждые 4 часа
                     signingCredentials: creds
                 );
 
@@ -169,36 +199,35 @@ namespace SettlementGame.Web.Controllers
                 
                 return Ok(jwt);
             }
-            if (request.Email == "User" && request.Password == "123")
-            {
-                //return Ok("token321");
-                var claims1 = new[]
-                {
-            new Claim(ClaimTypes.Email, request.Email),
-            new Claim(ClaimTypes.Role, "User"),
+            //if (request.Email == "User" && request.Password == "123")
+            //{
+            //    //return Ok("token321");
+            //    var claims1 = new[]
+            //    {
+            //new Claim(ClaimTypes.Email, request.Email),
+            //new Claim(ClaimTypes.Role, "User"),
 
-                };
-                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtKey));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            //    };
+            //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtKey));
+            //    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-                var token = new JwtSecurityToken(
-                    claims: claims1,
-                    expires: DateTime.Now.AddHours(9),//8+обед 
-                    signingCredentials: creds
-                );
+            //    var token = new JwtSecurityToken(
+            //        claims: claims1,
+            //        expires: DateTime.Now.AddHours(9),//8+обед 
+            //        signingCredentials: creds
+            //    );
 
-                var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+            //    var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
-                return Ok(jwt);
+            //    return Ok(jwt);
                 //if (request.Email == "user" && request.Password == "123")
                 //{
                 //    return Ok("token123");
                 //}
-            }
-                return Unauthorized();
+            
         }
 
     }
     
 
-}
+

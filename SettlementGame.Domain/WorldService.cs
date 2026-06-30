@@ -52,14 +52,14 @@ namespace SettlementGame.Domain
 
             //world.workerEmploymentService = WorldCreator.CreateWorkerEmploymentService(world);
             _worldCreator.CreateWorld();
-        _worldCreator.CreateWorkers(numberOfWorkers, _world);
+        _worldCreator.CreateDefaultWorkers(numberOfWorkers, _world);
             _world.CurrentCrownTask=CrownTask.CreateNewCrownTack(_world,_dbContext);
             
 
         return _world;
     }
 
-        public class WorkerDto
+        public class WorkerDTO
         {
             public int Id { get; set; }
             public int WorkPlaceId { get; set; }
@@ -69,18 +69,19 @@ namespace SettlementGame.Domain
             public int Y { get; set; }
             public double PersonalLoyality { get; set; }
             public int PersonalMoney { get; set; }
+            public string info { get; set; }
             //public TimeSpan StartWorkingTime { get; set; }
             //public TimeSpan EndWorkingTime { get; set; }
 
         }
 
-        public List<WorkerDto> GetWorkerDtoList()
+        public List<WorkerDTO> GetWorkerDtoList()
         {
-            List<WorkerDto> workerDtoList = new List<WorkerDto>();
+            List<WorkerDTO> workerDtoList = new List<WorkerDTO>();
             foreach (WorkerEntity workerEntity in _dbContext.Workers)
             {
                 Worker worker = WorkerMapper.ToDomain(workerEntity);
-                WorkerDto workerDto = new WorkerDto();
+                WorkerDTO workerDto = new WorkerDTO();
                 workerDto.Id = worker.Id;
                 workerDto.WorkPlaceId= (int)worker.WorkPlaceId;
                 workerDto.X = worker.X;
@@ -88,6 +89,7 @@ namespace SettlementGame.Domain
                 workerDto.IsAlive = worker.IsAlive;
                 workerDto.PersonalLoyality = worker.PersonalLoyality;
                 workerDto.PersonalMoney = worker.PersonalMoney;
+                workerDto.info = worker.info;
                 workerDtoList.Add(workerDto);
             }
             return workerDtoList;
@@ -102,6 +104,8 @@ namespace SettlementGame.Domain
             public int Y { get; set; }
 
             public int? AssignedWorkerId { get; set; }
+
+            public string info { get; set; }
         }
 
         public class CrownTaskDto
@@ -157,8 +161,9 @@ namespace SettlementGame.Domain
                     Y = building.Y,
                     HasEmployee = building.HasEmployee,
                     BuildingType = building.BuildingType,
-                    AssignedWorkerId=building.AssignedWorkerId
-                };
+                    AssignedWorkerId=building.AssignedWorkerId,
+                    info =building.info
+    };
 
                 BuildingDtoList.Add(buildingDto);
             }
@@ -223,7 +228,7 @@ namespace SettlementGame.Domain
             //DestroyBuildingContext destroyBuildingContext = new DestroyBuildingContext(building, _workerEmploymentService);
             if (building.HasEmployee == true&&building.AssignedWorkerId!=null)
             {
-                _workerEmploymentService.FireWorker(building.AssignedWorker.Id);
+                _workerEmploymentService.FireWorker((int)building.AssignedWorkerId);
                 //DestroyBuildingContext.Building.
                 //Program.TempFireWorkerDirectly(world, DestroyBuildingContext.Building, DestroyBuildingContext.Building.AssignedWorker);
             }
@@ -251,10 +256,15 @@ namespace SettlementGame.Domain
             return _world.Peopleloyality;
         }
 
+        public double GetCrownLoyality()
+        {
+            return _world.CrownLoyaity;
+        }
+
 
         public void CreateWorkersByService(int numberOfWorkers=3)
         {
-            _worldCreator.CreateWorkers(numberOfWorkers, _world);
+            _worldCreator.CreateDefaultWorkers(numberOfWorkers, _world);
         }
 
         public void Tick() 
@@ -263,8 +273,9 @@ namespace SettlementGame.Domain
             UpdateWorkers(_world);
             UpdateBuildings(_world);
             //UpdateResources();
-            UpdateLoyalty(_world);
+            UpdateWorkersLoyalty(_world);
             UpdateCrownTask(_world, _dbContext);
+            _workerEmploymentService.UpdateWorkerOrders(_world);
             //updateGameState(_world);
         }
 
@@ -277,11 +288,25 @@ namespace SettlementGame.Domain
                 int temp = world.GetHashCode();
                 Worker worker = WorkerMapper.ToDomain(workerEntity);
                 worker.Tick(world);
+
+                //добавим блок для запоминания состояния потребностей тупо в цифрах, чтобы не переусложнять БД
+                workerEntity.Hunger =worker.GetNeed<NeedHunger>().Amount;
+                workerEntity.Thirst =worker.GetNeed<NeedThirst>().Amount;
+                workerEntity.Alcohol =worker.GetNeed<NeedAlcohol>().Amount;
+
                 workerEntity.IsAlive = worker.IsAlive;
                 workerEntity.X = worker.X;
                 workerEntity.Y = worker.Y;
                 workerEntity.IsEmployed = worker.IsEmployed;
                 workerEntity.PersonalLoyality = worker.PersonalLoyality;
+                workerEntity.info = worker.info;
+                workerEntity.PersonalMoney = worker.PersonalMoney;
+                //тут сделаем проверку, что чел не умер
+                if (workerEntity.IsAlive == false)
+                {
+                    _dbContext.Workers.Remove(workerEntity);
+                    world.Peopleloyality -= -0.1;
+                }
 
             }
             _dbContext.SaveChanges();
@@ -294,6 +319,7 @@ namespace SettlementGame.Domain
                 CrownTask task = world.CurrentCrownTask;
                 AnyResource reqAnyResource = task.Resource;
                 world.SettlementResourceList.Find(x => x.ResourceType == reqAnyResource.ResourceType).Amount = world.SettlementResourceList.Find(x => x.ResourceType == reqAnyResource.ResourceType).Amount - reqAnyResource.Amount;
+                world.CrownLoyaity += task.LoyalityCounter;
                 world.CurrentCrownTask=CrownTask.CreateNewCrownTack(world, dbContext);
             }
             else
@@ -330,15 +356,24 @@ namespace SettlementGame.Domain
         }
                
 
-        private void UpdateLoyalty(DataWorld world)
+        private void UpdateWorkersLoyalty(DataWorld world)
         { double tempLoyality = 0;
             foreach (var worker in _dbContext.Workers)
             {
                 tempLoyality= tempLoyality+worker.PersonalLoyality;
             }
             world.Peopleloyality= tempLoyality / _dbContext.Workers.Count();
-            
+            if (world.Peopleloyality <= 0) { world.denominator = 15;}
+            if (world.Peopleloyality >= 1) { world.denominator = 45; }
+
         }
+
+        public static void ChangeResourseAmount(DataWorld world, AnyResource resource)
+        {
+            world.SettlementResourceList.Find(x => x.ResourceType == resource.ResourceType).Amount -= resource.Amount;
+        }
+
+        
 
         public void UpdateGameTime(DataWorld world)
         {

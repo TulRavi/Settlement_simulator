@@ -6,6 +6,11 @@ namespace SettlementGame.Domain
 {
     public class WorkerEntity
     {
+        public double Hunger { get; set; }
+
+        public double Thirst { get; set; }
+
+        public double Alcohol { get; set; }
         public int Id { get; set; }
         private bool isAlive;
         public bool IsAlive
@@ -29,5 +34,6 @@ namespace SettlementGame.Domain
             set { personalLoyality = Math.Clamp(value, 0, 1); }
         }
         public int PersonalMoney { get; set; }
+        public string info { get; set; }
     }
 }

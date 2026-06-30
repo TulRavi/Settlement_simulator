@@ -23,6 +23,11 @@ namespace SettlementGame.Domain
             
             worker.UnassignWithWorkPlace();
             building.RemoveWorker();
+            //world.SettlementResourceList.Find(x => x.ResourceType == ResourceType.Moneta).Amount -= world.standartSalary*3;
+            int compensation = world.standartSalary * 3;
+            AnyResource resource=new AnyResource(ResourceType.Moneta, compensation);
+            WorldService.ChangeResourseAmount(world, resource);
+            worker.ChangeMoneyAmount(compensation);
         }
         //if (worker.WorkPlace != null)
         //{

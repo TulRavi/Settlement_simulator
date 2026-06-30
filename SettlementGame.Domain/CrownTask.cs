@@ -13,6 +13,8 @@ namespace SettlementGame.Domain
 
         [System.Text.Json.Serialization.JsonIgnore]
         private GameDbContext _dbContext;
+
+        
         //private GameDbContext _dbContext;
         //public GameDbContext DbContext
         //{
@@ -34,13 +36,15 @@ namespace SettlementGame.Domain
             AnyResource reqAnyResource = world.CurrentCrownTask.Resource;
             if (world.SettlementResourceList.Find(x => x.ResourceType == reqAnyResource.ResourceType).Amount >= reqAnyResource.Amount) {
                 //world.SettlementResourceList.Find(x => x.ResourceType == reqAnyResource.ResourceType).Amount = world.SettlementResourceList.Find(x => x.ResourceType == reqAnyResource.ResourceType).Amount - reqAnyResource.Amount;
-                return true;} else { return false; }
+                return true;}
+            else { return false; }
         }
         public static CrownTask CreateNewCrownTack(DataWorld world, GameDbContext dbContext)
         {
             Random random = new Random();
             int numberOfResourses = Enum.GetValues(typeof(ResourceType)).Length;
             int selecteResourceNumber = random.Next(numberOfResourses);
+            //int selecteResourceNumber = world.tempTpCheck;
             ResourceType requestedResourceType = (ResourceType)selecteResourceNumber;
             int numberOfWorkers = dbContext.Workers.Count();
             //BuildingType buildingType=world.PossibleBuildingList.Find(x => x.GetType == Id)
@@ -63,9 +67,8 @@ namespace SettlementGame.Domain
                     int productionOfOneBuilding = tempBuildingCatalog.Outputs.FirstOrDefault(x => x.ResourceType == requestedResourceType).Amount;
                     int productionOfAllPossibleBuildings = productionOfOneBuilding * numberOfWorkers;
                     int amountCounter = random.Next(3, 9);
-                    double denominator = 30;
                     //вводим дабл для деления, ибо при делении инт на инт резтат будет инт.
-                    double loyalityCounter = amountCounter / denominator;
+                    double loyalityCounter = amountCounter / world.denominator;
                     //int reqAmount = random.Next(productionOfAllPossibleBuildings*amountCounter);
                     int reqAmount = productionOfAllPossibleBuildings * amountCounter;
                     //чтобы не было уберпросто, было логино и подталкивало к развию, мы просим произвести больше, чем есть
@@ -79,6 +82,7 @@ namespace SettlementGame.Domain
                     int numberOfTicks = reqAmount / productionOfAllPossibleBuildings + 5;
                     isPossibleTask = true;
                     tempCrownTask = new CrownTask(resourse, numberOfTicks, loyalityCounter);
+                    //world.tempTpCheck++;
                     break;
                 }
             }

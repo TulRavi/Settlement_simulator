@@ -11,6 +11,7 @@ namespace SettlementGame.Domain
             DoskaMakery,
             KirpichMakery,
             GoldMakery,
+            MonetaMakery,
             Tavern,
             BeerMakery,
             MeatMakery,

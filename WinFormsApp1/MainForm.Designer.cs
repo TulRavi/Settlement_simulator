@@ -49,16 +49,26 @@ namespace WinFormsApp1
             LabelBuildings = new Label();
             LabelSettlementresources = new Label();
             progressBarPeopleLoyality = new ProgressBar();
-            labelLoyality = new Label();
+            labelPeopleLoyality = new Label();
             textCurrentCrownTask = new TextBox();
+            labelWorker = new Label();
+            labelCrownLoyality = new Label();
+            progressBarCrownLoyality = new ProgressBar();
+            labelGoal = new Label();
+            labelBuilding = new Label();
+            btnAskForNewWorkers = new Button();
+            comboBoxAmountOfWorkers = new ComboBox();
+            textTicksTillNewWorkers = new TextBox();
+            labelTicksTillComeNewWorkers = new Label();
             ((System.ComponentModel.ISupportInitialize)buildingCatalogBindingSource).BeginInit();
             SuspendLayout();
             // 
             // btnTick
             // 
-            btnTick.Location = new Point(33, 227);
+            btnTick.Location = new Point(15, 92);
+            btnTick.Margin = new Padding(1, 1, 1, 1);
             btnTick.Name = "btnTick";
-            btnTick.Size = new Size(229, 145);
+            btnTick.Size = new Size(107, 59);
             btnTick.TabIndex = 0;
             btnTick.Text = "Tick";
             btnTick.UseVisualStyleBackColor = true;
@@ -66,9 +76,10 @@ namespace WinFormsApp1
             // 
             // btnCreateWorld
             // 
-            btnCreateWorld.Location = new Point(33, 133);
+            btnCreateWorld.Location = new Point(15, 54);
+            btnCreateWorld.Margin = new Padding(1, 1, 1, 1);
             btnCreateWorld.Name = "btnCreateWorld";
-            btnCreateWorld.Size = new Size(229, 75);
+            btnCreateWorld.Size = new Size(107, 30);
             btnCreateWorld.TabIndex = 1;
             btnCreateWorld.Text = "CreateWorld";
             btnCreateWorld.UseVisualStyleBackColor = true;
@@ -76,25 +87,28 @@ namespace WinFormsApp1
             // 
             // textWorkersState
             // 
-            textWorkersState.Location = new Point(657, 83);
+            textWorkersState.Location = new Point(352, 60);
+            textWorkersState.Margin = new Padding(1, 1, 1, 1);
             textWorkersState.Multiline = true;
             textWorkersState.Name = "textWorkersState";
-            textWorkersState.Size = new Size(234, 638);
+            textWorkersState.Size = new Size(111, 261);
             textWorkersState.TabIndex = 2;
             // 
             // textBuildingsState
             // 
-            textBuildingsState.Location = new Point(909, 83);
+            textBuildingsState.Location = new Point(470, 60);
+            textBuildingsState.Margin = new Padding(1, 1, 1, 1);
             textBuildingsState.Multiline = true;
             textBuildingsState.Name = "textBuildingsState";
-            textBuildingsState.Size = new Size(234, 638);
+            textBuildingsState.Size = new Size(111, 261);
             textBuildingsState.TabIndex = 3;
             // 
             // btnCreateBuilding
             // 
-            btnCreateBuilding.Location = new Point(33, 399);
+            btnCreateBuilding.Location = new Point(15, 187);
+            btnCreateBuilding.Margin = new Padding(1, 1, 1, 1);
             btnCreateBuilding.Name = "btnCreateBuilding";
-            btnCreateBuilding.Size = new Size(229, 107);
+            btnCreateBuilding.Size = new Size(107, 21);
             btnCreateBuilding.TabIndex = 4;
             btnCreateBuilding.Text = "CreateBuilding";
             btnCreateBuilding.UseVisualStyleBackColor = true;
@@ -104,25 +118,20 @@ namespace WinFormsApp1
             // 
             comboBoxBuildingType.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxBuildingType.FormattingEnabled = true;
-            //comboBoxBuildingType.Items.AddRange(new object[] { BuildingType.DoskaMakery, BuildingType.KirpichMakery, BuildingType.GoldMakery, BuildingType.Tavern, BuildingType.BeerMakery });
-            //вот тут надо подумать как не напрямую добалвять, мб чз источник данных
-            
-            comboBoxBuildingType.Location = new Point(33, 524);
+            comboBoxBuildingType.Location = new Point(15, 212);
+            comboBoxBuildingType.Margin = new Padding(1, 1, 1, 1);
             comboBoxBuildingType.Name = "comboBoxBuildingType";
-            comboBoxBuildingType.Size = new Size(229, 45);
+            comboBoxBuildingType.Size = new Size(109, 23);
             comboBoxBuildingType.TabIndex = 5;
             comboBoxBuildingType.Visible = false;
             comboBoxBuildingType.SelectedIndexChanged += comboBoxBuildingType_SelectedIndexChanged;
             // 
-            // buildingCatalogBindingSource
-            // 
-            //buildingCatalogBindingSource.DataSource = typeof(BuildingCatalog);
-            // 
             // btnDestroyBuilding
             // 
-            btnDestroyBuilding.Location = new Point(283, 402);
+            btnDestroyBuilding.Location = new Point(140, 187);
+            btnDestroyBuilding.Margin = new Padding(1, 1, 1, 1);
             btnDestroyBuilding.Name = "btnDestroyBuilding";
-            btnDestroyBuilding.Size = new Size(231, 104);
+            btnDestroyBuilding.Size = new Size(107, 21);
             btnDestroyBuilding.TabIndex = 6;
             btnDestroyBuilding.Text = "DestroyBuilding";
             btnDestroyBuilding.UseVisualStyleBackColor = true;
@@ -131,18 +140,20 @@ namespace WinFormsApp1
             // comboBoxDestroyType
             // 
             comboBoxDestroyType.FormattingEnabled = true;
-            comboBoxDestroyType.Location = new Point(285, 524);
+            comboBoxDestroyType.Location = new Point(141, 212);
+            comboBoxDestroyType.Margin = new Padding(1, 1, 1, 1);
             comboBoxDestroyType.Name = "comboBoxDestroyType";
-            comboBoxDestroyType.Size = new Size(229, 45);
+            comboBoxDestroyType.Size = new Size(166, 23);
             comboBoxDestroyType.TabIndex = 7;
             comboBoxDestroyType.Visible = false;
             comboBoxDestroyType.SelectedIndexChanged += comboBoxDestroyType_SelectedIndexChanged;
             // 
             // btnHireWorker
             // 
-            btnHireWorker.Location = new Point(33, 586);
+            btnHireWorker.Location = new Point(15, 238);
+            btnHireWorker.Margin = new Padding(1, 1, 1, 1);
             btnHireWorker.Name = "btnHireWorker";
-            btnHireWorker.Size = new Size(229, 52);
+            btnHireWorker.Size = new Size(107, 21);
             btnHireWorker.TabIndex = 8;
             btnHireWorker.Text = "HireWorker";
             btnHireWorker.UseVisualStyleBackColor = true;
@@ -151,26 +162,29 @@ namespace WinFormsApp1
             // comboBoxChooseWorker
             // 
             comboBoxChooseWorker.FormattingEnabled = true;
-            comboBoxChooseWorker.Location = new Point(160, 644);
+            comboBoxChooseWorker.Location = new Point(75, 261);
+            comboBoxChooseWorker.Margin = new Padding(1, 1, 1, 1);
             comboBoxChooseWorker.Name = "comboBoxChooseWorker";
-            comboBoxChooseWorker.Size = new Size(228, 45);
+            comboBoxChooseWorker.Size = new Size(172, 23);
             comboBoxChooseWorker.TabIndex = 9;
             comboBoxChooseWorker.Visible = false;
             // 
             // comboBoxChooseBuildingForWorker
             // 
             comboBoxChooseBuildingForWorker.FormattingEnabled = true;
-            comboBoxChooseBuildingForWorker.Location = new Point(33, 695);
+            comboBoxChooseBuildingForWorker.Location = new Point(75, 282);
+            comboBoxChooseBuildingForWorker.Margin = new Padding(1, 1, 1, 1);
             comboBoxChooseBuildingForWorker.Name = "comboBoxChooseBuildingForWorker";
-            comboBoxChooseBuildingForWorker.Size = new Size(228, 45);
+            comboBoxChooseBuildingForWorker.Size = new Size(172, 23);
             comboBoxChooseBuildingForWorker.TabIndex = 10;
             comboBoxChooseBuildingForWorker.Visible = false;
             // 
             // btnFireWorker
             // 
-            btnFireWorker.Location = new Point(285, 586);
+            btnFireWorker.Location = new Point(141, 238);
+            btnFireWorker.Margin = new Padding(1, 1, 1, 1);
             btnFireWorker.Name = "btnFireWorker";
-            btnFireWorker.Size = new Size(229, 52);
+            btnFireWorker.Size = new Size(107, 21);
             btnFireWorker.TabIndex = 11;
             btnFireWorker.Text = "FireWorker";
             btnFireWorker.UseVisualStyleBackColor = true;
@@ -178,71 +192,174 @@ namespace WinFormsApp1
             // 
             // textSettlementResourcesState
             // 
-            textSettlementResourcesState.Location = new Point(1162, 83);
+            textSettlementResourcesState.Location = new Point(588, 60);
+            textSettlementResourcesState.Margin = new Padding(1, 1, 1, 1);
             textSettlementResourcesState.Multiline = true;
             textSettlementResourcesState.Name = "textSettlementResourcesState";
-            textSettlementResourcesState.Size = new Size(234, 638);
+            textSettlementResourcesState.Size = new Size(111, 261);
             textSettlementResourcesState.TabIndex = 12;
             // 
             // LabelWorkers
             // 
             LabelWorkers.AutoSize = true;
-            LabelWorkers.Location = new Point(657, 31);
+            LabelWorkers.Location = new Point(352, 39);
+            LabelWorkers.Margin = new Padding(1, 0, 1, 0);
             LabelWorkers.Name = "LabelWorkers";
-            LabelWorkers.Size = new Size(113, 37);
+            LabelWorkers.Size = new Size(50, 15);
             LabelWorkers.TabIndex = 13;
             LabelWorkers.Text = "Workers";
             // 
             // LabelBuildings
             // 
             LabelBuildings.AutoSize = true;
-            LabelBuildings.Location = new Point(909, 31);
+            LabelBuildings.Location = new Point(470, 39);
+            LabelBuildings.Margin = new Padding(1, 0, 1, 0);
             LabelBuildings.Name = "LabelBuildings";
-            LabelBuildings.Size = new Size(126, 37);
+            LabelBuildings.Size = new Size(56, 15);
             LabelBuildings.TabIndex = 14;
             LabelBuildings.Text = "Buildings";
             // 
             // LabelSettlementresources
             // 
             LabelSettlementresources.AutoSize = true;
-            LabelSettlementresources.Location = new Point(1162, 31);
+            LabelSettlementresources.Location = new Point(588, 39);
+            LabelSettlementresources.Margin = new Padding(1, 0, 1, 0);
             LabelSettlementresources.Name = "LabelSettlementresources";
-            LabelSettlementresources.Size = new Size(263, 37);
+            LabelSettlementresources.Size = new Size(117, 15);
             LabelSettlementresources.TabIndex = 15;
             LabelSettlementresources.Text = "Settlement resources";
             // 
             // progressBarPeopleLoyality
             // 
-            progressBarPeopleLoyality.Location = new Point(454, 83);
+            progressBarPeopleLoyality.Location = new Point(582, 13);
+            progressBarPeopleLoyality.Margin = new Padding(1, 1, 1, 1);
             progressBarPeopleLoyality.Name = "progressBarPeopleLoyality";
-            progressBarPeopleLoyality.Size = new Size(197, 52);
+            progressBarPeopleLoyality.Size = new Size(92, 21);
             progressBarPeopleLoyality.TabIndex = 16;
             // 
-            // labelLoyality
+            // labelPeopleLoyality
             // 
-            labelLoyality.AutoSize = true;
-            labelLoyality.Location = new Point(454, 31);
-            labelLoyality.Name = "labelLoyality";
-            labelLoyality.Size = new Size(197, 37);
-            labelLoyality.TabIndex = 17;
-            labelLoyality.Text = "People Loyality";
+            labelPeopleLoyality.AutoSize = true;
+            labelPeopleLoyality.Location = new Point(487, 13);
+            labelPeopleLoyality.Margin = new Padding(1, 0, 1, 0);
+            labelPeopleLoyality.Name = "labelPeopleLoyality";
+            labelPeopleLoyality.Size = new Size(87, 15);
+            labelPeopleLoyality.TabIndex = 17;
+            labelPeopleLoyality.Text = "People Loyality";
             // 
             // textCurrentCrownTask
             // 
-            textCurrentCrownTask.Location = new Point(33, 31);
+            textCurrentCrownTask.Location = new Point(99, 13);
+            textCurrentCrownTask.Margin = new Padding(1, 1, 1, 1);
             textCurrentCrownTask.Multiline = true;
             textCurrentCrownTask.Name = "textCurrentCrownTask";
-            textCurrentCrownTask.Size = new Size(415, 96);
+            textCurrentCrownTask.Size = new Size(200, 23);
             textCurrentCrownTask.TabIndex = 18;
-            textCurrentCrownTask.TextChanged += textBox1_TextChanged;
+            // 
+            // labelWorker
+            // 
+            labelWorker.AutoSize = true;
+            labelWorker.Location = new Point(15, 264);
+            labelWorker.Margin = new Padding(1, 0, 1, 0);
+            labelWorker.Name = "labelWorker";
+            labelWorker.Size = new Size(45, 15);
+            labelWorker.TabIndex = 19;
+            labelWorker.Text = "Worker";
+            // 
+            // labelCrownLoyality
+            // 
+            labelCrownLoyality.AutoSize = true;
+            labelCrownLoyality.Location = new Point(300, 14);
+            labelCrownLoyality.Margin = new Padding(1, 0, 1, 0);
+            labelCrownLoyality.Name = "labelCrownLoyality";
+            labelCrownLoyality.Size = new Size(86, 15);
+            labelCrownLoyality.TabIndex = 20;
+            labelCrownLoyality.Text = "Crown Loyality";
+            // 
+            // progressBarCrownLoyality
+            // 
+            progressBarCrownLoyality.Location = new Point(392, 13);
+            progressBarCrownLoyality.Margin = new Padding(1, 1, 1, 1);
+            progressBarCrownLoyality.Name = "progressBarCrownLoyality";
+            progressBarCrownLoyality.Size = new Size(92, 21);
+            progressBarCrownLoyality.TabIndex = 21;
+            // 
+            // labelGoal
+            // 
+            labelGoal.AutoSize = true;
+            labelGoal.Location = new Point(15, 14);
+            labelGoal.Margin = new Padding(1, 0, 1, 0);
+            labelGoal.Name = "labelGoal";
+            labelGoal.Size = new Size(71, 15);
+            labelGoal.TabIndex = 22;
+            labelGoal.Text = "CurrentGoal";
+            // 
+            // labelBuilding
+            // 
+            labelBuilding.AutoSize = true;
+            labelBuilding.Location = new Point(15, 283);
+            labelBuilding.Margin = new Padding(1, 0, 1, 0);
+            labelBuilding.Name = "labelBuilding";
+            labelBuilding.Size = new Size(51, 15);
+            labelBuilding.TabIndex = 23;
+            labelBuilding.Text = "Building";
+            // 
+            // btnAskForNewWorkers
+            // 
+            btnAskForNewWorkers.Location = new Point(141, 67);
+            btnAskForNewWorkers.Margin = new Padding(1, 1, 1, 1);
+            btnAskForNewWorkers.Name = "btnAskForNewWorkers";
+            btnAskForNewWorkers.Size = new Size(120, 49);
+            btnAskForNewWorkers.TabIndex = 24;
+            btnAskForNewWorkers.Text = "AskForNewWorkers for 30 money each one";
+            btnAskForNewWorkers.UseVisualStyleBackColor = true;
+            btnAskForNewWorkers.Click += btnAskForNewWorkers_Click;
+            // 
+            // comboBoxAmountOfWorkers
+            // 
+            comboBoxAmountOfWorkers.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBoxAmountOfWorkers.FormattingEnabled = true;
+            comboBoxAmountOfWorkers.Location = new Point(141, 118);
+            comboBoxAmountOfWorkers.Margin = new Padding(1, 1, 1, 1);
+            comboBoxAmountOfWorkers.Name = "comboBoxAmountOfWorkers";
+            comboBoxAmountOfWorkers.Size = new Size(120, 23);
+            comboBoxAmountOfWorkers.TabIndex = 25;
+            comboBoxAmountOfWorkers.Visible = false;
+            // 
+            // textTicksTillNewWorkers
+            // 
+            textTicksTillNewWorkers.Location = new Point(264, 86);
+            textTicksTillNewWorkers.Margin = new Padding(1, 1, 1, 1);
+            textTicksTillNewWorkers.Name = "textTicksTillNewWorkers";
+            textTicksTillNewWorkers.Size = new Size(86, 23);
+            textTicksTillNewWorkers.TabIndex = 26;
+            // 
+            // labelTicksTillComeNewWorkers
+            // 
+            labelTicksTillComeNewWorkers.AutoSize = true;
+            labelTicksTillComeNewWorkers.Location = new Point(264, 69);
+            labelTicksTillComeNewWorkers.Margin = new Padding(1, 0, 1, 0);
+            labelTicksTillComeNewWorkers.Name = "labelTicksTillComeNewWorkers";
+            labelTicksTillComeNewWorkers.Size = new Size(80, 15);
+            labelTicksTillComeNewWorkers.TabIndex = 27;
+            labelTicksTillComeNewWorkers.Text = "TicksTillCome";
             // 
             // MainForm
             // 
-            AutoScaleDimensions = new SizeF(15F, 37F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1594, 788);
+            ClientSize = new Size(749, 341);
+            Controls.Add(labelTicksTillComeNewWorkers);
+            Controls.Add(textTicksTillNewWorkers);
+            Controls.Add(comboBoxAmountOfWorkers);
+            Controls.Add(btnAskForNewWorkers);
+            Controls.Add(labelBuilding);
+            Controls.Add(labelGoal);
+            Controls.Add(progressBarCrownLoyality);
+            Controls.Add(labelCrownLoyality);
+            Controls.Add(labelWorker);
             Controls.Add(textCurrentCrownTask);
-            Controls.Add(labelLoyality);
+            Controls.Add(labelPeopleLoyality);
             Controls.Add(progressBarPeopleLoyality);
             Controls.Add(LabelSettlementresources);
             Controls.Add(LabelBuildings);
@@ -260,7 +377,6 @@ namespace WinFormsApp1
             Controls.Add(textWorkersState);
             Controls.Add(btnCreateWorld);
             Controls.Add(btnTick);
-            Margin = new Padding(6, 7, 6, 7);
             Name = "MainForm";
             Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)buildingCatalogBindingSource).EndInit();
@@ -288,7 +404,16 @@ namespace WinFormsApp1
         private Label LabelBuildings;
         private Label LabelSettlementresources;
         private ProgressBar progressBarPeopleLoyality;
-        private Label labelLoyality;
+        private Label labelPeopleLoyality;
         private TextBox textCurrentCrownTask;
+        private Label labelWorker;
+        private Label labelCrownLoyality;
+        private ProgressBar progressBarCrownLoyality;
+        private Label labelGoal;
+        private Label labelBuilding;
+        private Button btnAskForNewWorkers;
+        private ComboBox comboBoxAmountOfWorkers;
+        private TextBox textTicksTillNewWorkers;
+        private Label labelTicksTillComeNewWorkers;
     }
 }

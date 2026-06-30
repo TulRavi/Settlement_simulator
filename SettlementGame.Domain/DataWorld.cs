@@ -20,6 +20,7 @@ namespace SettlementGame.Domain
         public TimeSpan endWorkingDay = new TimeSpan(18, 0, 0);
         public int tempHoursCounter;
         private int gameState;
+        public int TicksToRoad = 5;
 
         public int GameState
         {
@@ -36,6 +37,7 @@ namespace SettlementGame.Domain
             get { return currentCrownTask; }
             set { currentCrownTask = value; }
         }
+
 
 
         //public int NextWorkerId { get; set; }
@@ -57,6 +59,8 @@ namespace SettlementGame.Domain
         bool IsGameLost => CrownLoyaity <= 0;
         bool IsGameWon => CrownLoyaity >= 1;
 
+        //public int tempTpCheck = 0;
+
         private double peopleLoyality;//=worker.PesonalLoyality/WorkersList.Count()
 
         public double Peopleloyality
@@ -64,10 +68,17 @@ namespace SettlementGame.Domain
             get { return peopleLoyality; }
             set { peopleLoyality = Math.Clamp(value, 0, 1); }
         }
-        
-        
 
+        public double denominator { get; set; }
+        public int standartSalary { get; set; }
 
+        public class WorkerOrder
+        {
+            public int Amount { get; set; }
+
+            public int TicksLeft { get; set; }
+        }
+        public List<WorkerOrder> WorkerOrders { get; set; } = new List<WorkerOrder>();
 
     }
 }

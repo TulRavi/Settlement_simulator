@@ -8,6 +8,14 @@ namespace SettlementGame.Domain
 {
     public class NeedThirst:Need
     {
+        public NeedThirst()
+        {
+        }
+
+        public NeedThirst(double amount)
+        {
+            Amount = amount;
+        }
         public override bool IsCritical
         {
             get { return true; }

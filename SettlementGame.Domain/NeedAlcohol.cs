@@ -6,6 +6,14 @@ namespace SettlementGame.Domain
 {
     public class NeedAlcohol : Need
     {
+        public NeedAlcohol()
+        {
+        }
+
+        public NeedAlcohol(double amount)
+        {
+            Amount = amount;
+        }
         public override int Cost { get; set; } = 5;
         public override bool IsCritical
         {

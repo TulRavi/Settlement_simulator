@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,8 @@ namespace SettlementGame.Domain
     {
         //public string Position { get; set; }
         public int Id { get; set; }
+        public int PersonalMoney { get; set; }
+
         private int workPlaceId;
 
         public int ? WorkPlaceId
@@ -24,6 +27,8 @@ namespace SettlementGame.Domain
         public List<Need> workerNeeds;
         //public TimeSpan startWorkingTime { get; set; }
         //public TimeSpan endWorkingTime { get; set; }
+        [NotMapped] // SQLite полностью проигнорирует это свойство
+        public string ? info => $"{Id} workPlceId {WorkPlaceId}";
 
         private TimeSpan startWorkingTime;
 
@@ -140,6 +145,8 @@ namespace SettlementGame.Domain
             workerNeeds = new List<Need>();
         }
 
+
+
         private bool isAlive;
         public bool IsAlive
         {
@@ -148,6 +155,8 @@ namespace SettlementGame.Domain
                 //if(IsAlive = false) { workerIsDead(как передать аргумент в свойство); }
             }
         }
+
+        
 
 
         public bool IsEmployed => WorkPlaceId != null || WorkPlaceId != -1;
@@ -179,7 +188,8 @@ namespace SettlementGame.Domain
                     IsAlive = false;                    // Интерпретация состояния - если значение кол-ва нужды превысило единицу, работник умер
                     return;
                 }
-                if (need.AmountIsMoreThanOne()==false)//если работник не умер, удволетврояем все нужды за деньги
+                //если работник не умер, удволетврояем все нужды за деньги
+                if (need.AmountIsMoreThanOne() == false & need.AmountIsMoreThanNull() == true)
                 {
                     
                     if (HasEnoughMoney(need.Cost)==true)//убеждаемся, что денег хватает
@@ -187,7 +197,7 @@ namespace SettlementGame.Domain
                         bool isConfirmed=need.ChangePerTick(world);
                         if (isConfirmed)
                         {
-                            ChangeMoneyAmount(need.Cost);
+                            ChangeMoneyAmount(-need.Cost);
 
                             // бонус только за небазовые нужды
                             if (need.IsCritical == false)
@@ -208,12 +218,7 @@ namespace SettlementGame.Domain
                 }
             }
         }
-        public void RecalculateLoyality()
-        {
-            //если базовые потребности удоволтеворены, то удоплетворение доп.потребностей дает рост, если не удовлотетоврены базовые, минус.
-        }
-
-        public int PersonalMoney { get; set; }
+               
         
         public bool HasEnoughMoney(int value)
         {
@@ -226,15 +231,31 @@ namespace SettlementGame.Domain
         }
         public void ChangeMoneyAmount(int value)
         {
-            PersonalMoney = PersonalMoney - value;
+            PersonalMoney = PersonalMoney + value;
         }
 
         public void Tick(DataWorld world)
         {
+            RecalculateSalary(world);
             RecalculateNeedsState(world);
-            RecalculateLoyality();
+                        
+        }
 
+        public void RecalculateSalary(DataWorld world)
+        {   if (WorkPlaceId != -1 && WorkPlaceId != null)
+            {
+                ChangeMoneyAmount(world.standartSalary);
+            }
+        }
 
+        //новый обобщенный метод ищет нужный элемент в подаваемой на вход коллекции
+        //аналог public Need GetNeed(Type type)
+        //{
+        //    return workerNeeds.FirstOrDefault(x => x.GetType() == type);
+        //}
+        public T GetNeed<T>() where T : Need
+        {
+            return workerNeeds.OfType<T>().FirstOrDefault();
         }
 
 

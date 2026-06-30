@@ -6,11 +6,19 @@ namespace SettlementGame.Domain
 {
     public class WorkerMapper
     {
+
         public static Worker ToDomain(WorkerEntity entity)
         {   
             var needs = Worker.CreateDefaultNeeds(); // временно?
 
-            var worker = new Worker(needs);
+            //var worker = new Worker(needs);
+           
+            Worker worker = new Worker(new List<Need>
+{
+    new NeedHunger(entity.Hunger),
+    new NeedThirst(entity.Thirst),
+    new NeedAlcohol(entity.Alcohol)
+});
             worker.WorkPlaceId = entity.WorkPlaceId; 
             //worker.WorkPlace = null;
             worker.Id = entity.Id;
@@ -19,6 +27,7 @@ namespace SettlementGame.Domain
             worker.IsAlive = entity.IsAlive;
             worker.PersonalLoyality = entity.PersonalLoyality;
             worker.PersonalMoney= entity.PersonalMoney;
+            //worker.info = entity.info;
 
 
             return worker;
@@ -30,7 +39,7 @@ namespace SettlementGame.Domain
 
             return new WorkerEntity
             {
-
+                
                 X = domainWorker.X,
                 Y = domainWorker.Y,
                 //Id = domainWorker.Id,
@@ -38,7 +47,11 @@ namespace SettlementGame.Domain
                 WorkPlaceId = domainWorker.WorkPlaceId,
                 IsEmployed = domainWorker.IsEmployed,
                 PersonalLoyality = domainWorker.PersonalLoyality,
-                PersonalMoney= domainWorker.PersonalMoney
+                PersonalMoney = domainWorker.PersonalMoney,
+                info = domainWorker.info,
+                Hunger = domainWorker.GetNeed<NeedHunger>().Amount,
+                Thirst = domainWorker.GetNeed<NeedThirst>().Amount,
+                Alcohol = domainWorker.GetNeed<NeedAlcohol>().Amount,
             };
         }
     }
