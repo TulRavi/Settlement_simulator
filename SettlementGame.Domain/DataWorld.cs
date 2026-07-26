@@ -10,7 +10,7 @@ namespace SettlementGame.Domain
     public  class DataWorld
     {
         //public  List<Worker> WorkersList=new  List<Worker>();
-        public  List<AnyResource> SettlementResourceList = new List<AnyResource>();
+        public  List<Resource> SettlementResourceList = new List<Resource>();
         //public List<Building> BuildingList = new List<Building>();
         public List<BuildingType> PossibleBuildingList = new List<BuildingType>();
         //public WorkerEmploymentService workerEmploymentService { get; set; }

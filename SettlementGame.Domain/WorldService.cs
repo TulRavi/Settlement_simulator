@@ -53,7 +53,7 @@ namespace SettlementGame.Domain
             //world.workerEmploymentService = WorldCreator.CreateWorkerEmploymentService(world);
             _worldCreator.CreateWorld();
         _worldCreator.CreateDefaultWorkers(numberOfWorkers, _world);
-            _world.CurrentCrownTask=CrownTask.CreateNewCrownTack(_world,_dbContext);
+            _world.CurrentCrownTask=CreateNewCrownTack();
             
 
         return _world;
@@ -108,7 +108,7 @@ namespace SettlementGame.Domain
             public string info { get; set; }
         }
 
-        public class CrownTaskDto
+        public class CrownTaskDTO
         {
             public string ResourceType { get; set; }
             public int Amount { get; set; }
@@ -116,14 +116,14 @@ namespace SettlementGame.Domain
             public double LoyalityCounter { get; set; }
         }
 
-        public CrownTaskDto GetCurrentCrownTaskDto()
+        public CrownTaskDTO GetCurrentCrownTaskDTO()
         {
             var task = _world.CurrentCrownTask;
 
             if (task == null)
                 return null;
 
-            return new CrownTaskDto
+            return new CrownTaskDTO
             {
                 ResourceType = task.Resource.ResourceType.ToString(),
                 Amount = task.Resource.Amount,
@@ -132,10 +132,53 @@ namespace SettlementGame.Domain
             };
         }
 
-        public List<SettlementGame.Domain.AnyResource> GetSettlementResourceList()
+        public class SettlementResourceDTO
         {
-            return _world.SettlementResourceList;
+            public ResourceType ResourceType { get; set; }
+            public int Amount { get; set; }
         }
+
+        public List<SettlementResourceDTO> GetSettlementResourceListDTO()
+        {
+            List<SettlementResourceDTO> settlementResourceListDTO = new List<SettlementResourceDTO>();
+
+            foreach (Resource resource in _world.SettlementResourceList) {
+                SettlementResourceDTO settlementResourceDTO = new SettlementResourceDTO
+                {
+                    ResourceType = resource.ResourceType,
+                    Amount = resource.Amount
+                };
+                settlementResourceListDTO.Add(settlementResourceDTO);
+            }
+            return settlementResourceListDTO;
+        }
+
+        public class PeopleLoayalityDTO
+        {
+            public double PeopleLoyality { get; set; }
+        }
+
+        public PeopleLoayalityDTO GetPeopleLoyalityDTO()
+        {
+            return new PeopleLoayalityDTO
+            {
+                PeopleLoyality = _world.Peopleloyality
+            };
+        }
+
+        public class CrownLoayalityDTO
+        {
+            public double CrownLoyality { get; set; }
+        }
+
+        public CrownLoayalityDTO GetCrownLoyalityDTO()
+        {
+            return new CrownLoayalityDTO
+            {
+                CrownLoyality = _world.CrownLoyaity
+            };
+        }
+
         public List<BuildingDto> GetBuildingDtoList()
         {
             List<BuildingDto> BuildingDtoList = new List<BuildingDto>();
@@ -163,7 +206,7 @@ namespace SettlementGame.Domain
                     BuildingType = building.BuildingType,
                     AssignedWorkerId=building.AssignedWorkerId,
                     info =building.info
-    };
+                };
 
                 BuildingDtoList.Add(buildingDto);
             }
@@ -184,11 +227,7 @@ namespace SettlementGame.Domain
               .ToList();
         }
 
-        public CrownTask GetCurrentCrownTask()
-        {
-            return _world.CurrentCrownTask;
-        }
-
+       
         public bool CreateBuilding(BuildingType buildingType) {
             CreateBuildingContext createBuildingContext = new CreateBuildingContext(buildingType);
             bool exists = Enum.IsDefined(typeof(BuildingType), createBuildingContext.BuildingType);
@@ -251,16 +290,7 @@ namespace SettlementGame.Domain
             }
         }
 
-        public double GetPeopleLoyality()
-        {
-            return _world.Peopleloyality;
-        }
-
-        public double GetCrownLoyality()
-        {
-            return _world.CrownLoyaity;
-        }
-
+        
 
         public void CreateWorkersByService(int numberOfWorkers=3)
         {
@@ -270,30 +300,32 @@ namespace SettlementGame.Domain
         public void Tick() 
         {
             int temp = _world.GetHashCode();
-            UpdateWorkers(_world);
-            UpdateBuildings(_world);
+            UpdateWorkers();
+            UpdateBuildings();
             //UpdateResources();
-            UpdateWorkersLoyalty(_world);
-            UpdateCrownTask(_world, _dbContext);
+            UpdateWorkersLoyalty();
+            //UpdateCrownLoyality();
+            UpdateCrownTask();
             _workerEmploymentService.UpdateWorkerOrders(_world);
             //updateGameState(_world);
         }
 
         
 
-        private void UpdateWorkers(DataWorld world)
+        private void UpdateWorkers()
         {
             foreach (var workerEntity in _dbContext.Workers)
             {
-                int temp = world.GetHashCode();
+                int temp = _world.GetHashCode();
                 Worker worker = WorkerMapper.ToDomain(workerEntity);
-                worker.Tick(world);
+                List<Need> temp2 = worker.workerNeeds;
+                worker.Tick(_world.standartSalary,_world.SettlementResourceList);
 
-                //добавим блок для запоминания состояния потребностей тупо в цифрах, чтобы не переусложнять БД
+                //добавим блок для запоминания со+стояния потребностей тупо в цифрах, чтобы не переусложнять БД
                 workerEntity.Hunger =worker.GetNeed<NeedHunger>().Amount;
                 workerEntity.Thirst =worker.GetNeed<NeedThirst>().Amount;
                 workerEntity.Alcohol =worker.GetNeed<NeedAlcohol>().Amount;
-
+                workerEntity.Salary= worker.GetNeed<NeedSalary>().Amount;
                 workerEntity.IsAlive = worker.IsAlive;
                 workerEntity.X = worker.X;
                 workerEntity.Y = worker.Y;
@@ -305,41 +337,98 @@ namespace SettlementGame.Domain
                 if (workerEntity.IsAlive == false)
                 {
                     _dbContext.Workers.Remove(workerEntity);
-                    world.Peopleloyality -= -0.1;
+                    _world.Peopleloyality -= -0.1;
                 }
 
             }
             _dbContext.SaveChanges();
         }
 
-        public void UpdateCrownTask(DataWorld world,GameDbContext dbContext)
+        public void UpdateCrownTask()
         {
-            if (CrownTask.IsCompleted(world) == true)
+            if (_world.CurrentCrownTask.IsCompleted(_world) == true)
             {
-                CrownTask task = world.CurrentCrownTask;
-                AnyResource reqAnyResource = task.Resource;
-                world.SettlementResourceList.Find(x => x.ResourceType == reqAnyResource.ResourceType).Amount = world.SettlementResourceList.Find(x => x.ResourceType == reqAnyResource.ResourceType).Amount - reqAnyResource.Amount;
-                world.CrownLoyaity += task.LoyalityCounter;
-                world.CurrentCrownTask=CrownTask.CreateNewCrownTack(world, dbContext);
+                CrownTask task = _world.CurrentCrownTask;
+                Resource reqAnyResource = task.Resource;
+                _world.SettlementResourceList.Find(x => x.ResourceType == reqAnyResource.ResourceType).Amount = _world.SettlementResourceList.Find(x => x.ResourceType == reqAnyResource.ResourceType).Amount - reqAnyResource.Amount;
+                _world.CrownLoyaity += task.LoyalityCounter;
+                _world.CurrentCrownTask=CreateNewCrownTack();
             }
             else
             { 
-                world.CurrentCrownTask.NumberOfTicks--;
-                if (world.CurrentCrownTask.NumberOfTicks <= 0) 
+                _world.CurrentCrownTask.NumberOfTicks--;
+                if (_world.CurrentCrownTask.NumberOfTicks <= 0) 
                 {
-                    world.CrownLoyaity = world.CrownLoyaity - 0.1;
-                    world.CurrentCrownTask = CrownTask.CreateNewCrownTack(world, dbContext);
+                    _world.CrownLoyaity = _world.CrownLoyaity - 0.1;
+                    _world.CurrentCrownTask = CreateNewCrownTack();
                 }
             }
             ;
         }
 
-        public void UpdateBuildings(DataWorld world)
+        public CrownTask CreateNewCrownTack()
+        {
+            
+            Random random = new Random();
+            int numberOfResourses = Enum.GetValues(typeof(ResourceType)).Length;
+            int selecteResourceNumber = random.Next(numberOfResourses);
+            //int selecteResourceNumber = world.tempTpCheck;
+            ResourceType requestedResourceType = (ResourceType)selecteResourceNumber;
+            int numberOfWorkers = _dbContext.Workers.Count();
+            //BuildingType buildingType=world.PossibleBuildingList.Find(x => x.GetType == Id)
+            int nubmerOfBuildings = Enum.GetValues(typeof(BuildingType)).Length;
+            bool isPossibleTask = false;
+            CrownTask tempCrownTask = new CrownTask();
+
+            //исключаем таверну и пр.здания не произв.ресурсы
+            //var buildingTypes = Enum.GetValues(typeof(BuildingType)).Cast<BuildingType>().Where(b =>BuildingCatalog.GetProductForCreation(b).Outputs.Count > 0).ToList();
+
+            for (int x = 0; x < nubmerOfBuildings; x++)//перебирем здания
+            {
+                BuildingType buildingType = (BuildingType)x;//поочередно
+                //поочередно
+                BuildingCatalog tempBuildingCatalog = BuildingCatalog.GetProductForCreation(buildingType);
+                //получаем каталог производимых ресурсов и ищем, есть ли в нем нужный нам
+                if (tempBuildingCatalog.Outputs.FirstOrDefault(x => x.ResourceType == requestedResourceType) != null)
+                {
+                    //если нашли, считаем сколько можно произвести с текущими рабочими
+                    int productionOfOneBuilding = tempBuildingCatalog.Outputs.FirstOrDefault(x => x.ResourceType == requestedResourceType).Amount;
+                    int productionOfAllPossibleBuildings = productionOfOneBuilding * numberOfWorkers;
+                    int amountCounter = random.Next(3, 9);
+                    //вводим дабл для деления, ибо при делении инт на инт резтат будет инт.
+                    double loyalityCounter = amountCounter / _world.denominator;
+                    //int reqAmount = random.Next(productionOfAllPossibleBuildings*amountCounter);
+                    int reqAmount = productionOfAllPossibleBuildings * amountCounter;
+                    //чтобы не было уберпросто, было логино и подталкивало к развию, мы просим произвести больше, чем есть
+                    if (_world.SettlementResourceList.Find(x => x.ResourceType == requestedResourceType).Amount > reqAmount)
+                    {
+                        reqAmount = _world.SettlementResourceList.Find(x => x.ResourceType == requestedResourceType).Amount + reqAmount;
+                        loyalityCounter = loyalityCounter + 0.05;
+                        //подумать над логикой, мб это лишает мотивации создавать запас. корректируем лоялитиКаунтером
+                    }
+                    Resource resourse = new Resource(requestedResourceType, reqAmount);
+                    int numberOfTicks = reqAmount / productionOfAllPossibleBuildings + 5;
+                    isPossibleTask = true;
+                    tempCrownTask = new CrownTask(resourse, numberOfTicks, loyalityCounter);
+                    //world.tempTpCheck++;
+                    break;
+                }
+            }
+            if (isPossibleTask == false)
+            {
+                throw new ArgumentException("Невозможно создать задaние");
+            }
+            return tempCrownTask;
+            //BuildingType buildingType=new BuildingType();
+
+        }
+
+        public void UpdateBuildings()
         {
             foreach (var entity in _dbContext.BuildedBuildings)
             {
                 var building = BuildingMapper.ToDomain(entity);
-                if (building.HasEmployee== true) { building.Tick(world); }
+                if (building.HasEmployee== true) { building.Tick(_world); }
             }
         }
         public int updateGameState(DataWorld world) 
@@ -356,19 +445,20 @@ namespace SettlementGame.Domain
         }
                
 
-        private void UpdateWorkersLoyalty(DataWorld world)
+        private void UpdateWorkersLoyalty()
         { double tempLoyality = 0;
             foreach (var worker in _dbContext.Workers)
             {
                 tempLoyality= tempLoyality+worker.PersonalLoyality;
             }
-            world.Peopleloyality= tempLoyality / _dbContext.Workers.Count();
-            if (world.Peopleloyality <= 0) { world.denominator = 15;}
-            if (world.Peopleloyality >= 1) { world.denominator = 45; }
+            _world.Peopleloyality= tempLoyality / _dbContext.Workers.Count();
+            if (_world.Peopleloyality <= 0) { _world.denominator = 15;}
+            if (_world.Peopleloyality >= 1) { _world.denominator = 45; }
 
         }
 
-        public static void ChangeResourseAmount(DataWorld world, AnyResource resource)
+        
+        public static void ChangeResourseAmount(DataWorld world, Resource resource)
         {
             world.SettlementResourceList.Find(x => x.ResourceType == resource.ResourceType).Amount -= resource.Amount;
         }

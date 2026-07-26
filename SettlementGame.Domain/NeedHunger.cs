@@ -22,6 +22,29 @@ namespace SettlementGame.Domain
             get { return true; }
         }
 
+        public override double GetIncreaseChangePerTick()
+        {
+            return 0.2;
+        }
+
+        public override bool TryToSaticfy(Worker worker, List<Resource> resourceList)
+        {
+            foreach (Resource food in resourceList)
+            {
+                if (food.ResourceCategory == ResourceCategory.Food && food.TryToConsume(1)) //нужда отправляет запрос на потребление ресурсу
+                {
+                    ChangeAmount(-0.2);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public override bool ShouldTryToSatisfy()
+        {
+            if (Amount > 0) { return true; } else { return false; }
+        }
+
         public override int Cost { get; set; } = 1;
         private double _loyalityAmount;
 
@@ -30,21 +53,21 @@ namespace SettlementGame.Domain
             get { return -0.05; }
         }
 
-        public override bool ChangePerTick(DataWorld world) //
-        {
-            ChangeAmount(0.1);
+        //public override bool ChangePerTick(List<Resource> resourceList) //
+        //{
+        //    ChangeAmount(0.1);
 
-            foreach (AnyResource food in world.SettlementResourceList)
-            {
-                if (food.ResourceCategory == ResourceCategory.Food && food.TryToConsume(1)) //нужда отправляет запрос на потребление ресурсу
-                {
-                    ChangeAmount(-0.2);
-                    return true;
-                }
+        //    foreach (Resource food in resourceList)
+        //    {
+        //        if (food.ResourceCategory == ResourceCategory.Food && food.TryToConsume(1)) //нужда отправляет запрос на потребление ресурсу
+        //        {
+        //            ChangeAmount(-0.2);
+        //            return true;
+        //        }
 
-            }
-            return false;
-        }
+        //    }
+        //    return false;
+        //}
 
         //set => throw new NotImplementedException(); }
 

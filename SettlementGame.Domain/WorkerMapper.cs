@@ -17,7 +17,8 @@ namespace SettlementGame.Domain
 {
     new NeedHunger(entity.Hunger),
     new NeedThirst(entity.Thirst),
-    new NeedAlcohol(entity.Alcohol)
+    new NeedAlcohol(entity.Alcohol),
+    new NeedSalary(entity.Salary),
 });
             worker.WorkPlaceId = entity.WorkPlaceId; 
             //worker.WorkPlace = null;
@@ -52,6 +53,7 @@ namespace SettlementGame.Domain
                 Hunger = domainWorker.GetNeed<NeedHunger>().Amount,
                 Thirst = domainWorker.GetNeed<NeedThirst>().Amount,
                 Alcohol = domainWorker.GetNeed<NeedAlcohol>().Amount,
+                Salary= domainWorker.GetNeed<NeedSalary>().Amount,
             };
         }
     }

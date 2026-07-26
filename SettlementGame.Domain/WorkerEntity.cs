@@ -11,6 +11,10 @@ namespace SettlementGame.Domain
         public double Thirst { get; set; }
 
         public double Alcohol { get; set; }
+
+        public double Salary { get; set; }
+
+
         public int Id { get; set; }
         private bool isAlive;
         public bool IsAlive

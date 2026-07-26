@@ -12,7 +12,7 @@ namespace SettlementGame.Domain
             KirpichMakery,
             GoldMakery,
             MonetaMakery,
-            Tavern,
+            //Tavern,
             BeerMakery,
             MeatMakery,
             BerriesMakery,

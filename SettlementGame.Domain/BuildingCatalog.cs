@@ -58,8 +58,8 @@ namespace SettlementGame.Domain
                         new ResourceAmount(ResourceType.Hmel, 1)
                         },
                         new List<ResourceAmount>{new ResourceAmount(ResourceType.Beer, 10)});
-                case BuildingType.Tavern:
-                    return new BuildingCatalog(new List<ResourceAmount>(), new List<ResourceAmount>());//в удовлетворении нужды рабочего потребление, не тут
+                //case BuildingType.Tavern:
+                //    return new BuildingCatalog(new List<ResourceAmount>(), new List<ResourceAmount>());//в удовлетворении нужды рабочего потребление, не тут
                 case BuildingType.MeatMakery:
                     return new BuildingCatalog(new List<ResourceAmount>(),
                         new List<ResourceAmount> { new ResourceAmount(ResourceType.Meat, 5) });

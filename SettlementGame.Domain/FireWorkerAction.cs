@@ -25,7 +25,7 @@ namespace SettlementGame.Domain
             building.RemoveWorker();
             //world.SettlementResourceList.Find(x => x.ResourceType == ResourceType.Moneta).Amount -= world.standartSalary*3;
             int compensation = world.standartSalary * 3;
-            AnyResource resource=new AnyResource(ResourceType.Moneta, compensation);
+            Resource resource=new Resource(ResourceType.Moneta, compensation);
             WorldService.ChangeResourseAmount(world, resource);
             worker.ChangeMoneyAmount(compensation);
         }

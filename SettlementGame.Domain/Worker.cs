@@ -131,6 +131,7 @@ namespace SettlementGame.Domain
             workerNeeds.Add(new NeedHunger());
             workerNeeds.Add(new NeedThirst());
             workerNeeds.Add(new NeedAlcohol());
+            workerNeeds.Add(new NeedSalary());
             return workerNeeds;
         }
         
@@ -177,49 +178,95 @@ namespace SettlementGame.Domain
             WorkPlace = null;
             WorkPlaceId = -1;
         }
-
-
-        public void RecalculateNeedsState(DataWorld world)
-        {
-            foreach (Need need in workerNeeds)                // Проверяем каждую потребность
-            {
-                if (need.IsCritical && need.AmountIsMoreThanOne())
+        public void RecalculateNeedsState(Worker worker, List<Resource> resourceList) 
+        {   foreach(Need need in workerNeeds)
+            {   //пошагово
+                //1 нужда растет
+                need.Increase();
+                //2 проверяем, не выросла ли нужда настолько, что рабочий умер от голода/жажды
+                if (need.IsCritical && need.Amount >= 1)
                 {
-                    IsAlive = false;                    // Интерпретация состояния - если значение кол-ва нужды превысило единицу, работник умер
+                    isAlive = false;
                     return;
                 }
-                //если работник не умер, удволетврояем все нужды за деньги
-                if (need.AmountIsMoreThanOne() == false & need.AmountIsMoreThanNull() == true)
+
+                //2.1 проверка ЗП. есть рабочее место-пробуем платить. не получается - снижается лояльность
+                
+                if (need is NeedSalary && worker.IsEmployed)
                 {
-                    
-                    if (HasEnoughMoney(need.Cost)==true)//убеждаемся, что денег хватает
-                    {   
-                        bool isConfirmed=need.ChangePerTick(world);
-                        if (isConfirmed)
-                        {
-                            ChangeMoneyAmount(-need.Cost);
-
-                            // бонус только за небазовые нужды
-                            if (need.IsCritical == false)
-                            {
-                                ChangePersonalLoyality(need.LoyalityAmount);
-                            }
-                        }
-                        else
-                        {
-                            // штраф только за базовые нужды
-                            if (need.IsCritical)
-                            {
-                                ChangePersonalLoyality(need.LoyalityAmount);
-                            }
-                        }
-
-                    }
+                    bool resultSalary = need.TryToSaticfy(worker, resourceList);
+                    if (resultSalary == false) { worker.ChangePersonalLoyality(need.LoyalityAmount); } else { worker.ChangeMoneyAmount(need.Cost); }
+                    continue;
                 }
+                //3 смотрим, нужнается ли в удовлетворении на текущем тике и есть ли деньги
+                if (need.ShouldTryToSatisfy() == false) { continue; } else if (worker.HasEnoughMoney(need.Cost) == false) { continue; }
+
+                bool result = need.TryToSaticfy(worker, resourceList);
+                if (result == false) 
+                {
+                    //если не получилось удовлетворить нужду и она критическая, лояльность падает
+                    //тогда сразу переходим к следующей нужде
+                    if (need.IsCritical == true) { worker.ChangePersonalLoyality(need.LoyalityAmount); continue; }
+
+                }
+                if (result == true)
+                {   //берем деньги
+                    worker.ChangeMoneyAmount(need.Cost);
+                    
+                    //удовлетовряем некритиеские нужды и лояльность растет
+                    if (need.IsCritical == false)
+                    {
+                        worker.ChangePersonalLoyality(need.LoyalityAmount);
+                    }
+                    
+                }                 
             }
+            
         }
-               
-        
+
+        //public void RecalculateNeedsState(List<Resource>resourceList)
+        //{
+        //foreach (Need need in workerNeeds)                // Проверяем каждую потребность
+        //{
+        //    if (need.IsCritical && need.AmountIsMoreThanOne())
+        //    {
+        //        IsAlive = false;// Интерпретация состояния - если значение кол-ва крит. нужды превысило единицу, работник умер
+        //        return;
+        //    }
+
+        //    //if()//если работник имеет рабочее место, выдаем ему зп из ресурсов мира
+        //    //если работник не умер, удволетврояем все нужды за деньги
+        //    if (need.AmountIsMoreThanOne() == false )
+        //    {//& need.AmountIsMoreThanMinus0_1() == true
+
+        //        if (HasEnoughMoney(need.Cost)==true)//убеждаемся, что денег хватает
+        //        {   
+        //            bool isConfirmed=need.ChangePerTick(resourceList);
+        //            if (isConfirmed)
+        //            {
+        //                ChangeMoneyAmount(-need.Cost);
+
+        //                // бонус только за небазовые нужды
+        //                if (need.IsCritical == false)
+        //                {
+        //                    ChangePersonalLoyality(need.LoyalityAmount);
+        //                }
+        //            }
+        //            else
+        //            {
+        //                // штраф только за базовые нужды
+        //                if (need.IsCritical)
+        //                {
+        //                    ChangePersonalLoyality(need.LoyalityAmount);
+        //                }
+        //            }
+
+        //        }
+        //    }
+        //}
+        //}
+
+
         public bool HasEnoughMoney(int value)
         {
             if ((PersonalMoney - value) >= 0)
@@ -234,19 +281,20 @@ namespace SettlementGame.Domain
             PersonalMoney = PersonalMoney + value;
         }
 
-        public void Tick(DataWorld world)
+        public void Tick(int standartSalary,List<Resource>resourceList)
         {
-            RecalculateSalary(world);
-            RecalculateNeedsState(world);
+            
+            //RecalculateSalary(standartSalary);
+            RecalculateNeedsState(this,resourceList);
                         
         }
 
-        public void RecalculateSalary(DataWorld world)
-        {   if (WorkPlaceId != -1 && WorkPlaceId != null)
-            {
-                ChangeMoneyAmount(world.standartSalary);
-            }
-        }
+        //public void RecalculateSalary(int standartSalary)
+        //{   if (WorkPlaceId != -1 && WorkPlaceId != null)
+        //    {
+        //        ChangeMoneyAmount(standartSalary);
+        //    }
+        //}
 
         //новый обобщенный метод ищет нужный элемент в подаваемой на вход коллекции
         //аналог public Need GetNeed(Type type)

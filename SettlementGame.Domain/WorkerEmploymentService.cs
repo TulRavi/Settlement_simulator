@@ -37,7 +37,7 @@ namespace SettlementGame.Domain
             //это выполняет sql SELECT * FROM Workers WHERE Id = id; 
         }
         //пока закомменирую старое
-        private readonly DataWorld world;
+        
 
         //public WorkerEmploymentService(DataWorld world)
         //{
@@ -67,7 +67,7 @@ namespace SettlementGame.Domain
 
                 FireWorkerAction action = (FireWorkerAction)UsersActionsCatalog.FireWorkerAction(fireWorkerContext);
                 //context.Building = world.BuildingList.Find(x => x.Id == Id);
-                action.Execute(world);
+                action.Execute(_world);
 
                 //workerEntity = WorkerMapper.ToEntity(fireWorkerContext.Worker);
                 //_dbContext.Workers.Update(workerEntity);
@@ -116,13 +116,13 @@ namespace SettlementGame.Domain
 
             foreach (var order in completedOrders)
             {   
-                CreateWorkers(order.Amount, world);
+                CreateWorkers(order.Amount);
 
                 world.WorkerOrders.Remove(order);
             }
         }
 
-        public void CreateWorkers(int numberOfWorkers, DataWorld world)
+        public void CreateWorkers(int numberOfWorkers)
         {
             for (int i = 0; i < numberOfWorkers; i++)
             { //Потребности добавлены в лист потребностей
@@ -178,7 +178,7 @@ namespace SettlementGame.Domain
 
             var action = (HireWorkerAction)UsersActionsCatalog.HireWorkerAction(hireWorkerContext);
 
-            action.Execute(world);
+            action.Execute(_world);
             //var tempWorkerEntity = WorkerMapper.ToEntity(hireWorkerContext.Worker);
             //var tempWorker = WorkerMapper.ToDomain(tempWorkerEntity);
             workerEntity.IsEmployed = hireWorkerContext.Worker.IsEmployed;

@@ -23,8 +23,8 @@ namespace SettlementGame.Web.Controllers
             this._worldService = worldService;
         }
 
-        [HttpGet("GetWorkers")]
-        public IActionResult GetWorkers()
+        [HttpGet("GetWorkersDTO")]
+        public IActionResult GetWorkersDTO()
         {
             return Ok(_worldService.GetWorkerDtoList()); // ASP превращает List в JSON
         }

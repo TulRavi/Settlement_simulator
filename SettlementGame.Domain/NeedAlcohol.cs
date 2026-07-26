@@ -25,19 +25,21 @@ namespace SettlementGame.Domain
         {
             get { return +0.05; }
         }
-        public override bool ChangePerTick(DataWorld world) //
-        {
-            ChangeAmount(0.3);
 
-            foreach (AnyResource alcohol in world.SettlementResourceList)
+        public override double GetIncreaseChangePerTick()
+        {
+            return 0.1;
+        }
+        public override bool TryToSaticfy(Worker worker, List<Resource> resourceList) //
+        {
+            foreach (Resource alcohol in resourceList)
             {
                 if (alcohol.ResourceCategory == ResourceCategory.Alcohol && alcohol.TryToConsume(1)) //нужда отправляет запрос на потребление ресурсу
                 {
-                    ChangeAmount(-1);
+                    ChangeAmount(-0.3);
                     //куда вписать затраты рабочего. видимо, это дб метод рабочего и нужна не должна удовлетовряться, если у него нет денег.
                     return true;
                 }
-
             }
             return false;
         }

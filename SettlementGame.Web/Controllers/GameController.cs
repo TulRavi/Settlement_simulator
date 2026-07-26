@@ -32,7 +32,7 @@ namespace SettlementGame.Web.Controllers
             this._dbContext = dbContext;//для считывания логина-пароля из БД
         }
         //это пока уберем за ненадобностью
-        //[HttpGet]
+        //[HttpGet]getSettlementresourcesList
         //public ActionResult GetTime()
         //{
         //    //string gameAndWorkingTime = $"\"gameTime\":{world.GameTime}, \n \"workingHours\":{world.startWorkingDay}-{world.endWorkingDay}";
@@ -43,39 +43,39 @@ namespace SettlementGame.Web.Controllers
         //    };
         //    return Ok(response);
         //}
-        [HttpGet("getSettlementresourcesList")]
-        public IActionResult getSettlementresourcesList()
+        [HttpGet("getSettlementresourcesListDTO")]
+        public IActionResult getSettlementresourcesListDTO()
         {
             
             //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
-            return Ok(_worldService.GetSettlementResourceList());
+            return Ok(_worldService.GetSettlementResourceListDTO());
         }
 
-        [HttpGet("getPeopleLoayliy")]
-        public IActionResult getPeopleLoayliy()
+        [HttpGet("getPeopleLoayliyDTO")]
+        public IActionResult getPeopleLoayliyDTO()
         {
             //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
-            return Ok(_worldService.GetPeopleLoyality());
+            return Ok(_worldService.GetPeopleLoyalityDTO());
         }
 
 
 
-        [HttpGet("getCrownLoayliy")]
-        public IActionResult getCrownLoayliy()
+        [HttpGet("getCrownLoaylityDTO")]
+        public IActionResult getCrownLoaylityDTO()
         {
             //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
-            return Ok(_worldService.GetCrownLoyality());
+            return Ok(_worldService.GetCrownLoyalityDTO());
         }
 
-        [HttpGet("getCurrentCrownTask")]
-        public IActionResult getCurrentCrownTask()
+        [HttpGet("getCurrentCrownTaskDTO")]
+        public IActionResult getCurrentCrownTaskDTO()
         {
             //int temp = _world.GetHashCode();
             //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
 
             //CrownTask crownTask = _worldService.GetCurrentCrownTask();
             //return Ok(crownTask);
-            return Ok(_worldService.GetCurrentCrownTaskDto());
+            return Ok(_worldService.GetCurrentCrownTaskDTO());
 
             //var task = _worldService.GetCurrentCrownTask();
 
@@ -127,30 +127,18 @@ namespace SettlementGame.Web.Controllers
         //[Authorize(Roles = "Admin")]
         public IActionResult Tick()
         {
-            //int temp = _world.GetHashCode();
+            
             try
             {
                 _worldService.Tick();
+                return Ok();
             }
             catch (Exception ex)
             {
                 return StatusCode(500, ex.ToString());
             }
-            try {  
-            getCurrentCrownTask();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.ToString());
-            }
-            try{
-                getCurrentGameState();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.ToString());
-            }
-            return Ok();
+            
+            
         }
 
         

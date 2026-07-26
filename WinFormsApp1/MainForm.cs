@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static SettlementGame.Domain.DataWorld;
@@ -110,42 +111,52 @@ namespace WinFormsApp1
 
         private async Task RefreshPeopleLoayalityBrogressBar()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getPeopleLoayliy"); // запрос к API
-            //[HttpGet("getSettlementresourcesList")]
+            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getPeopleLoayliyDTO"); // запрос к API
+            //[HttpGet("getSettlementresourcesListDTO")]
             if (response.IsSuccessStatusCode) // проверяем успешность ответа
             {
                 string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
                 //временно полный json вид
-                json = json.Replace(".", ",");
-                progressBarPeopleLoyality.Value = (int)(double.Parse(json) * 100);
+                //json = json.Replace(".", ",");
+                JsonNode node = JsonNode.Parse(json);
+
+                // Извлекаем значение и приводим к нужному типу (например, int)
+                double amount = (double)node["peopleLoyality"];
+                progressBarPeopleLoyality.Value = (int)(amount * 100);
 
             }
             else // если ошибка запроса
             {
-                MessageBox.Show("${response.StatusCode.ToString()}"); // показываем код ошибки
+                MessageBox.Show(response.StatusCode.ToString()); // показываем код ошибки
             }
         }
 
         private async Task RefreshCrownLoayalityBrogressBar()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getCrownLoayliy"); // запрос к API
-            //[HttpGet("getSettlementresourcesList")]
+            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getCrownLoaylityDTO"); // запрос к API
+            //[HttpGet("getSettlementresourcesListDTO")]
             if (response.IsSuccessStatusCode) // проверяем успешность ответа
             {
                 string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
                 //временно полный json вид
-                json = json.Replace(".", ",");
-                progressBarCrownLoyality.Value = (int)(double.Parse(json) * 100);
+                //json = json.Replace(".", ",");
+                //progressBarCrownLoyality.Value = (int)(double.Parse(json) * 100);
+
+                //пробуем делать JsonNode по аналогии с progressBarPeopleLoyality
+                JsonNode node = JsonNode.Parse(json);
+                // Извлекаем значение и приводим к нужному типу (например, int)
+                double amount = (double)node["crownLoyality"];
+                progressBarCrownLoyality.Value = (int)(amount * 100);
             }
             else // если ошибка запроса
             {
-                MessageBox.Show("${response.StatusCode.ToString()}"); // показываем код ошибки
+                MessageBox.Show(response.StatusCode.ToString()); // показываем код ошибки
             }
         }
 
         private async Task RefreshWorkersInfo() // метод обновления информации о рабочих
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("api/workers/GetWorkers"); // запрос к API
+            HttpResponseMessage response = await _httpClient.GetAsync("api/workers/GetWorkersDTO"); // запрос к API
 
             if (response.IsSuccessStatusCode) // проверяем успешность ответа
             {
@@ -284,8 +295,8 @@ namespace WinFormsApp1
 
         private async Task RefreshSettlementResourcesInfo() // метод обновления информации о рабочих
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getSettlementresourcesList"); // запрос к API
-            //[HttpGet("getSettlementresourcesList")]
+            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getSettlementresourcesListDTO"); // запрос к API
+            //[HttpGet("getSettlementresourcesListDTO")]
             if (response.IsSuccessStatusCode) // проверяем успешность ответа
             {
                 string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
@@ -368,7 +379,7 @@ namespace WinFormsApp1
 
         private async Task RefreshCrownTaskInfo() // метод обновления информации о рабочих
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getCurrentCrownTask");
+            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getCurrentCrownTaskDTO");
             if (response.IsSuccessStatusCode) // проверяем успешность ответа
             {
                 string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
@@ -532,7 +543,7 @@ namespace WinFormsApp1
         {
             // отправляем GET запрос
             HttpResponseMessage response =
-                await _httpClient.GetAsync("api/workers/GetWorkers");
+                await _httpClient.GetAsync("api/workers/GetWorkersDTO");
 
             // если запрос успешен
             if (response.IsSuccessStatusCode)

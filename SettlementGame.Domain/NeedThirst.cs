@@ -26,22 +26,43 @@ namespace SettlementGame.Domain
         {
             get { return -0.1; }
         }
-
-        public override bool ChangePerTick(DataWorld world)
+        public override double GetIncreaseChangePerTick()
         {
-                        ChangeAmount(0.2);
+            return 0.2;
+        }
+        public override bool ShouldTryToSatisfy()
+        {
+            if (Amount > 0) { return true; } else { return false; }
+        }
 
-            foreach (AnyResource water in world.SettlementResourceList)
+        //public override bool ChangePerTick(List<Resource> resourceList)
+        //{
+        //                ChangeAmount(0.2);
+
+        //    foreach (Resource water in resourceList)
+        //    {
+        //        if (water.ResourceCategory==ResourceCategory.Water && water.TryToConsume(3))
+        //        {
+        //            ChangeAmount(-0.3);
+        //            return true;
+        //        }
+
+        //    }
+        //    return false;
+        //}
+
+        public override bool TryToSaticfy(Worker worker, List<Resource> resourceList)
+        {
+            foreach (Resource water in resourceList)
             {
-                if (water.ResourceCategory==ResourceCategory.Water && water.TryToConsume(3))
+                if (water.ResourceCategory == ResourceCategory.Water && water.TryToConsume(3))
                 {
-                    ChangeAmount(-0.3);
+                    ChangeAmount(-0.2);
                     return true;
                 }
-
             }
             return false;
         }
-        
+
     }
 }
