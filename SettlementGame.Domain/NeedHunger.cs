@@ -45,7 +45,7 @@ namespace SettlementGame.Domain
             if (Amount > 0) { return true; } else { return false; }
         }
 
-        public override int Cost { get; set; } = 1;
+        public override int Cost { get; set; } = -1;
         private double _loyalityAmount;
 
         public override double LoyalityAmount

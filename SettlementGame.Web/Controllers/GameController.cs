@@ -23,13 +23,16 @@ namespace SettlementGame.Web.Controllers
         private readonly WorldService _worldService;
         private readonly IHostApplicationLifetime _lifetime;
         private readonly GameDbContext _dbContext;
-        private string JwtKey { get; set; }
-        public GameController(DataWorld world, WorldService worldService, IHostApplicationLifetime lifetime, GameDbContext dbContext)
+        private readonly WebAuthService _webAuthService;
+        //private string JwtKey { get; set; }
+        
+        public GameController(DataWorld world, WorldService worldService, IHostApplicationLifetime lifetime, GameDbContext dbContext, WebAuthService webAuthService)
         {
             this._world = world;
             this._worldService = worldService;
             this._lifetime = lifetime; // для завершения раьоты сервера ASP
             this._dbContext = dbContext;//для считывания логина-пароля из БД
+            this._webAuthService = webAuthService;
         }
         //это пока уберем за ненадобностью
         //[HttpGet]getSettlementresourcesList
@@ -146,46 +149,50 @@ namespace SettlementGame.Web.Controllers
         [HttpPost("login")]
         public IActionResult Login(LoginRequest request)
         {
-            JwtKey = Program.JwtKey;
+            //_webAuthService = new WebAuthService(_dbContext);
+            string jwt=_webAuthService.Authenticate(request);
+            if (jwt == null) { return Unauthorized(); }
+            else { return Ok(jwt); }
+            //JwtKey = Program.JwtKey;
 
-            UserEntity user =_dbContext.Users.FirstOrDefault(x => x.Email == request.Email);
+            //UserEntity user =_dbContext.Users.FirstOrDefault(x => x.Email == request.Email);
 
-            if (user == null)
-            {
-                return Unauthorized();
-            }
-
-            bool passwordCorrect = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
-
-            if (!passwordCorrect)
-            {
-                return Unauthorized();
-            }
-            //переходим на хранение в БД
-            //if (request.Email == "Admin" && request.Password == "321")
+            //if (user == null)
             //{
-            //return Ok("token321");
-            var claims = new[]
-        {
-            new Claim(ClaimTypes.Email, request.Email),
-            new Claim(ClaimTypes.Role, user.Role)            
-            //new Claim(ClaimTypes.Role, "Admin")
-        };
+            //    return Unauthorized();
+            //}
 
-                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtKey));
-                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            //bool passwordCorrect = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
 
-                var token = new JwtSecurityToken(
-                    issuer: "game",
-                    audience: "game_client",
-                    claims: claims,
-                    expires: DateTime.Now.AddHours(9),//не будем выбивать человека каждые 4 часа
-                    signingCredentials: creds
-                );
+            //if (!passwordCorrect)
+            //{
+            //    return Unauthorized();
+            //}
+            ////переходим на хранение в БД
+            ////if (request.Email == "Admin" && request.Password == "321")
+            ////{
+            ////return Ok("token321");
+            //var claims = new[]
+            //    {
+            //new Claim(ClaimTypes.Email, request.Email),
+            //new Claim(ClaimTypes.Role, user.Role)            
+            ////new Claim(ClaimTypes.Role, "Admin")
+            //    };
 
-                var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+            //        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtKey));
+            //    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            //    var token = new JwtSecurityToken(
+            //        issuer: "game",
+            //        audience: "game_client",
+            //        claims: claims,
+            //        expires: DateTime.Now.AddHours(9),//не будем выбивать человека каждые 4 часа
+            //        signingCredentials: creds
+            //    );
+
+            //    var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
                 
-                return Ok(jwt);
             }
             //if (request.Email == "User" && request.Password == "123")
             //{

@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -75,18 +76,18 @@ namespace WinFormsApp1
             if (response.IsSuccessStatusCode)
             {
                 // получаем JSON строку
-                string json =
-                    await response.Content.ReadAsStringAsync();
+                //string json =
+                //    await response.Content.ReadAsStringAsync();
 
-                // превращаем JSON в список объектов
-                List<WorldService.BuildingDto>? buildings =
-                    JsonSerializer.Deserialize<List<WorldService.BuildingDto>>(
-                        json,
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        });
-
+                //// превращаем JSON в список объектов
+                //List<WorldService.BuildingDto>? buildings =
+                //    JsonSerializer.Deserialize<List<WorldService.BuildingDto>>(
+                //        json,
+                //        new JsonSerializerOptions
+                //        {
+                //            PropertyNameCaseInsensitive = true
+                //        });
+                List<BuildingDto>? buildings = await response.Content.ReadFromJsonAsync<List<BuildingDto>>();
                 // защита от null
                 if (buildings == null)
                 {
@@ -231,32 +232,44 @@ namespace WinFormsApp1
 
             if (response.IsSuccessStatusCode) // проверяем успешность ответа
             {
-                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
-                //временно полный json вид
-                textBuildingsState.Text = json;
+                List<BuildingDto>? buildings = await response.Content.ReadFromJsonAsync<List<BuildingDto>>();
 
-                JsonDocument buildingsTreeContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
-                //JsonDocument — это контейнер дерева
-                JsonElement buildingsTree = buildingsTreeContainer.RootElement; // корневой элемент (он же массив)
+                if (buildings == null)
+                {
+                    textBuildingsState.Text = "No buildings";
+                    return;
+                }
+
+                //string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
+                ////временно полный json вид
+                //textBuildingsState.Text = json;
+
+                //JsonDocument buildingsTreeContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
+                ////JsonDocument — это контейнер дерева
+                //JsonElement buildingsTree = buildingsTreeContainer.RootElement; // корневой элемент (он же массив)
 
                 textBuildingsState.Clear();
 
-                foreach (JsonElement building in buildingsTree.EnumerateArray()) // идем по всем элементам массива
+                //foreach (JsonElement building in buildingsTree.EnumerateArray()) // идем по всем элементам массива
+                foreach (BuildingDto building in buildings)
                 {
-                    int id = building.GetProperty("id").GetInt32(); // внутри JSON найди поле id и т.д.
-                    int buildingTypeValue = building.GetProperty("buildingType").GetInt32();
-
-                    BuildingType buildingType = (BuildingType)buildingTypeValue;
-                    //чтобы , когда нет рабочего не шло исключение, ставим рабочего-пустышку
-                    int assignedWorkerId = -1;
+                    int?id = building.Id;
+                    //int id = building.GetProperty("id").GetInt32(); // внутри JSON найди поле id и т.д.
+                    //int buildingTypeValue = building.GetProperty("buildingType").GetInt32();
+                    //int buildingTypeValue= (int)building.BuildingType;
+                    //BuildingType buildingType = (BuildingType)buildingTypeValue;
+                    BuildingType buildingType= building.BuildingType;
+                    //чтобы , когда нет рабочего, не шло исключение, ставим рабочего-пустышку
+                    int?assignedWorkerId = -1;
                     //и проверяем есть ли рил
-                    if (building.TryGetProperty("assignedWorkerId", out JsonElement workerIdElement))
-                    {
-                        if (workerIdElement.ValueKind == JsonValueKind.Number)
-                        {
-                            assignedWorkerId = workerIdElement.GetInt32();
-                        }
-                    }
+                    if (building.AssignedWorkerId != -1) { assignedWorkerId = building.AssignedWorkerId; }
+                    //if (building.TryGetProperty("assignedWorkerId", out JsonElement workerIdElement))
+                    //{
+                    //    if (workerIdElement.ValueKind == JsonValueKind.Number)
+                    //    {
+                    //        assignedWorkerId = workerIdElement.GetInt32();
+                    //    }
+                    //}
                     //int x = building.GetProperty("x").GetInt32();
                     //int y = building.GetProperty("y").GetInt32();
 
@@ -682,8 +695,7 @@ namespace WinFormsApp1
             {
 
                 // получаем JSON строку
-                string json =
-                        await response.Content.ReadAsStringAsync();
+                string json = await response.Content.ReadAsStringAsync();
 
                 // превращаем JSON в список объектов
                 List<WorldService.BuildingDto>? buildings =
@@ -944,34 +956,51 @@ namespace WinFormsApp1
         }
 
         private async Task RefreshTicksTillNewWorkers() // метод обновления информации о рабочих
-        {
+        {   
+
             HttpResponseMessage response = await _httpClient.GetAsync("api/workers/GetTicksTillNewWorkers"); // запрос к API
-
-            if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            if (!response.IsSuccessStatusCode)
             {
-                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
-
-                JsonDocument WorkerOrderContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
-                JsonElement WorkerOrderTree = WorkerOrderContainer.RootElement; // корневой элемент (он же массив)
-
-                textTicksTillNewWorkers.Clear();
-                //textTicksTillNewWorkers.Text = json;
-
-                foreach (JsonElement workerOrder in WorkerOrderTree.EnumerateArray()) // идем по всем элементам массива
-                {
-                    int amount = workerOrder.GetProperty("amount").GetInt32(); // внутри JSON найди поле id и т.д.
-                    int ticks = workerOrder.GetProperty("ticksLeft").GetInt32(); //очень тупо искать по имени, которое 10 раз поменяется, но оставим пока так
-
-                    //textWorkersState.AppendText($"Id:{id} X:{x} Y:{y} Alive:{isAlive}\r\n"); // выводим строку
-                    textTicksTillNewWorkers.AppendText($"{amount} in:{ticks}\r\n");
-
-                    //}
-                }
+                textWorkersState.Text = response.StatusCode.ToString();
+                return;
             }
-            else // если ошибка запроса
+
+            List<WorkerOrderDTO>? orders = await response.Content.ReadFromJsonAsync<List<WorkerOrderDTO>>();
+            textTicksTillNewWorkers.Clear();
+
+            if (orders == null)
+                return;
+
+            foreach (WorkerOrderDTO order in orders)
             {
-                textWorkersState.Text = response.StatusCode.ToString(); // показываем код ошибки
+                textTicksTillNewWorkers.AppendText(
+                    $"{order.Amount} in:{order.TicksLeft}\r\n");
             }
+            //if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            //{
+            //    string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
+
+            //    JsonDocument WorkerOrderContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
+            //    JsonElement WorkerOrderTree = WorkerOrderContainer.RootElement; // корневой элемент (он же массив)
+
+            //    textTicksTillNewWorkers.Clear();
+            //    //textTicksTillNewWorkers.Text = json;
+
+            //    foreach (JsonElement workerOrder in WorkerOrderTree.EnumerateArray()) // идем по всем элементам массива
+            //    {
+            //        int amount = workerOrder.GetProperty("amount").GetInt32(); // внутри JSON найди поле id и т.д.
+            //        int ticks = workerOrder.GetProperty("ticksLeft").GetInt32(); //очень тупо искать по имени, которое 10 раз поменяется, но оставим пока так
+
+            //        //textWorkersState.AppendText($"Id:{id} X:{x} Y:{y} Alive:{isAlive}\r\n"); // выводим строку
+            //        textTicksTillNewWorkers.AppendText($"{amount} in:{ticks}\r\n");
+
+            //        //}
+            //    }
+            //}
+            //else // если ошибка запроса
+            //{
+            //    textWorkersState.Text = response.StatusCode.ToString(); // показываем код ошибки
+            //}
         }
 
 

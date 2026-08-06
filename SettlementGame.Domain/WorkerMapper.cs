@@ -27,7 +27,8 @@ namespace SettlementGame.Domain
             worker.Y = entity.Y;
             worker.IsAlive = entity.IsAlive;
             worker.PersonalLoyality = entity.PersonalLoyality;
-            worker.PersonalMoney= entity.PersonalMoney;
+            worker.CurrentSalary = entity.CurrentSalary;
+                worker.PersonalMoney = entity.PersonalMoney;
             //worker.info = entity.info;
 
 
@@ -35,12 +36,12 @@ namespace SettlementGame.Domain
         }
         public static WorkerEntity ToEntity(Worker domainWorker)
         {
-            
+
             //domainWorker.WorkPlace = null;
 
             return new WorkerEntity
             {
-                
+
                 X = domainWorker.X,
                 Y = domainWorker.Y,
                 //Id = domainWorker.Id,
@@ -49,11 +50,12 @@ namespace SettlementGame.Domain
                 IsEmployed = domainWorker.IsEmployed,
                 PersonalLoyality = domainWorker.PersonalLoyality,
                 PersonalMoney = domainWorker.PersonalMoney,
+                CurrentSalary = domainWorker.CurrentSalary,
                 info = domainWorker.info,
                 Hunger = domainWorker.GetNeed<NeedHunger>().Amount,
                 Thirst = domainWorker.GetNeed<NeedThirst>().Amount,
                 Alcohol = domainWorker.GetNeed<NeedAlcohol>().Amount,
-                Salary= domainWorker.GetNeed<NeedSalary>().Amount,
+                Salary = domainWorker.GetNeed<NeedSalary>().Amount,
             };
         }
     }

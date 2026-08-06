@@ -67,23 +67,27 @@ namespace SettlementGame.Domain
 
                 FireWorkerAction action = (FireWorkerAction)UsersActionsCatalog.FireWorkerAction(fireWorkerContext);
                 //context.Building = world.BuildingList.Find(x => x.Id == Id);
-                action.Execute(_world);
+                int compensation = _world.standartSalary * 3;
+                Resource resource = new Resource(ResourceType.Moneta, compensation);
+                bool isCompleted = WorldService.ChangeResourseAmount(_world, resource);
+                if (isCompleted == true)
+                {
+                    action.Execute(_world);
+                    workerEntity.WorkPlaceId = fireWorkerContext.Worker.WorkPlaceId;
 
+                    workerEntity.IsEmployed = fireWorkerContext.Worker.IsEmployed;
+
+                    buildingEntity.AssignedWorkerId = fireWorkerContext.Building.AssignedWorkerId;
+
+                    _dbContext.SaveChanges();
+
+                    return true;
+                } else return false;
                 //workerEntity = WorkerMapper.ToEntity(fireWorkerContext.Worker);
                 //_dbContext.Workers.Update(workerEntity);
                 //buildingEntity = BuildingMapper.ToEntity(fireWorkerContext.Building);
                 //_dbContext.BuildedBuildings.Update(buildingEntity);
-                workerEntity.WorkPlaceId =
-        fireWorkerContext.Worker.WorkPlaceId;
 
-                workerEntity.IsEmployed =
-                    fireWorkerContext.Worker.IsEmployed;
-
-                buildingEntity.AssignedWorkerId =
-                    fireWorkerContext.Building.AssignedWorkerId;
-                _dbContext.SaveChanges();
-
-                return true;
             }
             else return false;
         }
@@ -162,17 +166,19 @@ namespace SettlementGame.Domain
             //var worker = workerEntity; // пока без WorkerMapper
             var worker = WorkerMapper.ToDomain(workerEntity);//добавили маппер
             var building = BuildingMapper.ToDomain(buildingEntity);
+            bool isBuildingWorkerPossibleToBeFired=false;
             if (worker.WorkPlaceId == building.AssignedWorkerId) { return false; }
             if (worker.WorkPlaceId!=-1&&worker.WorkPlaceId!=null)
             {
-                FireWorker(worker.Id);
+                isBuildingWorkerPossibleToBeFired=FireWorker(worker.Id);
+                if(isBuildingWorkerPossibleToBeFired == false) { return false; }
             }
-            if (building.AssignedWorkerId != -1&& building.AssignedWorkerId !=null)
+            if (isBuildingWorkerPossibleToBeFired==true&&building.AssignedWorkerId != -1&& building.AssignedWorkerId !=null)
             {
-                FireWorker((int)building.AssignedWorkerId);
+                bool isNewBuildingWorkerPossibleToBeFired = FireWorker((int)building.AssignedWorkerId);
+                if (isNewBuildingWorkerPossibleToBeFired == false) { return false; }
             }
 
-            //todo:поправить и включить позже - done
 
             var hireWorkerContext = new HireWorkerContext(worker, building);
 

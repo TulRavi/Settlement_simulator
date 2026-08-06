@@ -53,7 +53,7 @@ namespace SettlementGame.Web.Controllers
         {
             bool result = worldService.RemoveBuilding(id);
             
-            if (result == true) { return Ok("Building was destroyed"); } else { return BadRequest(); }
+            if (result == true) { return Ok("Building was destroyed"); } else { return BadRequest("not enouth money for compensation to a worker - destroying is illegal"); }
         }
 
         // GET: BuildingController/Details/5

@@ -22,6 +22,8 @@ namespace SettlementGame.Domain
             set { workPlaceId = (int)value; }
         }
 
+        public int?CurrentSalary;
+
         //public int?WorkPlaceId { get; set; }
         private string InternalId { get; set; }
         public List<Need> workerNeeds;
@@ -30,12 +32,77 @@ namespace SettlementGame.Domain
         [NotMapped] // SQLite полностью проигнорирует это свойство
         public string ? info => $"{Id} workPlceId {WorkPlaceId}";
 
+        private double personalLoyality=0.5;
+
+        public double PersonalLoyality
+        {
+            get { return personalLoyality; }
+            set { personalLoyality = Math.Clamp(value, 0, 1); }
+        }
+        public void ChangePersonalLoyality(double value)
+        {
+            personalLoyality = PersonalLoyality + value;
+        }
+
+
+        public static List<Need> CreateDefaultNeeds()
+        {
+            List<Need> workerNeeds = new List<Need>();
+            workerNeeds.Add(new NeedHunger());
+            workerNeeds.Add(new NeedThirst());
+            workerNeeds.Add(new NeedAlcohol());
+            workerNeeds.Add(new NeedSalary());
+            return workerNeeds;
+        }
+        
+
+        public Worker(List<Need> wokerNeeds)
+        {
+            this.workerNeeds = wokerNeeds;           
+        }
+
+        public Worker()
+        {
+            workerNeeds = new List<Need>();
+        }
+
+        private bool isAlive;
+        public bool IsAlive
+        {
+            get { return isAlive; }
+            set { isAlive = value;
+                //if(IsAlive = false) { workerIsDead(как передать аргумент в свойство); }
+            }
+        }
+
+        public bool IsEmployed => WorkPlaceId != null && WorkPlaceId != -1;
+        //private Building? workPlace;
+
+        public Building? WorkPlace { get;  set; }
+
+        internal void AssignWithWorkPlace(Building building)
+        {
+            WorkPlace = building;
+            WorkPlaceId = (int)building.Id;
+            //building.HasEmployee = true;
+            
+        }
+
+        internal void UnassignWithWorkPlace()
+        {
+            WorkPlace = null;
+            WorkPlaceId = -1;
+        }
+
+        //пока не исп-ся:
         private TimeSpan startWorkingTime;
 
         public TimeSpan StartWorkingTime
         {
             get { return startWorkingTime; }
-            set { startWorkingTime = value;
+            set
+            {
+                startWorkingTime = value;
                 //CurrentTimeForm = "works";
 
             }
@@ -44,7 +111,8 @@ namespace SettlementGame.Domain
         public TimeSpan EndWorkingTime
         {
             get { return endWorkingTime; }
-            set {
+            set
+            {
                 endWorkingTime = value;
                 //CurrentTimeForm = "works";
                 startFreeTime = endWorkingTime.Add(TimeSpan.FromMinutes(1));
@@ -63,7 +131,8 @@ namespace SettlementGame.Domain
         protected TimeSpan StartFreeTime
         {
             get { return startFreeTime; }
-            set {
+            set
+            {
                 startFreeTime = value;
                 //startFreeTime = endWorkingTime.Add(TimeSpan.FromMinutes(1));
                 //CurrentTimeForm = "rests";
@@ -74,7 +143,8 @@ namespace SettlementGame.Domain
         protected TimeSpan EndFreeTime
         {
             get { return endFreeTime; }
-            set {
+            set
+            {
                 endFreeTime = value;
                 //endFreeTime = StartSleepTime.Add(TimeSpan.FromMinutes(-1));
 
@@ -85,7 +155,8 @@ namespace SettlementGame.Domain
         protected TimeSpan StartSleepTime
         {
             get { return startSleepTime; }
-            set {
+            set
+            {
                 startSleepTime = value;
                 //startSleepTime = startWorkingTime.Add(TimeSpan.FromHours(-8));
                 //CurrentTimeForm = "sleeps";
@@ -112,72 +183,9 @@ namespace SettlementGame.Domain
         public int X { get; set; }
         public int Y { get; set; }
 
-        
-        private double personalLoyality=0.5;
-
-        public double PersonalLoyality
-        {
-            get { return personalLoyality; }
-            set { personalLoyality = Math.Clamp(value, 0, 1); }
-        }
-        public void ChangePersonalLoyality(double value)
-        {
-            personalLoyality = PersonalLoyality + value;
-        }
-
-        public static List<Need> CreateDefaultNeeds()
-        {
-            List<Need> workerNeeds = new List<Need>();
-            workerNeeds.Add(new NeedHunger());
-            workerNeeds.Add(new NeedThirst());
-            workerNeeds.Add(new NeedAlcohol());
-            workerNeeds.Add(new NeedSalary());
-            return workerNeeds;
-        }
-        
-
-        public Worker(List<Need> wokerNeeds)
-        {
-            this.workerNeeds = wokerNeeds;           
-        }
-
-        public Worker()
-        {
-            workerNeeds = new List<Need>();
-        }
+        //конец неисп.свойств
 
 
-
-        private bool isAlive;
-        public bool IsAlive
-        {
-            get { return isAlive; }
-            set { isAlive = value;
-                //if(IsAlive = false) { workerIsDead(как передать аргумент в свойство); }
-            }
-        }
-
-        
-
-
-        public bool IsEmployed => WorkPlaceId != null || WorkPlaceId != -1;
-        //private Building? workPlace;
-
-        public Building? WorkPlace { get;  set; }
-
-        internal void AssignWithWorkPlace(Building building)
-        {
-            WorkPlace = building;
-            WorkPlaceId = (int)building.Id;
-            //building.HasEmployee = true;
-            
-        }
-
-        internal void UnassignWithWorkPlace()
-        {
-            WorkPlace = null;
-            WorkPlaceId = -1;
-        }
         public void RecalculateNeedsState(Worker worker, List<Resource> resourceList) 
         {   foreach(Need need in workerNeeds)
             {   //пошагово
@@ -195,7 +203,7 @@ namespace SettlementGame.Domain
                 if (need is NeedSalary && worker.IsEmployed)
                 {
                     bool resultSalary = need.TryToSaticfy(worker, resourceList);
-                    if (resultSalary == false) { worker.ChangePersonalLoyality(need.LoyalityAmount); } else { worker.ChangeMoneyAmount(need.Cost); }
+                    if (resultSalary == false) { worker.ChangePersonalLoyality(need.LoyalityAmount); } else { worker.ChangeMoneyAmount((int)worker.CurrentSalary); }
                     continue;
                 }
                 //3 смотрим, нужнается ли в удовлетворении на текущем тике и есть ли деньги

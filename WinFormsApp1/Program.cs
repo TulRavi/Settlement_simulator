@@ -20,7 +20,7 @@ namespace WinFormsApp1
             client.BaseAddress = new Uri("http://localhost:5126/");
             AuthService authService = new AuthService(client);
             // создаём сервис авторизации
-            AuthForm authForm = new AuthForm(authService);
+            AuthenticationClient authForm = new AuthenticationClient(authService);
             // создаём форму логина
             if (authForm.ShowDialog() == DialogResult.OK)
             // показываем модально (пока не залогинился — дальше нельзя)

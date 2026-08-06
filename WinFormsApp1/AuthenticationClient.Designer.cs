@@ -1,6 +1,6 @@
 ﻿namespace WinFormsAppUI
 {
-    partial class AuthForm
+    partial class AuthenticationClient
     {
         /// <summary>
         /// Required designer variable.

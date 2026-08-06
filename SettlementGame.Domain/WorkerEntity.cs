@@ -38,6 +38,8 @@ namespace SettlementGame.Domain
             set { personalLoyality = Math.Clamp(value, 0, 1); }
         }
         public int PersonalMoney { get; set; }
+
+        public int?CurrentSalary { get; set; }
         public string info { get; set; }
     }
 }

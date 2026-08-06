@@ -69,7 +69,7 @@ namespace SettlementGame.Domain
             AddOrUpdateItem(ResourceType.Wood, 40);
             AddOrUpdateItem(ResourceType.Stone, 40);
             AddOrUpdateItem(ResourceType.Gold, 10);
-            AddOrUpdateItem(ResourceType.Moneta, 100);
+            AddOrUpdateItem(ResourceType.Moneta, 500);
             AddOrUpdateItem(ResourceType.Psheniza, 10);
             AddOrUpdateItem(ResourceType.Hmel, 10);
             
@@ -158,6 +158,7 @@ namespace SettlementGame.Domain
                 Worker worker = new Worker(workerNeeds);//создан рабочий с заданными потребностями
                 worker.IsAlive = true;
                 worker.WorkPlaceId = -1;
+                worker.CurrentSalary = world.standartSalary;
                 
                 //world.WorkersList.Add(worker);//рабочий с заданнами потербностями добавлен в лист рабочих
                 

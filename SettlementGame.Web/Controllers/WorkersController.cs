@@ -119,7 +119,7 @@ namespace SettlementGame.Web.Controllers
             {
                 return Ok($"Worker ID {hireWorkerRequest.WorkerId} workPlace was changed");
             }
-            else { return NotFound(); }
+            else { return BadRequest("impossible to execute-check money amount"); }
         }
 
         

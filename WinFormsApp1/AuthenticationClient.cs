@@ -10,7 +10,7 @@ using System.Windows.Forms;
 
 namespace WinFormsAppUI
 {
-    public partial class AuthForm : Form
+    public partial class AuthenticationClient : Form
     {
         private readonly AuthService _authService;
         // сервис авторизации
@@ -18,7 +18,7 @@ namespace WinFormsAppUI
         public string Token { get; private set; }
         // токен доступен снаружи, но записывается только внутри
 
-        public AuthForm(AuthService authService)
+        public AuthenticationClient(AuthService authService)
         {
             InitializeComponent();
             // создаёт UI

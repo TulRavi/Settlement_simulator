@@ -9,11 +9,8 @@ using static SettlementGame.Domain.WorldService;
 
 
 namespace SettlementGame.Domain
-{   //CreateWorld
+{   
 
-//GetWorld
-
-//ResetWorld
     public class WorldService
     {
 
@@ -93,6 +90,13 @@ namespace SettlementGame.Domain
                 workerDtoList.Add(workerDto);
             }
             return workerDtoList;
+        }
+
+        public class WorkerOrderDTO
+        {
+            public int Amount { get; set; }
+            public int TicksLeft { get; set; }
+
         }
 
         public class BuildingDto
@@ -267,19 +271,25 @@ namespace SettlementGame.Domain
             //DestroyBuildingContext destroyBuildingContext = new DestroyBuildingContext(building, _workerEmploymentService);
             if (building.HasEmployee == true&&building.AssignedWorkerId!=null)
             {
-                _workerEmploymentService.FireWorker((int)building.AssignedWorkerId);
+                bool isPossibleToBeFired=_workerEmploymentService.FireWorker((int)building.AssignedWorkerId);
+                if (isPossibleToBeFired == true)
+                {
+                    _dbContext.BuildedBuildings.Remove(entity);
+                    _dbContext.SaveChanges();
+                    return true;
+                }
+                else return false;
                 //DestroyBuildingContext.Building.
                 //Program.TempFireWorkerDirectly(world, DestroyBuildingContext.Building, DestroyBuildingContext.Building.AssignedWorker);
             }
-            
+            else return false;
+
             //DestroyBuildingAction action = (DestroyBuildingAction)UsersActionsCatalog.DestroyBuildingAction(destroyBuildingContext);
             //context.Building = world.BuildingList.Find(x => x.Id == Id);
             //action.Execute(world);
             //entity = BuildingMapper.ToEntity(destroyBuildingContext.DestroyingBuilding,WorkerEmploymentService);
 
-            _dbContext.BuildedBuildings.Remove(entity);
-            _dbContext.SaveChanges();
-            return true;
+
         }
 
         public void PrintAllPossibleBuildings(DataWorld world)
@@ -458,9 +468,16 @@ namespace SettlementGame.Domain
         }
 
         
-        public static void ChangeResourseAmount(DataWorld world, Resource resource)
+        public static bool ChangeResourseAmount(DataWorld world, Resource resource)
         {
-            world.SettlementResourceList.Find(x => x.ResourceType == resource.ResourceType).Amount -= resource.Amount;
+            Resource selectedResource=world.SettlementResourceList.Find(x => x.ResourceType == resource.ResourceType);
+            if ((selectedResource.Amount - resource.Amount) > 0)
+            {
+                selectedResource.Amount -= resource.Amount;
+                return true;
+            }
+            else return false;
+            ;
         }
 
         

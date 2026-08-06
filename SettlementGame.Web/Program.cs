@@ -80,6 +80,7 @@ namespace SettlementGame.Web
             builder.Services.AddScoped<WorldCreator>();
             builder.Services.AddScoped<WorkerEmploymentService>();
             builder.Services.AddScoped<WorldService>();
+            builder.Services.AddScoped<WebAuthService>();
 
             var app = builder.Build();//создали сервер
             using (var scope = app.Services.CreateScope())
