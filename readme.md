@@ -25,6 +25,12 @@ the simulation progresses through game ticks.
 ![Login screen](docs/images/login.png)
 ![Main window screen](docs/images/main.png)
 
+## Demo Accounts
+
+The following account is available for demonstration purposes:
+Login:Admin
+Password:321
+
 ## Features
 
 - Colony / worker-camp simulation based on game ticks

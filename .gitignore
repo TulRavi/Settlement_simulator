@@ -22,6 +22,8 @@ obj/
 
 # Development secrets
 secrets.json
+jwt.key
+**/jwt.key
 
 # Logs
 *.log

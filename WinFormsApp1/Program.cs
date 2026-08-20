@@ -9,10 +9,12 @@ namespace WinFormsApp1
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static async Task Main()
         {
             // Initialize the Windows Forms application.
             ApplicationConfiguration.Initialize();
+
+
 
             // Create one HttpClient for the entire application.
             // The same client is used for authentication and all subsequent API requests.
@@ -23,6 +25,65 @@ namespace WinFormsApp1
 
             // Set the base address of the Web API.
             client.BaseAddress = new Uri("http://localhost:5126/");
+
+            // The Web server process may have started, but ASP.NET Core
+            // may still be initializing.
+            //
+            // Therefore Process.Start() alone is not enough.
+            // We repeatedly call the health endpoint until the server
+            // actually starts accepting HTTP requests.
+            bool serverReady = false;
+
+            // Try for up to 30 seconds.
+            const int maxAttempts = 30;
+
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    // Health endpoint does not require authentication.
+                    HttpResponseMessage response =
+                        await client.GetAsync("api/health");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        serverReady = true;
+                        break;
+                    }
+                }
+                catch (HttpRequestException)
+                {
+                    // The server has probably not started listening yet.
+                    //
+                    // This is expected during the first few attempts,
+                    // so we simply wait and try again.
+                }
+                catch (TaskCanceledException)
+                {
+                    // The request timed out.
+                    //
+                    // The server may still be starting, so continue
+                    // trying until the maximum number of attempts
+                    // has been reached.
+                }
+
+                // Wait one second before the next health check.
+                await Task.Delay(1000);
+            }
+
+
+            // If the Web API did not become available within the
+            // allowed time, there is no point in showing the login form.
+            if (!serverReady)
+            {
+                MessageBox.Show(
+                    "The Web server could not be started or did not become ready within 30 seconds.",
+                    "SettlementGame",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+                return;
+            }
 
             // Create the authentication service.
             // AuthService is responsible for sending Login requests to the Web API.
@@ -50,5 +111,6 @@ namespace WinFormsApp1
                 Application.Run(new MainForm(client));
             }
         }
+
     }
 }

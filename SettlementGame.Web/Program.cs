@@ -14,20 +14,46 @@ namespace SettlementGame.Web
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            var JwtKey = builder.Configuration["Jwt:Key"];
+            //var JwtKey = builder.Configuration["Jwt:Key"];
+            //if (string.IsNullOrWhiteSpace(JwtKey))
+            //{
+            //    throw new InvalidOperationException(
+            //        "JWT key is not configured.");
+            //}
+
+            //making new jwt-configuration for easy runnung in public version:
+            //1) look Jwt:Key in user secrets(for dev, real file location: %APPDATA%\Microsoft\UserSecrets)
+            //2) look in jwt.key and create a new one, if it does not exists.
+
+            string? JwtKey = builder.Configuration["Jwt:Key"];
+
             if (string.IsNullOrWhiteSpace(JwtKey))
             {
-                throw new InvalidOperationException(
-                    "JWT key is not configured.");
+                string jwtKeyPath = Path.Combine(
+                    AppContext.BaseDirectory,
+                    "jwt.key");
+
+                if (File.Exists(jwtKeyPath))
+                {
+                    JwtKey = File.ReadAllText(jwtKeyPath).Trim();
+                }
+                else
+                {
+                    byte[] keyBytes = new byte[32];
+                    System.Security.Cryptography.RandomNumberGenerator.Fill(keyBytes);
+
+                    JwtKey = Convert.ToHexString(keyBytes).ToLowerInvariant();
+
+                    File.WriteAllText(jwtKeyPath, JwtKey);
+                }
             }
-            builder.WebHost.UseUrls(
-                "http://localhost:5126"
-            );
+            builder.Configuration["Jwt:Key"] = JwtKey;
+            builder.WebHost.UseUrls("http://localhost:5126");
 
 
-            
+
             // DATABASE
-            
+
 
             // GameDbContext is registered as Scoped.
             //
@@ -36,13 +62,15 @@ namespace SettlementGame.Web
             //
             // Scoped is the standard lifetime for Entity Framework Core
             // DbContext because it keeps one unit of work within a request.
-            builder.Services.AddDbContext<GameDbContext>(
-                options => options.UseSqlite("Data Source=game.db"));
-
-
             
+            //added path to be sure, that the file will be created in the correct folder
+            string databasePath = Path.Combine(AppContext.BaseDirectory,"game.db");
+            //builder.Services.AddDbContext<GameDbContext>(options => options.UseSqlite("Data Source=game.db"));
+            builder.Services.AddDbContext<GameDbContext>(options => options.UseSqlite($"Data Source={databasePath}"));
+
+
             // API
-            
+
 
             // Registers API controllers.
             builder.Services.AddControllers();
@@ -245,6 +273,10 @@ namespace SettlementGame.Web
                     .GetRequiredService<GameDbContext>();
 
                 // Creates the database and its tables if they do not exist.
+
+                //Console.WriteLine($"DATABASE: {databasePath}");
+                //Console.WriteLine($"DATABASE EXISTS: {File.Exists(databasePath)}");
+                //Console.WriteLine($"USERS COUNT BEFORE SEED: {db.Users.Count()}");
                 db.Database.EnsureCreated();
 
                 // Seed initial users if the database does not contain
