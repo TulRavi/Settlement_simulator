@@ -74,7 +74,7 @@
 
         #endregion
 
-        private TextBox loginBtn;
+        private TextBox LoginBtn;
         private TextBox txtPassword;
         private Button btnLogin;
         private TextBox txtLogin;

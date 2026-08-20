@@ -29,7 +29,7 @@ namespace SettlementGame.Domain
         }
 
         bool CrownTaskIsCompleted = false;
-        //private CrownsTask currentCrownTask;
+       
         private CrownTask currentCrownTask;
 
         public CrownTask CurrentCrownTask
@@ -38,10 +38,6 @@ namespace SettlementGame.Domain
             set { currentCrownTask = value; }
         }
 
-
-
-        //public int NextWorkerId { get; set; }
-        //public int NextId { get; set; }
         public DataWorld()
         {
             GameTime = new DateTime(1, 1, 1);
@@ -59,14 +55,14 @@ namespace SettlementGame.Domain
         bool IsGameLost => CrownLoyaity <= 0;
         bool IsGameWon => CrownLoyaity >= 1;
 
-        //public int tempTpCheck = 0;
+        
 
-        private double peopleLoyality;//=worker.PesonalLoyality/WorkersList.Count()
+        private double peopleLoyalty;//=worker.PesonalLoyalty/WorkersList.Count()
 
-        public double Peopleloyality
+        public double PeopleLoyalty
         {
-            get { return peopleLoyality; }
-            set { peopleLoyality = Math.Clamp(value, 0, 1); }
+            get { return peopleLoyalty; }
+            set { peopleLoyalty = Math.Clamp(value, 0, 1); }
         }
 
         public double denominator { get; set; }

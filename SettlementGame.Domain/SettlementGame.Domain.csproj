@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <Compile Remove="Resource.cs" />
+    <Compile Remove="TickAction.cs" />
+    <Compile Remove="TickContext.cs" />
   </ItemGroup>
 
   <ItemGroup>

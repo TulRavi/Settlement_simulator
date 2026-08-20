@@ -27,11 +27,11 @@ namespace SettlementGame.Domain
             return 0.2;
         }
 
-        public override bool TryToSaticfy(Worker worker, List<Resource> resourceList)
+        public override bool TryToSatisfy(Worker worker, List<Resource> resourceList)
         {
             foreach (Resource food in resourceList)
             {
-                if (food.ResourceCategory == ResourceCategory.Food && food.TryToConsume(1)) //нужда отправляет запрос на потребление ресурсу
+                if (food.ResourceCategory == ResourceCategory.Food && food.TryToConsume(1)) //A demand sends a request to consume a resource
                 {
                     ChangeAmount(-0.2);
                     return true;
@@ -46,39 +46,13 @@ namespace SettlementGame.Domain
         }
 
         public override int Cost { get; set; } = -1;
-        private double _loyalityAmount;
+        private double _LoyaltyAmount;
 
-        public override double LoyalityAmount
+        public override double LoyaltyAmount
         {
             get { return -0.05; }
         }
 
-        //public override bool ChangePerTick(List<Resource> resourceList) //
-        //{
-        //    ChangeAmount(0.1);
-
-        //    foreach (Resource food in resourceList)
-        //    {
-        //        if (food.ResourceCategory == ResourceCategory.Food && food.TryToConsume(1)) //нужда отправляет запрос на потребление ресурсу
-        //        {
-        //            ChangeAmount(-0.2);
-        //            return true;
-        //        }
-
-        //    }
-        //    return false;
-        //}
-
-        //set => throw new NotImplementedException(); }
-
-        //    public override double delta
-        //    {   if(resources.Food>=1){
-        //        resources.Food=resources.Food-1;
-        //        get{return 0.0}
-
-        //}else
-        //get { return 0.1; }
-        //    }
 
 
     }

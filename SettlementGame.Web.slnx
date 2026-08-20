@@ -1,5 +1,8 @@
 <Solution>
   <Folder Name="/Элементы решения/">
+    <File Path="docs/images/login.png" />
+    <File Path="docs/images/main.png" />
+    <File Path="readme.md" />
     <File Path="SettlementGame/PlansAndComments.txt" />
   </Folder>
   <Project Path="SettlementGame.Domain/SettlementGame.Domain.csproj" />

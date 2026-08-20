@@ -8,20 +8,20 @@ namespace SettlementGame.Domain
 {
     public enum BuildingType
     {
-            DoskaMakery,
-            KirpichMakery,
-            GoldMakery,
-            MonetaMakery,
+            Sawmill,
+            Brickworks,
+            GoldMine,
+            Mint,
             //Tavern,
-            BeerMakery,
-            MeatMakery,
-            BerriesMakery,
-            CleanWater,
-            WoodMakery,
-            StoneMakery,
-            WineMakery,
-            PshenizaMakery,
-            HmelMakery
+            Brewery,
+            Hunter,
+            BerryGathery,
+            WaterWell,
+            LoggingCamp,
+            StoneQuarry,
+            Winery,
+            WheatFarm,
+            HopFarm
 
     }
     

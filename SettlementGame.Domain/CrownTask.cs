@@ -9,24 +9,17 @@ namespace SettlementGame.Domain
     {
         public Resource Resource { get; set; }
         public int NumberOfTicks { get; set; }
-        public double LoyalityCounter { get; set; }
+        public double LoyaltyCounter { get; set; }
 
         [System.Text.Json.Serialization.JsonIgnore]
         private GameDbContext _dbContext;
 
-        
-        //private GameDbContext _dbContext;
-        //public GameDbContext DbContext
-        //{
-        //    get => _dbContext;
-        //    set => _dbContext = value;
-        //}
 
-        public CrownTask(Resource resource,int numberOfTicks,double loyalityCounter)
+        public CrownTask(Resource resource,int numberOfTicks,double LoyaltyCounter)
         {
             Resource = resource;               
             NumberOfTicks = numberOfTicks;     
-            LoyalityCounter = loyalityCounter; 
+            LoyaltyCounter = LoyaltyCounter; 
             
         }
         public CrownTask() { }

@@ -20,7 +20,7 @@ namespace SettlementGame.Domain
         }
 
         public override int Cost { get; set; } = 0;
-        public override double LoyalityAmount
+        public override double LoyaltyAmount
         {
             get { return -0.1; }
         }
@@ -29,20 +29,12 @@ namespace SettlementGame.Domain
             return 1;
         }
 
-        public override bool TryToSaticfy(Worker worker, List<Resource> resourceList)
+        public override bool TryToSatisfy(Worker worker, List<Resource> resourceList)
         {
-            Resource selectedResource = resourceList.Find(x => x.ResourceType == ResourceType.Moneta);
+            Resource selectedResource = resourceList.Find(x => x.ResourceType == ResourceType.Coin);
             bool isPossibleToConsume=selectedResource.TryToConsume((int)worker.CurrentSalary);
             if (isPossibleToConsume == true) { return true; } else { return false; }
-            //foreach (Resource moneta in resourceList)
-            //{
-            //    if (moneta.ResourceCategory == ResourceCategory.Money && moneta.TryToConsume(Cost))
-            //    {
-            //        ChangeAmount(-0.1);
-            //        return true;
-            //    }
-            //}
-            //return false;
+            
         }
     }
 }

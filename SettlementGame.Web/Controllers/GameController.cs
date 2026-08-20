@@ -1,136 +1,84 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using SettlementGame.Domain;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace SettlementGame.Web.Controllers
 {
     [ApiController]
-
     [Route("api/world")]
-
-    
     public class GameController : ControllerBase
     {
         private readonly DataWorld _world;
         private readonly WorldService _worldService;
         private readonly IHostApplicationLifetime _lifetime;
-        private readonly GameDbContext _dbContext;
         private readonly WebAuthService _webAuthService;
-        //private string JwtKey { get; set; }
-        
-        public GameController(DataWorld world, WorldService worldService, IHostApplicationLifetime lifetime, GameDbContext dbContext, WebAuthService webAuthService)
+
+        public GameController(
+            DataWorld world,
+            WorldService worldService,
+            IHostApplicationLifetime lifetime,
+            WebAuthService webAuthService)
         {
             this._world = world;
             this._worldService = worldService;
-            this._lifetime = lifetime; // для завершения раьоты сервера ASP
-            this._dbContext = dbContext;//для считывания логина-пароля из БД
+            this._lifetime = lifetime; //Used to control the lifetime of the ASP.NET Core application.
             this._webAuthService = webAuthService;
         }
-        //это пока уберем за ненадобностью
-        //[HttpGet]getSettlementresourcesList
-        //public ActionResult GetTime()
-        //{
-        //    //string gameAndWorkingTime = $"\"gameTime\":{world.GameTime}, \n \"workingHours\":{world.startWorkingDay}-{world.endWorkingDay}";
-        //    var response = new
-        //    {
-        //        gameTime = world.GameTime,
-        //        workingHours = $"{world.startWorkingDay}-{world.endWorkingDay}"
-        //    };
-        //    return Ok(response);
-        //}
-        [HttpGet("getSettlementresourcesListDTO")]
-        public IActionResult getSettlementresourcesListDTO()
+
+        [HttpGet("GetSettlementresourcesListDto")]
+        public IActionResult GetSettlementresourcesListDto()
         {
-            
-            //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
-            return Ok(_worldService.GetSettlementResourceListDTO());
+            return Ok(_worldService.GetSettlementResourceListDto());
         }
 
-        [HttpGet("getPeopleLoayliyDTO")]
-        public IActionResult getPeopleLoayliyDTO()
+        [HttpGet("GetPeopleLoayliyDto")]
+        public IActionResult GetPeopleLoayliyDto()
         {
-            //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
-            return Ok(_worldService.GetPeopleLoyalityDTO());
+            return Ok(_worldService.GetPeopleLoyaltyDto());
         }
 
-
-
-        [HttpGet("getCrownLoaylityDTO")]
-        public IActionResult getCrownLoaylityDTO()
+        [HttpGet("GetCrownLoyalityDto")]
+        public IActionResult GetCrownLoyalityDto()
         {
-            //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
-            return Ok(_worldService.GetCrownLoyalityDTO());
+            return Ok(_worldService.GetCrownLoyaltyDto());
         }
 
-        [HttpGet("getCurrentCrownTaskDTO")]
-        public IActionResult getCurrentCrownTaskDTO()
+        [HttpGet("GetCurrentCrownTaskDto")]
+        public IActionResult GetCurrentCrownTaskDto()
         {
-            //int temp = _world.GetHashCode();
-            //List <SettlementGame.Domain.AnyResource> recivedSettlementresourcesList=_worldService.GetSettlementResourceList();
-
-            //CrownTask crownTask = _worldService.GetCurrentCrownTask();
-            //return Ok(crownTask);
-            return Ok(_worldService.GetCurrentCrownTaskDTO());
-
-            //var task = _worldService.GetCurrentCrownTask();
-
-            //return Ok(new
-            //{
-            //    Exists = task != null
-            //});
+            return Ok(_worldService.GetCurrentCrownTaskDto());
         }
 
-        [HttpGet("getCurrentGameState")]
-        public IActionResult getCurrentGameState()
+        [HttpGet("GetCurrentGameState")]
+        public IActionResult GetCurrentGameState()
         {
             return Ok(_worldService.updateGameState(_world));
-
         }
 
-        [HttpPost("create")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-
-        //public IActionResult CreateWorld([FromBody]int numberOfWorkers)
+        [HttpPost("Create")]
+        [Authorize(
+            AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme,
+            Roles = "Admin")]
         public IActionResult CreateWorld()
         {
-            //foreach (var h in Request.Headers)
-            //{
-            //    Console.WriteLine($"{h.Key}: {h.Value}");
-            //}
-
-            var auth = Request.Headers.Authorization.ToString();
-            //return Ok(world);
+            //The [Authorize] attribute requires the request to contain a valid JWT.
+            //The Roles parameter additionally requires the authenticated user to have the "Admin" role.
             _worldService.CreateWorld();
-            
-            //worldService.CreateWorkersByService(numberOfWorkers);
-            int temp=_world.GetHashCode();
+
             return Ok(new
             {
-                
                 Workers = _worldService.GetWorkerDtoList(),
-                Buildings = _worldService.GetBuildingDtoList(),
-
-               
+                Buildings = _worldService.GetBuildingDtoList()
             });
         }
 
-
-
-        [HttpPut("tick")]
+        [HttpPut("Tick")]
         [Authorize]
-        //[Authorize(Roles = "User")]
-        //[Authorize(Roles = "Admin")]
         public IActionResult Tick()
         {
-            
+            //[Authorize] requires an authenticated user, but does not restrict the request to a specific role.
             try
             {
                 _worldService.Tick();
@@ -138,91 +86,26 @@ namespace SettlementGame.Web.Controllers
             }
             catch (Exception ex)
             {
+                //HTTP 500 means that an unexpected error occurred while processing the request.
                 return StatusCode(500, ex.ToString());
             }
-            
-            
         }
 
-        
-
-        [HttpPost("login")]
+        [HttpPost("Login")]
         public IActionResult Login(LoginRequest request)
         {
-            //_webAuthService = new WebAuthService(_dbContext);
-            string jwt=_webAuthService.Authenticate(request);
-            if (jwt == null) { return Unauthorized(); }
-            else { return Ok(jwt); }
-            //JwtKey = Program.JwtKey;
+            //Login is not protected by [Authorize], because a user must be able to
+            //authenticate before they have a JWT.
+            string jwt = _webAuthService.Authenticate(request);
 
-            //UserEntity user =_dbContext.Users.FirstOrDefault(x => x.Email == request.Email);
-
-            //if (user == null)
-            //{
-            //    return Unauthorized();
-            //}
-
-            //bool passwordCorrect = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
-
-            //if (!passwordCorrect)
-            //{
-            //    return Unauthorized();
-            //}
-            ////переходим на хранение в БД
-            ////if (request.Email == "Admin" && request.Password == "321")
-            ////{
-            ////return Ok("token321");
-            //var claims = new[]
-            //    {
-            //new Claim(ClaimTypes.Email, request.Email),
-            //new Claim(ClaimTypes.Role, user.Role)            
-            ////new Claim(ClaimTypes.Role, "Admin")
-            //    };
-
-            //        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtKey));
-            //    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            //    var token = new JwtSecurityToken(
-            //        issuer: "game",
-            //        audience: "game_client",
-            //        claims: claims,
-            //        expires: DateTime.Now.AddHours(9),//не будем выбивать человека каждые 4 часа
-            //        signingCredentials: creds
-            //    );
-
-            //    var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-                
+            if (jwt == null)
+            {
+                return Unauthorized();
             }
-            //if (request.Email == "User" && request.Password == "123")
-            //{
-            //    //return Ok("token321");
-            //    var claims1 = new[]
-            //    {
-            //new Claim(ClaimTypes.Email, request.Email),
-            //new Claim(ClaimTypes.Role, "User"),
-
-            //    };
-            //    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtKey));
-            //    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            //    var token = new JwtSecurityToken(
-            //        claims: claims1,
-            //        expires: DateTime.Now.AddHours(9),//8+обед 
-            //        signingCredentials: creds
-            //    );
-
-            //    var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            //    return Ok(jwt);
-                //if (request.Email == "user" && request.Password == "123")
-                //{
-                //    return Ok("token123");
-                //}
-            
+            else
+            {
+                return Ok(jwt);
+            }
         }
-
     }
-    
-
-
+}

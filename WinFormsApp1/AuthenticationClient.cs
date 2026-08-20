@@ -1,74 +1,59 @@
-﻿using Azure;
+﻿
 using SettlementGame.Domain;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
+
 
 namespace WinFormsAppUI
 {
     public partial class AuthenticationClient : Form
     {
         private readonly AuthService _authService;
-        // сервис авторизации
-
+        // The authentication token can be read from outside,
+        // but it can only be assigned inside this class
         public string Token { get; private set; }
-        // токен доступен снаружи, но записывается только внутри
+
 
         public AuthenticationClient(AuthService authService)
         {
             InitializeComponent();
-            // создаёт UI
 
+            // Store the authentication service.
             _authService = authService;
-            // сохраняем сервис
         }
 
         private async void btnLogin_Click(object sender, EventArgs e)
         {
-            //Console.WriteLine("нажата кнопка login");
-            System.Diagnostics.Debug.WriteLine("нажата кнопка");
+            System.Diagnostics.Debug.WriteLine("Login button clicked");
 
             string email = txtLogin.Text;
-            // читаем логин
-
             string password = txtPassword.Text;
-            // читаем пароль
 
-            string token = await _authService.loginTask(email, password);
-            // вызываем сервис (UI не знает про HTTP)
-            //MessageBox.Show(token);
-            //Console.WriteLine(token);
+            // The UI delegates the HTTP request to AuthService.
+            // This keeps HTTP-related logic outside the UI layer.
+            string token = await _authService.LoginTask(email, password);
 
             if (token == null)
             {
+                MessageBox.Show(
+                    "Please enter your Login and password again.",
+                    "Authentication error",
+                    MessageBoxButtons.OK);
 
-                //MessageBox.Show("Ошибка авторизации");
-                DialogResult result = MessageBox.Show(
-                "Введите логин и пароль заново",
-                "Ошибка авторизации",
-                MessageBoxButtons.OK);
-                if (result == DialogResult.OK)
-                {
-                    this.Activate();
-                    txtLogin.Focus();
-                }
-                
+                Activate();
+                txtLogin.Focus();
+
+                return;
             }
-            if (token != null) { 
-            Token = token;
-            // сохраняем токен
 
+            // Store the JWT received from the server.
+            Token = token;
+
+            // Notify Program.cs that authentication was successful.
             DialogResult = DialogResult.OK;
-            // сигнал Program.cs
 
             Close();
-            // закрываем форму
         }
-        }
+    }
 
     }
-}
+
+

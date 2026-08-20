@@ -23,24 +23,13 @@ namespace SettlementGame.Domain
 
             int compensation= _world.standartSalary * 3;
 
-
-            //world.SettlementResourceList.Find(x => x.ResourceType == ResourceType.Moneta).Amount -= world.standartSalary*3;
-            //int compensation = world.standartSalary * 3;
-            //Resource resource=new Resource(ResourceType.Moneta, compensation);
-            //bool isCompleted = WorldService.ChangeResourseAmount(world, resource);
-            //if (isCompleted == true) { worker.ChangeMoneyAmount(compensation);
             worker.ChangeMoneyAmount(compensation);
             worker.UnassignWithWorkPlace();
-                building.RemoveWorker();
+            building.RemoveWorker();
             
             
         }
-        //if (worker.WorkPlace != null)
-        //{
-        //    Building building = worker.WorkPlace;
-        //    worker.UnassignWithWorkPlace();
-        //    building.RemoveWorker();
-        //}
+        
     }
         
     }

@@ -13,11 +13,6 @@ namespace SettlementGame.Domain
             return new CreateBuildingAction(CreateBuildingContext);
         }
 
-        //public static IUserAction DestroyBuildingAction(DestroyBuildingContext DestroyBuildingContext)
-        //{
-        //    return new DestroyBuildingAction(DestroyBuildingContext);
-        //}
-
         public static IUserAction HireWorkerAction(HireWorkerContext context)
         {
             return new HireWorkerAction(context);
@@ -28,9 +23,5 @@ namespace SettlementGame.Domain
             return new FireWorkerAction(context);
         }
 
-        //public static IUserAction TickAction(TickContext context)
-        //{
-        //    return new TickAction(context);
-        //}
     }
 }

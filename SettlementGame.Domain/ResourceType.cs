@@ -11,16 +11,16 @@ namespace SettlementGame.Domain
         
             Meat,
             Berries,
-            CleanWater,
+            WaterWell,
             Wood,
             Stone,
             Gold,
-            Doska,
-            Kirpich,
-            Moneta,
+            Plank,
+            Brick,
+            Coin,
             Beer,
             Wine,
-            Psheniza,
-            Hmel
+            Wheat,
+            Hops
      }
 }

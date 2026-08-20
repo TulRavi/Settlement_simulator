@@ -30,12 +30,12 @@ namespace SettlementGame.Domain
         public int? WorkPlaceId { get; set; } // вместо Building , вопр.знак, чтобы в случае отсвутвия не записал число 0, кот.реально мб айди
         public bool IsEmployed { get; set; }
 
-        private double personalLoyality;
+        private double personalLoyalty;
 
-        public double PersonalLoyality
+        public double PersonalLoyalty
         {
-            get { return personalLoyality; }
-            set { personalLoyality = Math.Clamp(value, 0, 1); }
+            get { return personalLoyalty; }
+            set { personalLoyalty = Math.Clamp(value, 0, 1); }
         }
         public int PersonalMoney { get; set; }
 

@@ -10,13 +10,13 @@ namespace SettlementGame.Domain
     {
         public GameDbContext CreateDbContext(string[] args)
         {
-            // создаём билдер опций для DbContext
+            //Create an options builder for DbContext
             var optionsBuilder = new DbContextOptionsBuilder<GameDbContext>();
 
-            // указываем какую БД использовать (пример — SQL Server)
+            //specify which database to use (SQLite)
             optionsBuilder.UseSqlite("Data Source=game.db");
 
-            // возвращаем готовый контекст с настройками
+            //return the context with the configured options
             return new GameDbContext(optionsBuilder.Options);
         }
     }

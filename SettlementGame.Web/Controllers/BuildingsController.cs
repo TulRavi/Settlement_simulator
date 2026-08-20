@@ -1,32 +1,24 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SettlementGame.Domain;
 
 namespace SettlementGame.Web.Controllers
 {
-    [ApiController]
-
-    [Route("api/buildings")]
-    public class BuildingsController : Controller
+    [ApiController] //Enables API-specific behavior such as automatic model validation and binding.
+    [Route("api/buildings")] //Defines the base route for all endpoints in this controller.
+    public class BuildingsController : ControllerBase
     {
-        private readonly DataWorld world;
-        private readonly WorkerEmploymentService workerEmploymentService;
         private readonly WorldService worldService;
-        
-        public BuildingsController(DataWorld world, WorkerEmploymentService workerEmploymentService, WorldService worldService)
+
+        public BuildingsController(WorldService worldService)
         {
-            this.world = world;
-            this.workerEmploymentService = workerEmploymentService;
             this.worldService = worldService;
         }
-        [HttpGet("GetBuildings")]
-        
 
-        // GET: BuildingController
-        public ActionResult GetBuildings()
+        [HttpGet("GetBuildings")]
+        public IActionResult GetBuildings()
         {
-            return Ok(worldService.GetBuildingDtoList());//todo: перенести в ВорлдСервис-done
+            //Ok() returns HTTP 200 and serializes the Dto list into the response body.
+            return Ok(worldService.GetBuildingDtoList());
         }
 
         [HttpGet("GetPossibleBuildings")]
@@ -39,29 +31,43 @@ namespace SettlementGame.Web.Controllers
         {
             public BuildingType BuildingType { get; set; }
         }
-        
+
         [HttpPost("CreateBuilding")]
-        public IActionResult CreateBuilding([FromBody] CreateBuildingRequest createBuildingRequest)
+        public IActionResult CreateBuilding(
+            [FromBody] CreateBuildingRequest CreateBuildingRequest)
         {
-            bool result=worldService.CreateBuilding(createBuildingRequest.BuildingType);
-            if (result == true) { return Ok("Building was created"); } else { return BadRequest(); }
-            ;
-            
+            //[FromBody] tells ASP.NET Core to deserialize the request body into this object.
+            bool result = worldService.CreateBuilding(
+                CreateBuildingRequest.BuildingType);
+
+            if (result)
+            {
+                return Ok("Building was Created");
+            }
+
+            //BadRequest() returns HTTP 400 when the requested operation cannot be performed.
+            return BadRequest();
         }
+
         [HttpDelete("{id}")]
         public IActionResult RemoveBuilding(int id)
         {
             bool result = worldService.RemoveBuilding(id);
-            
-            if (result == true) { return Ok("Building was destroyed"); } else { return BadRequest("not enouth money for compensation to a worker - destroying is illegal"); }
+
+            if (result==true)
+            {
+                return Ok("Building was destroyed");
+            }
+
+            return BadRequest(
+                "can not destroy - may be there is not enough money for worker's compensation - destroying is illegal");
         }
 
-        // GET: BuildingController/Details/5
         [HttpGet("/api/buildings/availible")]
-
-        // GET: BuildingController
-        public ActionResult GetAvailibleBuildings()
+        public IActionResult GetAvailibleBuildings()
         {
+            //This endpoint currently duplicates GetPossibleBuildings().
+            //The route is kept to avoid breaking an existing client request.
             return Ok(worldService.GetPossibleBuildings());
         }
     }

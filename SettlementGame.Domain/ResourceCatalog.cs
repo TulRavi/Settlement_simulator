@@ -15,17 +15,17 @@ namespace SettlementGame.Domain
             {
                 case ResourceType.Meat: return ResourceCategory.Food;
                 case ResourceType.Berries: return ResourceCategory.Food;
-                case ResourceType.CleanWater: return ResourceCategory.Water;
+                case ResourceType.WaterWell: return ResourceCategory.Water;
                 case ResourceType.Wood: return ResourceCategory.Material;
                 case ResourceType.Stone: return ResourceCategory.Material;
                 case ResourceType.Gold: return ResourceCategory.Material;
-                case ResourceType.Doska: return ResourceCategory.Material;
-                case ResourceType.Kirpich: return ResourceCategory.Material;
-                case ResourceType.Moneta: return ResourceCategory.Money;
+                case ResourceType.Plank: return ResourceCategory.Material;
+                case ResourceType.Brick: return ResourceCategory.Material;
+                case ResourceType.Coin: return ResourceCategory.Money;
                 case ResourceType.Beer: return ResourceCategory.Alcohol;
                 case ResourceType.Wine: return ResourceCategory.Alcohol;
-                case ResourceType.Psheniza: return ResourceCategory.Material;
-                case ResourceType.Hmel: return ResourceCategory.Material;
+                case ResourceType.Wheat: return ResourceCategory.Material;
+                case ResourceType.Hops: return ResourceCategory.Material;
                 default: throw new ArgumentOutOfRangeException();
                
             

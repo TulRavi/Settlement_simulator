@@ -1,238 +1,191 @@
-using Microsoft.Identity.Client;
 using SettlementGame.Domain;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Net.Http.Json;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using static SettlementGame.Domain.DataWorld;
 using static SettlementGame.Domain.WorldService;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-
+using static SettlementGame.Web.Controllers.WorkersController;
 
 namespace WinFormsApp1
 {
     public partial class MainForm : Form
     {
-        //private WorldService _worldService;
-        //private WorldCreator _worldCreator;
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
+
         private bool isBuildingMode = false;
         private bool isDestroyMode = false;
-        //private bool isFirstDestroySelection;
         private bool userActionDestroy = false;
         private bool userActionChooseWorker = false;
         private bool userActionChooseBuilding = false;
         private bool isHireMode = false;
         private bool isFireMode = false;
         private bool isAksForNewWorker = false;
+
         private int chosenWorkerId;
-        // используем тот же HttpClient (с токеном)
-        //private System.Windows.Forms.Button btnTick;
+
 
         public MainForm(HttpClient client1)
         {
-            InitializeComponent();// создаёт кнопки,поля эт цэтра
-                                  //_httpClient = new HttpClient();
+            InitializeComponent();
+
             _httpClient = client1;
 
-            //DataWorld world=_worldCreator.CreateWorld();
-            //btnTick = new Button();
-            //btnTick.Text = "Tick";
-            //btnTick.Left = 150;
-            //btnTick.Top = 50;
-
-
-            //this.Controls.Add(this.btnTick);
+            // The world has not been Created yet.
+            // Only the Create World button is available.
+            SetGameControlsVisible(false);
         }
 
-        //private async void btnTick_Click(object sender, EventArgs e)
-        //{ // async — чтобы UI не зависал
-        //    try
-        //    {
-        //        var response = await _httpClient.PostAsync("tick", null); // POST запрос как в Postman // null — тело не передаём
-        //        if (response.IsSuccessStatusCode) { MessageBox.Show("Tick выполнен"); }
-        //        else { MessageBox.Show("Ошибка: " + response.StatusCode); }
-        //    }
-        //    catch (Exception ex) { MessageBox.Show(ex.Message); }
-        //}
+        private void SetGameControlsVisible(bool visible)
+        {
+            btnTick.Visible = visible;
+            btnCreateBuilding.Visible = visible;
+            btnDestroyBuilding.Visible = visible;
+            btnHireWorker.Visible = visible;
+            btnFireWorker.Visible = visible;
+            btnAskForNewWorkers.Visible = visible;
+
+            comboBoxBuildingType.Visible = false;
+            comboBoxDestroyType.Visible = false;
+            comboBoxChooseWorker.Visible = false;
+            comboBoxChooseBuildingForWorker.Visible = false;
+            comboBoxAmountOfWorkers.Visible = false;
+        }
 
 
         private async Task RefreshDestroyBuildingsComboBox()
         {
-            // отправляем GET запрос
             HttpResponseMessage response =
                 await _httpClient.GetAsync("api/buildings/GetBuildings");
 
-            // если запрос успешен
             if (response.IsSuccessStatusCode)
             {
-                // получаем JSON строку
-                //string json =
-                //    await response.Content.ReadAsStringAsync();
+                List<BuildingDto>? buildings =
+                    await response.Content.ReadFromJsonAsync<List<BuildingDto>>();
 
-                //// превращаем JSON в список объектов
-                //List<WorldService.BuildingDto>? buildings =
-                //    JsonSerializer.Deserialize<List<WorldService.BuildingDto>>(
-                //        json,
-                //        new JsonSerializerOptions
-                //        {
-                //            PropertyNameCaseInsensitive = true
-                //        });
-                List<BuildingDto>? buildings = await response.Content.ReadFromJsonAsync<List<BuildingDto>>();
-                // защита от null
                 if (buildings == null)
                 {
                     return;
                 }
-                comboBoxDestroyType.SelectedIndexChanged -= comboBoxDestroyType_SelectedIndexChanged;
-                // источник данных комбобокса
+
+                comboBoxDestroyType.SelectedIndexChanged -=
+                    comboBoxDestroyType_SelectedIndexChanged;
+
                 comboBoxDestroyType.DataSource = buildings;
 
-                
-                // что показывать пользователю
-                comboBoxDestroyType.DisplayMember = "info".ToString();
+                // Property displayed to the user.
+                comboBoxDestroyType.DisplayMember = "info";
 
-
-
-                // что считать значением
+                // Property used as the selected value.
                 comboBoxDestroyType.ValueMember = "Id";
+
                 comboBoxDestroyType.SelectedIndex = -1;
-                comboBoxDestroyType.SelectedIndexChanged += comboBoxDestroyType_SelectedIndexChanged;
+
+                comboBoxDestroyType.SelectedIndexChanged +=
+                    comboBoxDestroyType_SelectedIndexChanged;
             }
         }
+
 
         private async Task RefreshPeopleLoayalityBrogressBar()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getPeopleLoayliyDTO"); // запрос к API
-            //[HttpGet("getSettlementresourcesListDTO")]
-            if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            HttpResponseMessage response =
+                await _httpClient.GetAsync("api/world/GetPeopleLoayliyDto");
+
+            if (response.IsSuccessStatusCode)
             {
-                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
-                //временно полный json вид
-                //json = json.Replace(".", ",");
-                JsonNode node = JsonNode.Parse(json);
+                PeopleLoayalityDto? peopleLoyaltyDto =
+                    await response.Content.ReadFromJsonAsync<PeopleLoayalityDto>();
 
-                // Извлекаем значение и приводим к нужному типу (например, int)
-                double amount = (double)node["peopleLoyality"];
-                progressBarPeopleLoyality.Value = (int)(amount * 100);
+                if (peopleLoyaltyDto == null)
+                {
+                    return;
+                }
 
+                double amount = peopleLoyaltyDto.PeopleLoyalty;
+
+                progressBarPeopleLoyalty.Value = (int)(amount * 100);
             }
-            else // если ошибка запроса
+            else
             {
-                MessageBox.Show(response.StatusCode.ToString()); // показываем код ошибки
+                MessageBox.Show(response.StatusCode.ToString());
             }
         }
+
 
         private async Task RefreshCrownLoayalityBrogressBar()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getCrownLoaylityDTO"); // запрос к API
-            //[HttpGet("getSettlementresourcesListDTO")]
-            if (response.IsSuccessStatusCode) // проверяем успешность ответа
-            {
-                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
-                //временно полный json вид
-                //json = json.Replace(".", ",");
-                //progressBarCrownLoyality.Value = (int)(double.Parse(json) * 100);
+            HttpResponseMessage response =
+                await _httpClient.GetAsync("api/world/GetCrownLoyalityDto");
 
-                //пробуем делать JsonNode по аналогии с progressBarPeopleLoyality
-                JsonNode node = JsonNode.Parse(json);
-                // Извлекаем значение и приводим к нужному типу (например, int)
-                double amount = (double)node["crownLoyality"];
-                progressBarCrownLoyality.Value = (int)(amount * 100);
-            }
-            else // если ошибка запроса
+            if (response.IsSuccessStatusCode)
             {
-                MessageBox.Show(response.StatusCode.ToString()); // показываем код ошибки
+                CrownLoayalityDto? crownLoyaltyDto =
+                    await response.Content.ReadFromJsonAsync<CrownLoayalityDto>();
+
+                if (crownLoyaltyDto == null)
+                {
+                    return;
+                }
+
+                double amount = crownLoyaltyDto.CrownLoyalty;
+
+                progressBarCrownLoyalty.Value = (int)(amount * 100);
+            }
+            else
+            {
+                MessageBox.Show(response.StatusCode.ToString());
             }
         }
 
-        private async Task RefreshWorkersInfo() // метод обновления информации о рабочих
+
+        private async Task RefreshWorkersInfo()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("api/workers/GetWorkersDTO"); // запрос к API
+            HttpResponseMessage response =
+                await _httpClient.GetAsync("api/workers/GetWorkersDto");
 
-            if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            if (response.IsSuccessStatusCode)
             {
-                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
-
-                JsonDocument workersTreeContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
-                //JsonDocument — это контейнер дерева
-                JsonElement workersTree = workersTreeContainer.RootElement; // корневой элемент (он же массив)
-
                 textWorkersState.Clear();
-                //textWorkersState.Text = json;
-                //временно уберем имязависимое красивое отображение
-                foreach (JsonElement worker in workersTree.EnumerateArray()) // идем по всем элементам массива
+
+                List<WorkerDto>? workersDto =
+                    await response.Content.ReadFromJsonAsync<List<WorkerDto>>();
+
+                if (workersDto == null)
                 {
-                    int id = worker.GetProperty("id").GetInt32(); // внутри JSON найди поле id и т.д.
-                    bool isAlive = worker.GetProperty("isAlive").GetBoolean(); // читаем жив ли
-                    int WorkPlaceId = worker.GetProperty("workPlaceId").GetInt32(); //очень тупо искать по имени, которое 10 раз поменяется, но оставим пока так
-                    //обращаю, что имя свойства с маленькой буквы
-                    double PersonalLoyality = worker.GetProperty("personalLoyality").GetDouble();
-                    int PersonalMoney = worker.GetProperty("personalMoney").GetInt32();
+                    return;
+                }
 
-                    //int x = worker.GetProperty("x").GetInt32(); 
-                    //int y = worker.GetProperty("y").GetInt32();
+                foreach (WorkerDto workerDto in workersDto)
+                {
+                    int id = workerDto.Id;
+                    bool isAlive = workerDto.IsAlive;
+                    int workPlaceId = workerDto.WorkPlaceId;
+                    double personalLoyalty = workerDto.PersonalLoyalty;
+                    int personalMoney = workerDto.PersonalMoney;
 
-                    //textWorkersState.AppendText($"Id:{id} X:{x} Y:{y} Alive:{isAlive}\r\n"); // выводим строку
-                    textWorkersState.AppendText($"Id:{id} Alive:{isAlive} WorkPlaceId {WorkPlaceId} PersonalLoyality {PersonalLoyality} PersonalMoney {PersonalMoney}\r\n");
+                    textWorkersState.AppendText(
+                        $"Id:{id} " +
+                        $"Alive:{isAlive} " +
+                        $"WorkPlaceId:{workPlaceId} " +
+                        $"PersonalLoyalty:{personalLoyalty} " +
+                        $"PersonalMoney:{personalMoney}\r\n");
                 }
             }
-            else // если ошибка запроса
+            else
             {
-                textWorkersState.Text = response.StatusCode.ToString(); // показываем код ошибки
+                textWorkersState.Text =
+                    response.StatusCode.ToString();
             }
         }
 
-        //лучеше обновлять данные о рабочих как ниже, но из-за вложенности класса Дто все падает, а выносить все Дто в отд.классы ради 1 метода сомнительное решение, так что придется идти тупо по именам
-        //private async Task RefreshWorkersInfo()
-        //{
-        //    HttpResponseMessage response =
-        //        await _httpClient.GetAsync("api/workers/GetWorkers");
 
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        string json =
-        //            await response.Content.ReadAsStringAsync();
-        //        //MessageBox.Show(json);
-        //        List<WorkerDto>? workers =
-        //            JsonSerializer.Deserialize<List<WorldService.WorkerDto>>(json);
-        //        MessageBox.Show(workers[0].GetType().FullName);
-        //        textWorkersState.Clear();
-
-        //        foreach (WorkerDto worker in workers)
-        //        {
-        //            textWorkersState.AppendText(
-        //                $"Id:{worker.Id} " +
-        //                $"Alive:{worker.IsAlive} " +
-        //                $"WorkPlaceId:{worker.WorkPlaceId} " +
-        //                $"Loyality:{worker.PersonalLoyality} " +
-        //                $"Money:{worker.PersonalMoney}" +
-        //                Environment.NewLine);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        textWorkersState.Text =
-        //            response.StatusCode.ToString();
-        //    }
-        //}
-
-        private async Task RefreshBuildingsInfo() // метод обновления информации о рабочих
+        private async Task RefreshBuildingsInfo()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("api/buildings/GetBuildings"); // запрос к API
+            HttpResponseMessage response =
+                await _httpClient.GetAsync("api/buildings/GetBuildings");
 
-            if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            if (response.IsSuccessStatusCode)
             {
-                List<BuildingDto>? buildings = await response.Content.ReadFromJsonAsync<List<BuildingDto>>();
+                List<BuildingDto>? buildings =
+                    await response.Content.ReadFromJsonAsync<List<BuildingDto>>();
 
                 if (buildings == null)
                 {
@@ -240,48 +193,37 @@ namespace WinFormsApp1
                     return;
                 }
 
-                //string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
-                ////временно полный json вид
-                //textBuildingsState.Text = json;
-
-                //JsonDocument buildingsTreeContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
-                ////JsonDocument — это контейнер дерева
-                //JsonElement buildingsTree = buildingsTreeContainer.RootElement; // корневой элемент (он же массив)
-
                 textBuildingsState.Clear();
 
-                //foreach (JsonElement building in buildingsTree.EnumerateArray()) // идем по всем элементам массива
                 foreach (BuildingDto building in buildings)
                 {
-                    int?id = building.Id;
-                    //int id = building.GetProperty("id").GetInt32(); // внутри JSON найди поле id и т.д.
-                    //int buildingTypeValue = building.GetProperty("buildingType").GetInt32();
-                    //int buildingTypeValue= (int)building.BuildingType;
-                    //BuildingType buildingType = (BuildingType)buildingTypeValue;
-                    BuildingType buildingType= building.BuildingType;
-                    //чтобы , когда нет рабочего, не шло исключение, ставим рабочего-пустышку
-                    int?assignedWorkerId = -1;
-                    //и проверяем есть ли рил
-                    if (building.AssignedWorkerId != -1) { assignedWorkerId = building.AssignedWorkerId; }
-                    //if (building.TryGetProperty("assignedWorkerId", out JsonElement workerIdElement))
-                    //{
-                    //    if (workerIdElement.ValueKind == JsonValueKind.Number)
-                    //    {
-                    //        assignedWorkerId = workerIdElement.GetInt32();
-                    //    }
-                    //}
-                    //int x = building.GetProperty("x").GetInt32();
-                    //int y = building.GetProperty("y").GetInt32();
+                    int? id = building.Id;
 
+                    BuildingType buildingType =
+                        building.BuildingType;
 
-                    textBuildingsState.AppendText($"Id:{id} BuildingType:{buildingType} AssignedWorkerId {assignedWorkerId}\r\n"); // выводим строку
+                    // If there is no assigned worker,
+                    // display -1 instead of a nullable value.
+                    int? assignedWorkerId = -1;
+
+                    if (building.AssignedWorkerId != -1)
+                    {
+                        assignedWorkerId = building.AssignedWorkerId;
+                    }
+
+                    textBuildingsState.AppendText(
+                        $"Id:{id} " +
+                        $"BuildingType:{buildingType} " +
+                        $"AssignedWorkerId:{assignedWorkerId}\r\n");
                 }
             }
-            else // если ошибка запроса
+            else
             {
-                textBuildingsState.Text = response.StatusCode.ToString(); // показываем код ошибки
+                textBuildingsState.Text =
+                    response.StatusCode.ToString();
             }
         }
+
 
         private async Task RefreshPossibleBuildings()
         {
@@ -289,69 +231,70 @@ namespace WinFormsApp1
                 await _httpClient.GetAsync(
                     "api/buildings/GetPossibleBuildings");
 
-            string json =
-                await response.Content.ReadAsStringAsync();
-
-            List<BuildingType>? buildings =
-                JsonSerializer.Deserialize<List<BuildingType>>(
-                    json,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
-
-            if (buildings == null)
+            if (!response.IsSuccessStatusCode)
+            {
+                MessageBox.Show(response.StatusCode.ToString());
                 return;
+            }
 
-            comboBoxBuildingType.DataSource = buildings;
+            List<BuildingType>? buildingTypeList =
+                await response.Content.ReadFromJsonAsync<List<BuildingType>>();
+
+            if (buildingTypeList == null)
+            {
+                return;
+            }
+
+            comboBoxBuildingType.DataSource =
+                buildingTypeList;
         }
 
-        private async Task RefreshSettlementResourcesInfo() // метод обновления информации о рабочих
+
+        private async Task RefreshSettlementResourcesInfo()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getSettlementresourcesListDTO"); // запрос к API
-            //[HttpGet("getSettlementresourcesListDTO")]
-            if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            HttpResponseMessage response =
+                await _httpClient.GetAsync(
+                    "api/world/GetSettlementresourcesListDto");
+
+            if (response.IsSuccessStatusCode)
             {
-                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
-                //временно полный json вид
-                //textSettlementResourcesState.Clear();
-                //textSettlementResourcesState.Text = json;
+                textSettlementResourcesState.Clear();
 
-                JsonDocument SettlementResourcesTreeContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
-                //JsonDocument — это контейнер дерева
-                JsonElement SettlementResourcesTree = SettlementResourcesTreeContainer.RootElement; // корневой элемент (он же массив)
+                List<Resource>? resourceList =
+                    await response.Content.ReadFromJsonAsync<List<Resource>>();
 
-
-
-                foreach (JsonElement SettlementResources in SettlementResourcesTree.EnumerateArray()) // идем по всем элементам массива
+                if (resourceList == null)
                 {
-                    int resourceTypeValue = SettlementResources.GetProperty("resourceType").GetInt32(); // внутри JSON найди поле id и т.д.
-                    int amount = SettlementResources.GetProperty("amount").GetInt32();
+                    return;
+                }
 
-
-                    ResourceType resourceType = (ResourceType)resourceTypeValue;
-
-                    textSettlementResourcesState.AppendText($"{resourceType} {amount}\r\n"); // выводим строку
-                    //MessageBox.Show(textSettlementResourcesState.ToString());
+                foreach (Resource resource in resourceList)
+                {
+                    textSettlementResourcesState.AppendText(
+                        $"{resource.ResourceType} {resource.Amount}\r\n");
                 }
             }
-            else // если ошибка запроса
+            else
             {
-                textSettlementResourcesState.Text = response.StatusCode.ToString(); // показываем код ошибки
+                textSettlementResourcesState.Text =
+                    response.StatusCode.ToString();
             }
         }
 
-        private async Task RefreshGameState() // метод обновления информации о рабочих
+
+        private async Task RefreshGameState()
         {
             try
             {
-                HttpResponseMessage response = await _httpClient.GetAsync("api/world/getCurrentGameState");
-                if (response.IsSuccessStatusCode) // проверяем успешность ответа
+                HttpResponseMessage response =
+                    await _httpClient.GetAsync(
+                        "api/world/GetCurrentGameState");
+
+                if (response.IsSuccessStatusCode)
                 {
-                    string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
-                                                                              //временно полный json вид
-                                                                              //textCurrentCrownTask.Clear();
-                    int result = int.Parse(json);
+                    int result =
+                        await response.Content.ReadFromJsonAsync<int>();
+
                     if (result == -1)
                     {
                         ShowEnd("Simulation failed");
@@ -361,12 +304,10 @@ namespace WinFormsApp1
                     {
                         ShowEnd("Simulation is successful");
                     }
-
-
                 }
-                else // если ошибка запроса
+                else
                 {
-                    MessageBox.Show(response.StatusCode.ToString()); // показываем код ошибки
+                    MessageBox.Show(response.StatusCode.ToString());
                 }
             }
             catch (Exception ex)
@@ -375,89 +316,55 @@ namespace WinFormsApp1
             }
         }
 
+
         private void ShowEnd(string message)
         {
             MessageBox.Show(message, "Info");
 
-            // важно: через UI thread безопасно
+            // Close only the current WinForms application.
+            // The ASP.NET server continues running.
             BeginInvoke(new Action(() =>
             {
                 Application.Exit();
-                //мы не останавливаем весь сервер из-за 1 человека, закрываем онли его винформс 
-            }
-
-            ));
-
+            }));
         }
 
-        private async Task RefreshCrownTaskInfo() // метод обновления информации о рабочих
+
+        private async Task RefreshCrownTaskInfo()
         {
-            HttpResponseMessage response = await _httpClient.GetAsync("api/world/getCurrentCrownTaskDTO");
-            if (response.IsSuccessStatusCode) // проверяем успешность ответа
+            HttpResponseMessage response =
+                await _httpClient.GetAsync(
+                    "api/world/GetCurrentCrownTaskDto");
+
+            if (response.IsSuccessStatusCode)
             {
-                string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
-                
-                textCurrentCrownTask.Clear();
+                CrownTaskDto? crownTaskDto =
+                    await response.Content.ReadFromJsonAsync<CrownTaskDto>();
 
-                //временно полный json вид
-                //textCurrentCrownTask.Text = json;
+                if (crownTaskDto == null)
+                {
+                    return;
+                }
 
-                JsonDocument SettlementTaskTreeContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
-
-                JsonElement SettlementTaskTree = SettlementTaskTreeContainer.RootElement; // корневой элемент (он же массив)
-
-                JsonElement resourceType = SettlementTaskTree.GetProperty("resourceType");
-
-
-                int amount = SettlementTaskTree.GetProperty("amount").GetInt32();
-
-                int ticks = SettlementTaskTree.GetProperty("numberOfTicks").GetInt32();
-
-
-                //textCurrentCrownTask.AppendText($"{resourceType} {amount} ticks:{ticks}\r\n");
-                textCurrentCrownTask.Text = $"{resourceType} {amount} ticks:{ticks}\r\n";
-
-                //трайнем получить из ДТО данные - не срабатывает дессериалзация, возвр.к прошлому варинату.
-                //CrownTaskDto? task = JsonSerializer.Deserialize<CrownTaskDto>(json);
-                //textCurrentCrownTask.Text = $"{task.ResourceType} {task.Amount} ticks:{task.NumberOfTicks}";
-
+                textCurrentCrownTask.Text =
+                    $"{crownTaskDto.ResourceType} " +
+                    $"{crownTaskDto.Amount} " +
+                    $"Ticks:{crownTaskDto.NumberOfTicks}\r\n";
             }
-            else // если ошибка запроса
+            else
             {
-                textCurrentCrownTask.Text = response.StatusCode.ToString(); // показываем код ошибки
+                textCurrentCrownTask.Text =
+                    response.StatusCode.ToString();
             }
         }
-
-
 
 
         private async void btnCreateWorld_Click(object sender, EventArgs e)
         {
-            //int workers = 10;
-            //StringContent content = new StringContent(
-            //workers.ToString(),
-            //Encoding.UTF8,
-            //"application/json");
-            //HttpResponseMessage response = await _httpClient.PostAsync("api/world/create", content);
-            // POST
-            //MessageBox.Show(_httpClient.DefaultRequestHeaders.Authorization?.ToString());
-            //MessageBox.Show(content.ToString());
-            //HttpResponseMessage response =
-            //await _httpClient.PostAsync(
-            //    "api/world/create",
-            //    content);
-
             HttpResponseMessage response =
-            await _httpClient.PostAsync(
-                "api/world/create", null);
-
-            //MessageBox.Show(response.StatusCode.ToString());
-
-            string text =
-                await response.Content.ReadAsStringAsync();
-
-            //MessageBox.Show(text);
-
+                await _httpClient.PostAsync(
+                    "api/world/Create",
+                    null);
 
             if (response.IsSuccessStatusCode)
             {
@@ -467,443 +374,410 @@ namespace WinFormsApp1
                 await RefreshPossibleBuildings();
                 await RefreshCrownTaskInfo();
 
-                //MessageBox.Show("Мир создан");
-
+                SetGameControlsVisible(true);
             }
             else
             {
-                MessageBox.Show("Ошибка запроса");
+                MessageBox.Show(
+                    await response.Content.ReadAsStringAsync());
             }
         }
 
+
         private async void btnTick_Click(object sender, EventArgs e)
         {
-            HttpResponseMessage response = await _httpClient.PutAsync("api/world/tick", null);
-            //MessageBox.Show(response.StatusCode.ToString());
-            //todo: System.Threading.Tasks.TaskCanceledException: "The request was canceled due to the configured HttpClient.Timeout of 100 seconds elapsing."
-            //передал на подольше
-            //пошла авторизация
+            HttpResponseMessage response =
+                await _httpClient.PutAsync(
+                    "api/world/Tick",
+                    null);
+
             if (response.IsSuccessStatusCode)
             {
                 await RefreshWorkersInfo();
-                //MessageBox.Show("Workers OK");
                 await RefreshBuildingsInfo();
-                //MessageBox.Show("Buildings OK");
-
                 await RefreshSettlementResourcesInfo();
-                //MessageBox.Show("Resources OK");
                 await RefreshPeopleLoayalityBrogressBar();
-                //MessageBox.Show("PeopleLoyality OK");
-                RefreshCrownLoayalityBrogressBar();
-                //MessageBox.Show("CrownLoyality OK");
+                await RefreshCrownLoayalityBrogressBar();
                 await RefreshCrownTaskInfo();
-                //MessageBox.Show("Task OK");
                 await RefreshGameState();
-                //MessageBox.Show("GameState OK");
-                RefreshTicksTillNewWorkers();
-                //MessageBox.Show("TicksTillNewWorkersComeInfo OK");
-                //MessageBox.Show("Tick выполнен");
+                await RefreshTicksTillNewWorkers();
             }
             else
             {
-                string error = await response.Content.ReadAsStringAsync();
+                string error =
+                    await response.Content.ReadAsStringAsync();
 
                 MessageBox.Show(error);
             }
         }
 
+
         private async void btnCreateBuilding_Click(object sender, EventArgs e)
         {
             isBuildingMode = true;
+
             comboBoxBuildingType.Visible = true;
-            // далее берём выбранный тип здания из ComboBox
         }
+
 
         private async void btnDestroyBuilding_Click(object sender, EventArgs e)
         {
             isDestroyMode = true;
 
             comboBoxDestroyType.Visible = true;
+
             userActionDestroy = false;
-            RefreshDestroyBuildingsComboBox();
-            // берём выбранный тип здания из ComboBox
+
+            await RefreshDestroyBuildingsComboBox();
+
             userActionDestroy = true;
         }
+
 
         private async void btnHireWorker_Click(object sender, EventArgs e)
         {
             isFireMode = false;
             isHireMode = true;
+
             userActionChooseWorker = false;
+
             comboBoxChooseWorker.Visible = true;
-            await ChooseWorkersComboBox();//присваиваем переменной chosenWorkerId номер выбранного рабочего
+
+            await ChooseWorkersComboBox();
+
             userActionChooseWorker = true;
+
             comboBoxChooseWorker.Enabled = true;
         }
+
 
         private async void btnFireWorker_Click(object sender, EventArgs e)
         {
             isHireMode = false;
             isFireMode = true;
+
             userActionChooseWorker = false;
+
             comboBoxChooseWorker.Visible = true;
+
             await ChooseWorkersComboBox();
+
             userActionChooseWorker = true;
+
             comboBoxChooseWorker.Enabled = true;
         }
 
+
         private async Task ChooseWorkersComboBox()
         {
-            // отправляем GET запрос
             HttpResponseMessage response =
-                await _httpClient.GetAsync("api/workers/GetWorkersDTO");
+                await _httpClient.GetAsync(
+                    "api/workers/GetWorkersDto");
 
-            // если запрос успешен
             if (response.IsSuccessStatusCode)
             {
+                List<WorkerDto>? workerDtoList =
+                    await response.Content.ReadFromJsonAsync<List<WorkerDto>>();
 
-                // получаем JSON строку
-                string json =
-                        await response.Content.ReadAsStringAsync();
-
-                // превращаем JSON в список объектов
-                List<WorldService.WorkerDTO>? workers =
-                    JsonSerializer.Deserialize<List<WorldService.WorkerDTO>>(
-                        json,
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        });
-
-                // защита от null
-                if (workers == null)
+                if (workerDtoList == null)
                 {
                     return;
                 }
-                comboBoxChooseWorker.SelectedIndexChanged -= comboBoxChooseWorker_SelectedIndexChanged;
-                // источник данных комбобокса
-                comboBoxChooseWorker.DataSource = workers;
 
-                // что показывать пользователю
-                comboBoxChooseWorker.DisplayMember = "info";
+                comboBoxChooseWorker.SelectedIndexChanged -=
+                    comboBoxChooseWorker_SelectedIndexChanged;
 
-                // что считать значением
-                comboBoxChooseWorker.ValueMember = "Id";
+                comboBoxChooseWorker.DataSource =
+                    workerDtoList;
+
+                comboBoxChooseWorker.DisplayMember =
+                    "info";
+
+                comboBoxChooseWorker.ValueMember =
+                    "Id";
+
                 comboBoxChooseWorker.SelectedIndex = -1;
-                comboBoxChooseWorker.SelectedIndexChanged += comboBoxChooseWorker_SelectedIndexChanged;
+
+                comboBoxChooseWorker.SelectedIndexChanged +=
+                    comboBoxChooseWorker_SelectedIndexChanged;
             }
         }
 
-        private async void comboBoxChooseWorker_SelectedIndexChanged(object sender, EventArgs e)
+
+        private async void comboBoxChooseWorker_SelectedIndexChanged(
+    object sender,
+    EventArgs e)
         {
-
-            //if (!isHireMode)
-            //    return;
-
-            // получаем выбранный тип
-            //BuildingDto selectedBuilding =
-            //    (BuildingDto)comboBoxDestroyType.SelectedItem;
-
-            //if (selectedBuilding == null)
-            //{
-            //    return;
-            //}
-            // берём id здания
             if (!userActionChooseWorker)
-                return;
-            if (comboBoxChooseWorker.SelectedIndex < 0)
-                return;
-            //BuildingDto temp = (BuildingDto)comboBoxDestroyType.SelectedValue;
-            //int id = (int)temp.Id;
-
-            chosenWorkerId = (int)comboBoxChooseWorker.SelectedValue;
-            if (chosenWorkerId == null)
             {
-                MessageBox.Show("У worker нет Id");
-
                 return;
             }
 
-            // выключаем режим 
-            //isHireMode = false;
+            if (comboBoxChooseWorker.SelectedIndex < 0)
+            {
+                return;
+            }
+
+            // Save the selected worker ID.
+            // It will be used later when the user selects a building.
+            chosenWorkerId = (int)comboBoxChooseWorker.SelectedValue;
+
+            // Disable the worker selector after the worker has been chosen.
             comboBoxChooseWorker.Enabled = false;
 
             if (isHireMode == true)
             {
+                // The selected worker is stored in chosenWorkerId.
+                // Now the user has to select a building for this worker.
                 comboBoxChooseBuildingForWorker.Visible = true;
                 comboBoxChooseBuildingForWorker.Enabled = true;
+
                 await ChooseBuildingForWorkersComboBox();
+
                 return;
             }
+
             if (isFireMode == true)
             {
                 isFireMode = false;
                 comboBoxChooseWorker.Visible = false;
 
-                //формируем JSON
-                string json =
-                    $"{{chosenWorkerId}}";
-
-                StringContent content =
-                    new StringContent(json, Encoding.UTF8, "application/json");
-
-
-                // отправляем запрос
+                // Worker ID is already stored in chosenWorkerId.
+                // The API receives it from the URL: /api/workers/{id}/fire.
                 HttpResponseMessage response =
-                    await _httpClient.PutAsync($"api/workers/{chosenWorkerId}/fire", content);
+                    await _httpClient.PutAsync(
+                        $"api/workers/{chosenWorkerId}/fire",
+                        null);
 
                 if (response.IsSuccessStatusCode)
                 {
                     await RefreshWorkersInfo();
                     await RefreshBuildingsInfo();
+
                     MessageBox.Show("Рабочий уволен");
                 }
                 else
-                    MessageBox.Show(await response.Content.ReadAsStringAsync());
+                {
+                    MessageBox.Show(
+                        await response.Content.ReadAsStringAsync());
+                }
             }
-            // скрываем список
-            //comboBoxChooseWorker.Visible = false;
-
-
-            // формируем JSON
-            //string json =
-            //    $"{{\"buildingType\":{(int)selectedType}}}";
-
-            //StringContent content =
-            //    new StringContent(json, Encoding.UTF8, "application/json");
-
-
-            //// отправляем запрос
-            //HttpResponseMessage response =
-            //    await _httpClient.DeleteAsync($"api/buildings/{id}");
-
-            //if (response.IsSuccessStatusCode)
-            //    MessageBox.Show("Здание уничтожено");
-            //else
-            //    MessageBox.Show(await response.Content.ReadAsStringAsync());
-
         }
+
 
         private async Task ChooseBuildingForWorkersComboBox()
         {
-            // отправляем GET запрос
             HttpResponseMessage response =
-                await _httpClient.GetAsync("api/buildings/GetBuildings");
+                await _httpClient.GetAsync(
+                    "api/buildings/GetBuildings");
 
-            // если запрос успешен
             if (response.IsSuccessStatusCode)
             {
+                List<BuildingDto>? buildingDtoList =
+                    await response.Content.ReadFromJsonAsync<List<BuildingDto>>();
 
-                // получаем JSON строку
-                string json = await response.Content.ReadAsStringAsync();
-
-                // превращаем JSON в список объектов
-                List<WorldService.BuildingDto>? buildings =
-                    JsonSerializer.Deserialize<List<WorldService.BuildingDto>>(
-                        json,
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        });
-
-                // защита от null
-                if (buildings == null)
+                if (buildingDtoList == null)
                 {
                     return;
                 }
-                comboBoxChooseBuildingForWorker.SelectedIndexChanged -= comboBoxChooseBuildingForWorker_SelectedIndexChanged;
-                // источник данных комбобокса
-                comboBoxChooseBuildingForWorker.DataSource = buildings;
 
-                // что показывать пользователю
-                comboBoxChooseBuildingForWorker.DisplayMember = "info".ToString();
-                
-                // что считать значением
-                comboBoxChooseBuildingForWorker.ValueMember = "Id";
+                comboBoxChooseBuildingForWorker.SelectedIndexChanged -=
+                    comboBoxChooseBuildingForWorker_SelectedIndexChanged;
+
+                comboBoxChooseBuildingForWorker.DataSource =
+                    buildingDtoList;
+
+                comboBoxChooseBuildingForWorker.DisplayMember =
+                    "info";
+
+                comboBoxChooseBuildingForWorker.ValueMember =
+                    "Id";
+
                 comboBoxChooseBuildingForWorker.SelectedIndex = -1;
-                comboBoxChooseBuildingForWorker.SelectedIndexChanged += comboBoxChooseBuildingForWorker_SelectedIndexChanged;
-                userActionChooseBuilding = true;
 
+                comboBoxChooseBuildingForWorker.SelectedIndexChanged +=
+                    comboBoxChooseBuildingForWorker_SelectedIndexChanged;
+
+                userActionChooseBuilding = true;
             }
         }
 
-        private async void comboBoxChooseBuildingForWorker_SelectedIndexChanged(object sender, EventArgs e)
+
+        private async void comboBoxChooseBuildingForWorker_SelectedIndexChanged(
+    object sender,
+    EventArgs e)
         {
             if (!isHireMode)
-                return;
-
-            // получаем выбранный тип
-            //BuildingDto selectedBuilding =
-            //    (BuildingDto)comboBoxDestroyType.SelectedItem;
-
-            //if (selectedBuilding == null)
-            //{
-            //    return;
-            //}
-            // берём id здания
-            if (!userActionChooseBuilding)
-                return;
-            if (comboBoxChooseBuildingForWorker.SelectedIndex < 0)
-                return;
-            //BuildingDto temp = (BuildingDto)comboBoxDestroyType.SelectedValue;
-            //int id = (int)temp.Id;
-
-            int chosenBuildingId = (int)comboBoxChooseBuildingForWorker.SelectedValue;
-            if (chosenBuildingId == null)
             {
-                MessageBox.Show("У building нет Id");
-
                 return;
             }
 
-            // выключаем режим 
+            if (!userActionChooseBuilding)
+            {
+                return;
+            }
+
+            if (comboBoxChooseBuildingForWorker.SelectedIndex < 0)
+            {
+                return;
+            }
+
+            int chosenBuildingId =
+                (int)comboBoxChooseBuildingForWorker.SelectedValue;
+
+            // The worker was selected in the previous step
+            // and is stored in chosenWorkerId.
+
             isHireMode = false;
 
             comboBoxChooseBuildingForWorker.Enabled = false;
+
             comboBoxChooseWorker.Visible = false;
             comboBoxChooseBuildingForWorker.Visible = false;
 
+            HireWorkerRequest request = new HireWorkerRequest
+            {
+                WorkerId = chosenWorkerId,
+                BuildingId = chosenBuildingId
+            };
 
-            //формируем JSON
-            string json =
-                $"{{\"workerId\":{chosenWorkerId},\"id\":{chosenBuildingId}}}";
+            JsonContent content =
+                JsonContent.Create(request);
 
-            StringContent content =
-                new StringContent(json, Encoding.UTF8, "application/json");
-
-
-            // отправляем запрос
             HttpResponseMessage response =
-                await _httpClient.PutAsync($"api/workers/hire", content);
+                await _httpClient.PutAsync(
+                    "api/workers/hire",
+                    content);
 
             if (response.IsSuccessStatusCode)
             {
                 await RefreshWorkersInfo();
                 await RefreshBuildingsInfo();
+
                 MessageBox.Show("Рабочий нанят");
             }
             else
-                MessageBox.Show(await response.Content.ReadAsStringAsync());
+            {
+                MessageBox.Show(
+                    await response.Content.ReadAsStringAsync());
+            }
         }
 
 
-        private async void comboBoxBuildingType_SelectedIndexChanged(object sender, EventArgs e)
+        private async void comboBoxBuildingType_SelectedIndexChanged(
+            object sender,
+            EventArgs e)
         {
-            // если мы не в режиме строительства — ничего не делаем. можно и изящнее сделать, ну да ладно
             if (!isBuildingMode)
+            {
                 return;
+            }
 
-            // получаем выбранный тип
+            if (comboBoxBuildingType.SelectedIndex < 0)
+            {
+                return;
+            }
+
             BuildingType selectedType =
                 (BuildingType)comboBoxBuildingType.SelectedItem;
 
-            // выключаем режим 
             isBuildingMode = false;
 
-            // скрываем список
             comboBoxBuildingType.Visible = false;
 
-            // формируем JSON
-            string json =
-                $"{{\"buildingType\":{(int)selectedType}}}";
+            // Create the request object instead of manually constructing JSON.
+            var request = new
+            {
+                BuildingType = selectedType
+            };
 
-            StringContent content =
-                new StringContent(json, Encoding.UTF8, "application/json");
+            JsonContent content =
+                JsonContent.Create(request);
 
-            // отправляем запрос
             HttpResponseMessage response =
-                await _httpClient.PostAsync("api/buildings/CreateBuilding", content);
-
+                await _httpClient.PostAsync(
+                    "api/buildings/CreateBuilding",
+                    content);
 
             if (response.IsSuccessStatusCode)
             {
                 await RefreshBuildingsInfo();
                 await RefreshSettlementResourcesInfo();
+
                 MessageBox.Show("Здание построено");
             }
-
             else
-                MessageBox.Show(await response.Content.ReadAsStringAsync());
+            {
+                MessageBox.Show(
+                    await response.Content.ReadAsStringAsync());
+            }
         }
 
-        private async void comboBoxDestroyType_SelectedIndexChanged(object sender, EventArgs e)
+
+        private async void comboBoxDestroyType_SelectedIndexChanged(
+            object sender,
+            EventArgs e)
         {
-            // если мы не в режиме удаления — ничего не делаем
             if (!isDestroyMode)
-                return;
-
-            // получаем выбранный тип
-            //BuildingDto selectedBuilding =
-            //    (BuildingDto)comboBoxDestroyType.SelectedItem;
-
-            //if (selectedBuilding == null)
-            //{
-            //    return;
-            //}
-            // берём id здания
-            if (!userActionDestroy)
-                return;
-            if (comboBoxDestroyType.SelectedIndex < 0)
-                return;
-            //BuildingDto temp = (BuildingDto)comboBoxDestroyType.SelectedValue;
-            //int id = (int)temp.Id;
-
-            int id = (int)comboBoxDestroyType.SelectedValue;
-            if (id == null)
             {
-                MessageBox.Show("У здания нет Id");
-
                 return;
             }
 
-            // выключаем режим 
+            if (!userActionDestroy)
+            {
+                return;
+            }
+
+            if (comboBoxDestroyType.SelectedIndex < 0)
+            {
+                return;
+            }
+
+            int id =
+                (int)comboBoxDestroyType.SelectedValue;
+
             isDestroyMode = false;
 
-            // скрываем список
-            comboBoxBuildingType.Visible = false;
-
-
-            // формируем JSON
-            //string json =
-            //    $"{{\"buildingType\":{(int)selectedType}}}";
-
-            //StringContent content =
-            //    new StringContent(json, Encoding.UTF8, "application/json");
-
-
-            // отправляем запрос
-            HttpResponseMessage response =
-                await _httpClient.DeleteAsync($"api/buildings/{id}");
             comboBoxDestroyType.Visible = false;
+
+            HttpResponseMessage response =
+                await _httpClient.DeleteAsync(
+                    $"api/buildings/{id}");
+
             if (response.IsSuccessStatusCode)
             {
                 await RefreshWorkersInfo();
                 await RefreshBuildingsInfo();
+
                 MessageBox.Show("Здание уничтожено");
             }
             else
-                MessageBox.Show(await response.Content.ReadAsStringAsync());
-
+            {
+                MessageBox.Show(
+                    await response.Content.ReadAsStringAsync());
+            }
         }
 
-        private async void btnAskForNewWorkers_Click(object sender, EventArgs e)
+
+        private async void btnAskForNewWorkers_Click(
+            object sender,
+            EventArgs e)
         {
-            //isFireMode = false;
             isAksForNewWorker = true;
+
             comboBoxAmountOfWorkers.Visible = true;
+
             await ChooseAmountOfNewWorkers();
-            
         }
+
 
         private async Task ChooseAmountOfNewWorkers()
         {
-            int[] numbers = new int[9]; // создаем массив на 9 элементов
-
-            for (int i = 0; i < numbers.Length; i++)
-            {
-                numbers[i] = i + 1; // записываем числа от 1 до 9
-            }
-            //comboBoxAmountOfWorkers.Items.AddRange(numbers); плохо - не работает с инт, нуждно в объект преобразовывать?
+            // Important:
+            // remove the handler first because this method can be called
+            // more than once during the lifetime of the form.
+            comboBoxAmountOfWorkers.SelectedIndexChanged -=
+                comboBoxAmountOfWorkers_SelectedIndexChanged;
 
             comboBoxAmountOfWorkers.Items.Clear();
 
@@ -912,100 +786,95 @@ namespace WinFormsApp1
                 comboBoxAmountOfWorkers.Items.Add(i);
             }
 
-            comboBoxAmountOfWorkers.SelectedIndexChanged += comboBoxAmountOfWorkers_SelectedIndexChanged;
-         }
+            comboBoxAmountOfWorkers.SelectedIndex = -1;
 
-        private async void comboBoxAmountOfWorkers_SelectedIndexChanged(object sender, EventArgs e)
+            comboBoxAmountOfWorkers.SelectedIndexChanged +=
+                comboBoxAmountOfWorkers_SelectedIndexChanged;
+        }
+
+
+        private async void comboBoxAmountOfWorkers_SelectedIndexChanged(
+            object sender,
+            EventArgs e)
         {
-            // если мы не в режиме строительства — ничего не делаем. можно и изящнее сделать, ну да ладно
             if (!isAksForNewWorker)
+            {
                 return;
+            }
 
-            // получаем выбранный тип
-            int number = (int)comboBoxAmountOfWorkers.SelectedItem;
+            if (comboBoxAmountOfWorkers.SelectedIndex < 0)
+            {
+                return;
+            }
 
-            // выключаем режим 
+            int number =
+                (int)comboBoxAmountOfWorkers.SelectedItem;
+
+            // Disable the mode before sending the request.
+            // This prevents accidental repeated orders.
             isAksForNewWorker = false;
 
-                 
-            // формируем JSON
-            string json =
-                $"{{\"Number\":{number}}}";
+            comboBoxAmountOfWorkers.Visible = false;
 
-            StringContent content =
-                new StringContent(json, Encoding.UTF8, "application/json");
+            // Create JSON automatically.
+            // System.Net.Http.Json serializes the anonymous object into:
+            // {"Number":3}
+            var request = new
+            {
+                Number = number
+            };
 
-            // отправляем запрос
+            JsonContent content =
+                JsonContent.Create(request);
+
             HttpResponseMessage response =
-                await _httpClient.PostAsync("api/workers/CreateOrderForNewWorkers", content);
-
+                await _httpClient.PostAsync(
+                    "api/workers/CreateOrderForNewWorkers",
+                    content);
 
             if (response.IsSuccessStatusCode)
             {
-                //await RefreshBuildingsInfo();
-                //await RefreshSettlementResourcesInfo();
                 MessageBox.Show("Работники заказаны");
-                RefreshTicksTillNewWorkers();
 
-
-                comboBoxAmountOfWorkers.Visible = false;
+                await RefreshTicksTillNewWorkers();
             }
-
             else
-                MessageBox.Show(await response.Content.ReadAsStringAsync());
+            {
+                MessageBox.Show(
+                    await response.Content.ReadAsStringAsync());
+            }
         }
 
-        private async Task RefreshTicksTillNewWorkers() // метод обновления информации о рабочих
-        {   
 
-            HttpResponseMessage response = await _httpClient.GetAsync("api/workers/GetTicksTillNewWorkers"); // запрос к API
+        private async Task RefreshTicksTillNewWorkers()
+        {
+            HttpResponseMessage response =
+                await _httpClient.GetAsync(
+                    "api/workers/GetTicksTillNewWorkers");
+
             if (!response.IsSuccessStatusCode)
             {
-                textWorkersState.Text = response.StatusCode.ToString();
+                textWorkersState.Text =
+                    response.StatusCode.ToString();
+
                 return;
             }
 
-            List<WorkerOrderDTO>? orders = await response.Content.ReadFromJsonAsync<List<WorkerOrderDTO>>();
+            List<WorkerOrderDto>? orders =
+                await response.Content.ReadFromJsonAsync<List<WorkerOrderDto>>();
+
             textTicksTillNewWorkers.Clear();
 
             if (orders == null)
+            {
                 return;
+            }
 
-            foreach (WorkerOrderDTO order in orders)
+            foreach (WorkerOrderDto order in orders)
             {
                 textTicksTillNewWorkers.AppendText(
                     $"{order.Amount} in:{order.TicksLeft}\r\n");
             }
-            //if (response.IsSuccessStatusCode) // проверяем успешность ответа
-            //{
-            //    string json = await response.Content.ReadAsStringAsync(); // получаем JSON строку
-
-            //    JsonDocument WorkerOrderContainer = JsonDocument.Parse(json); // парсим JSON в дерево, то есть не строку, но структурированный блок как в БД
-            //    JsonElement WorkerOrderTree = WorkerOrderContainer.RootElement; // корневой элемент (он же массив)
-
-            //    textTicksTillNewWorkers.Clear();
-            //    //textTicksTillNewWorkers.Text = json;
-
-            //    foreach (JsonElement workerOrder in WorkerOrderTree.EnumerateArray()) // идем по всем элементам массива
-            //    {
-            //        int amount = workerOrder.GetProperty("amount").GetInt32(); // внутри JSON найди поле id и т.д.
-            //        int ticks = workerOrder.GetProperty("ticksLeft").GetInt32(); //очень тупо искать по имени, которое 10 раз поменяется, но оставим пока так
-
-            //        //textWorkersState.AppendText($"Id:{id} X:{x} Y:{y} Alive:{isAlive}\r\n"); // выводим строку
-            //        textTicksTillNewWorkers.AppendText($"{amount} in:{ticks}\r\n");
-
-            //        //}
-            //    }
-            //}
-            //else // если ошибка запроса
-            //{
-            //    textWorkersState.Text = response.StatusCode.ToString(); // показываем код ошибки
-            //}
         }
-
-
-
-
-
     }
 }

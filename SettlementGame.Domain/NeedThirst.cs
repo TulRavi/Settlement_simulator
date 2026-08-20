@@ -22,7 +22,7 @@ namespace SettlementGame.Domain
         }
 
         public override int Cost { get; set; } = 0;
-        public override double LoyalityAmount
+        public override double LoyaltyAmount
         {
             get { return -0.1; }
         }
@@ -35,23 +35,7 @@ namespace SettlementGame.Domain
             if (Amount > 0) { return true; } else { return false; }
         }
 
-        //public override bool ChangePerTick(List<Resource> resourceList)
-        //{
-        //                ChangeAmount(0.2);
-
-        //    foreach (Resource water in resourceList)
-        //    {
-        //        if (water.ResourceCategory==ResourceCategory.Water && water.TryToConsume(3))
-        //        {
-        //            ChangeAmount(-0.3);
-        //            return true;
-        //        }
-
-        //    }
-        //    return false;
-        //}
-
-        public override bool TryToSaticfy(Worker worker, List<Resource> resourceList)
+        public override bool TryToSatisfy(Worker worker, List<Resource> resourceList)
         {
             foreach (Resource water in resourceList)
             {

@@ -21,7 +21,7 @@ namespace SettlementGame.Domain
         public int? AssignedWorkerId { get; set; }
 
         public string info => $"id:{Id} {BuildingType} workerId{AssignedWorkerId}";
-        
+
 
         internal void AssignWorker(Worker worker)
         {
@@ -35,20 +35,9 @@ namespace SettlementGame.Domain
             AssignedWorkerId = -1;
         }
 
+        // -1 means that the building does not have an assigned worker.
         public bool HasEmployee => AssignedWorkerId != -1 && AssignedWorkerId != null;
 
-        //private bool hasEmployee;
-
-        //public bool HasEmployee
-        //{
-        //    get { return hasEmployee; }
-        //    set { hasEmployee = value;
-        //        if (hasEmployee == false)
-        //        {
-        //            //AssignedWorker != null;
-        //        }
-        //    }
-        //}
 
 
 
@@ -62,9 +51,9 @@ namespace SettlementGame.Domain
 
 
 
-        public void Tick(DataWorld world)//тут здание должно отправлять запрос на создание ресурсу
+        public void Tick(DataWorld world)//the building should send a request to Create a resource here
         {
-            BuildingCatalog buildingCatalog = BuildingCatalog.GetProductForCreation(BuildingType);//забираем экземпляр класса каталог строительства
+            BuildingCatalog buildingCatalog = BuildingCatalog.GetProductForCreation(BuildingType);//get an instance of the building catalog class
 
             bool canProduce = true;
 
@@ -82,17 +71,17 @@ namespace SettlementGame.Domain
             if (canProduce == true)
             {
 
-                for (int x = 0; x < buildingCatalog.Outputs.Count(); x++)//добалвяем произведнный ресурс в ресурсы поседения
+                for (int x = 0; x < buildingCatalog.Outputs.Count(); x++)//add the produced resource to the settlement resources
                 {
                     foreach (Resource resource1 in world.SettlementResourceList)
                         if (resource1.ResourceType == buildingCatalog.Outputs.ElementAt(x).ResourceType)
-                        {   
+                        {
                             resource1.Increase(buildingCatalog.Outputs.ElementAt(x).Amount);
                             continue;
                         }
-                    
+
                 }
-                for (int y = 0; y < buildingCatalog.Inputs.Count(); y++)//меняем кол-во материалов в поселении, убирая затраченные 
+                for (int y = 0; y < buildingCatalog.Inputs.Count(); y++)//change the amount of materials in the settlement by removing the consumed resources
                 {
                     foreach (Resource resource2 in world.SettlementResourceList)
                         if (resource2.ResourceType == buildingCatalog.Inputs.ElementAt(y).ResourceType)
@@ -105,29 +94,5 @@ namespace SettlementGame.Domain
         }
 
 
-        //public void CreateSomethingold(DataWorld world)//тут здание должно отправлять запрос на создание ресурсу
-        //{
-        //    BuildingCatalog buildingCatalog = BuildingCatalog.GetProductForCreation(BuildingType);//забираем экземпляр класса каталог строительства
-        //    foreach (ResourceOfSettlement resource in world.ResourceList)
-        //    {
-        //        if (resource.ResourceType == buildingCatalog.InputResource)
-        //        {
-        //            if (resource.TryToConsume(buildingCatalog.AmountOfInputResource) == true)
-        //            {
-        //                foreach (ResourceOfSettlement resource1 in world.ResourceList)
-        //                    if (resource1.ResourceType == buildingCatalog.OutputResource)
-        //                    {
-        //                        resource1.Increase(buildingCatalog.AmountOfOutputResource);
-        //                    }
-        //            }
-        //        }
-        //    }
-
-        //}
-
     }
 }
-    
-
-
-

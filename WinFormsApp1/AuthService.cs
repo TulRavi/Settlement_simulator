@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json;
 
 namespace SettlementGame.Domain
 {
@@ -13,30 +14,30 @@ namespace SettlementGame.Domain
             _client = client;
         }
 
-        public async Task<string> loginTask(string email, string password)
+        public async Task<string> LoginTask(string email, string password)
         {
-            // вся логика HTTP здесь
-            string json = $"{{\"email\":\"{email}\",\"password\":\"{password}\"}}";
-            // формируем JSON вручную (альтернатива — JsonSerializer)
-            StringContent content = new StringContent(
+            var request = new { email, password };
+            string json = JsonSerializer.Serialize(request);
+
+            // Create the HTTP request body.
+            using StringContent content = new StringContent(
                 json,
                 Encoding.UTF8,
                 "application/json");
-            // тело POST запроса
 
-            
-            HttpResponseMessage response = await _client.PostAsync("api/world/login", content);
-            // отправляем POST api/world/login
+            // Send the Login request to the Web API.
+            HttpResponseMessage response =
+                await _client.PostAsync("api/world/Login", content);
 
+            // The server returns an unsuccessful status code
+            // when authentication fails.
             if (!response.IsSuccessStatusCode)
             {
                 return null;
-                //
-                //todo: переписать на мэссэджбокс с ошибкой и повторить ввод
             }
 
+            // Read the JWT returned by the server.
             string token = await response.Content.ReadAsStringAsync();
-            // читаем токен из ответа
 
             return token;
         }

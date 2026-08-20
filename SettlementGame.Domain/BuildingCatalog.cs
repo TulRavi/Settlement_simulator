@@ -10,19 +10,6 @@ namespace SettlementGame.Domain
     {
         public List<ResourceAmount> Inputs { get; set; }
         public List<ResourceAmount> Outputs { get; set; }
-        //public ResourceType InputResource { get; }
-
-        //public int AmountOfInputResource { get; set; }
-        //public ResourceType OutputResource { get; set; }
-        //public int AmountOfOutputResource { get; set; }
-
-        //public BuildingCatalog (ResourceType InputResource, int AmountOfInputResource, ResourceType OutputResource, int AmountOfOutputResource)
-        //{
-        //    this.InputResource = InputResource;
-        //    this.AmountOfInputResource = AmountOfInputResource;
-        //    this.OutputResource = OutputResource;
-        //    this.AmountOfOutputResource = AmountOfOutputResource;
-        //}
         public BuildingCatalog(
         List<ResourceAmount> inputs,
         List<ResourceAmount> outputs)
@@ -32,59 +19,60 @@ namespace SettlementGame.Domain
         }
 
 
+        //Returns the production recipe for the specified building type.
         public static BuildingCatalog GetProductForCreation(BuildingType buildingType)
         {
             switch (buildingType)
             {
-                case BuildingType.DoskaMakery:
-                    return new BuildingCatalog(new List<ResourceAmount>{new ResourceAmount(ResourceType.Wood,1) },
-                    new List<ResourceAmount> { new ResourceAmount(ResourceType.Doska, 5) }); //найти в ресурсах мира дерево, потребить и создать доски
-                    //или вернуть тип потребляемого ресурса и его кол-во, тип производимого ресурса и его кол-во.
-                case BuildingType.KirpichMakery:
+                case BuildingType.Sawmill:
+                    return new BuildingCatalog(new List<ResourceAmount> { new ResourceAmount(ResourceType.Wood, 1) },
+                    new List<ResourceAmount> { new ResourceAmount(ResourceType.Plank, 5) }); //find wood in the world resources, consume it and Create planks
+                                                                                             //or return the type and amount of the consumed resource and the type and amount of the produced resource.
+                case BuildingType.Brickworks:
                     return new BuildingCatalog(new List<ResourceAmount> { new ResourceAmount(ResourceType.Stone, 1) },
-                        new List<ResourceAmount> { new ResourceAmount(ResourceType.Kirpich, 4) });
-                case BuildingType.GoldMakery:
-                        return new BuildingCatalog(new List<ResourceAmount>(),
-                            new List<ResourceAmount> { new ResourceAmount(ResourceType.Gold, 3) });
+                        new List<ResourceAmount> { new ResourceAmount(ResourceType.Brick, 4) });
+                case BuildingType.GoldMine:
+                    return new BuildingCatalog(new List<ResourceAmount>(),
+                        new List<ResourceAmount> { new ResourceAmount(ResourceType.Gold, 3) });
 
-                case BuildingType.MonetaMakery:
+                case BuildingType.Mint:
                     return new BuildingCatalog(new List<ResourceAmount> { new ResourceAmount(ResourceType.Gold, 1) },
-                        new List<ResourceAmount> { new ResourceAmount(ResourceType.Moneta, 10) });
-                case BuildingType.BeerMakery:
+                        new List<ResourceAmount> { new ResourceAmount(ResourceType.Coin, 10) });
+                case BuildingType.Brewery:
                     return new BuildingCatalog(new List<ResourceAmount>
                         {
-                        new ResourceAmount(ResourceType.CleanWater, 10),
-                        new ResourceAmount(ResourceType.Psheniza, 1),
-                        new ResourceAmount(ResourceType.Hmel, 1)
+                        new ResourceAmount(ResourceType.WaterWell, 10),
+                        new ResourceAmount(ResourceType.Wheat, 1),
+                        new ResourceAmount(ResourceType.Hops, 1)
                         },
-                        new List<ResourceAmount>{new ResourceAmount(ResourceType.Beer, 10)});
+                        new List<ResourceAmount> { new ResourceAmount(ResourceType.Beer, 10) });
                 //case BuildingType.Tavern:
-                //    return new BuildingCatalog(new List<ResourceAmount>(), new List<ResourceAmount>());//в удовлетворении нужды рабочего потребление, не тут
-                case BuildingType.MeatMakery:
+                //    return new BuildingCatalog(new List<ResourceAmount>(), new List<ResourceAmount>());//worker needs are handled elsewhere, not here
+                case BuildingType.Hunter:
                     return new BuildingCatalog(new List<ResourceAmount>(),
                         new List<ResourceAmount> { new ResourceAmount(ResourceType.Meat, 5) });
-                case BuildingType.BerriesMakery:
+                case BuildingType.BerryGathery:
                     return new BuildingCatalog(new List<ResourceAmount>(),
                         new List<ResourceAmount> { new ResourceAmount(ResourceType.Berries, 5) });
-                case BuildingType.CleanWater:
+                case BuildingType.WaterWell:
                     return new BuildingCatalog(new List<ResourceAmount>(),
-                        new List<ResourceAmount> { new ResourceAmount(ResourceType.CleanWater, 5) });
-                case BuildingType.WoodMakery:
+                        new List<ResourceAmount> { new ResourceAmount(ResourceType.WaterWell, 5) });
+                case BuildingType.LoggingCamp:
                     return new BuildingCatalog(new List<ResourceAmount>(),
                         new List<ResourceAmount> { new ResourceAmount(ResourceType.Wood, 5) });
-                case BuildingType.StoneMakery:
+                case BuildingType.StoneQuarry:
                     return new BuildingCatalog(new List<ResourceAmount>(),
                         new List<ResourceAmount> { new ResourceAmount(ResourceType.Stone, 5) });
-                case BuildingType.WineMakery:
+                case BuildingType.Winery:
                     return new BuildingCatalog(new List<ResourceAmount> { new ResourceAmount(ResourceType.Berries, 10) },
                         new List<ResourceAmount> { new ResourceAmount(ResourceType.Wine, 3) });
-                case BuildingType.PshenizaMakery:
+                case BuildingType.WheatFarm:
                     return new BuildingCatalog(new List<ResourceAmount>(),
-                        new List<ResourceAmount> { new ResourceAmount(ResourceType.Psheniza, 5) });
-                case BuildingType.HmelMakery:
+                        new List<ResourceAmount> { new ResourceAmount(ResourceType.Wheat, 5) });
+                case BuildingType.HopFarm:
                     return new BuildingCatalog(new List<ResourceAmount>(),
-                        new List<ResourceAmount> { new ResourceAmount(ResourceType.Hmel, 5) });
-                
+                        new List<ResourceAmount> { new ResourceAmount(ResourceType.Hops, 5) });
+
 
                 default: throw new ArgumentOutOfRangeException();
 

@@ -8,8 +8,7 @@ namespace SettlementGame.Domain
 {
     public class HireWorkerContext
     {
-        //public WorkerEmploymentService workerEmploymentService;
-        
+                
         public Worker Worker { get; }
         public Building Building { get; }
 
@@ -19,19 +18,7 @@ namespace SettlementGame.Domain
             Building = building;
 
         }
-        public Worker HiringWorker { get; set; }
-        //public int WorkerIndex { get; }
-        //public int BuildingIndex { get; }
-
-        //public TimeSpan StartWorkingTime { get; set; }
-        //public TimeSpan EndWorkingTime { get; set; }
-
-        //public HireWorkerContext(int workerIndex, int buildingIndex, TimeSpan startWorkingTime, TimeSpan endWorkingTime)
-        //{
-        //    WorkerIndex = workerIndex;
-        //    BuildingIndex = buildingIndex;
-        //    StartWorkingTime = startWorkingTime;
-        //    EndWorkingTime = endWorkingTime;
-        //}
+        
+        
     }
 }

@@ -20,5 +20,12 @@ obj/
 *.user
 *.suo
 
+# Development secrets
+secrets.json
+
 # Logs
 *.log
+
+/SettlementGame.Web/appsettings.json
+/SettlementGame/PlansAndComments.txt
+/SettlementGame.Web/game.db

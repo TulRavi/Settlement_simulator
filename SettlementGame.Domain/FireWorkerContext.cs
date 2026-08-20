@@ -17,13 +17,6 @@ namespace SettlementGame.Domain
             Worker = worker;
             Building = building;
         }
-        //public int WorkerId { get; }
-        //public int Id { get; }
-
-        //public FireWorkerContext(int workerId)
-        //{
-        //    WorkerId = workerId;
-        //    Id = Id;
-        //}
+        
     }
 }

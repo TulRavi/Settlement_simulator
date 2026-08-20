@@ -26,7 +26,7 @@ namespace SettlementGame.Domain
             worker.X = entity.X;
             worker.Y = entity.Y;
             worker.IsAlive = entity.IsAlive;
-            worker.PersonalLoyality = entity.PersonalLoyality;
+            worker.PersonalLoyalty = entity.PersonalLoyalty;
             worker.CurrentSalary = entity.CurrentSalary;
                 worker.PersonalMoney = entity.PersonalMoney;
             //worker.info = entity.info;
@@ -48,7 +48,7 @@ namespace SettlementGame.Domain
                 IsAlive = domainWorker.IsAlive,
                 WorkPlaceId = domainWorker.WorkPlaceId,
                 IsEmployed = domainWorker.IsEmployed,
-                PersonalLoyality = domainWorker.PersonalLoyality,
+                PersonalLoyalty = domainWorker.PersonalLoyalty,
                 PersonalMoney = domainWorker.PersonalMoney,
                 CurrentSalary = domainWorker.CurrentSalary,
                 info = domainWorker.info,

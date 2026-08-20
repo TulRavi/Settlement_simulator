@@ -11,18 +11,28 @@ namespace SettlementGame.Web
 {
     public class WebAuthService
     {
-        
-        private readonly GameDbContext _dbContext;
-        
 
-        public WebAuthService(GameDbContext dbContext)
+        private readonly GameDbContext _dbContext;
+        private readonly IConfiguration _configuration; //ASP.NET Core's IConfiguration will provide this automatically via DI
+        //allows to use JWT key without saving it directly and openning from Program, like it was before
+
+        public WebAuthService(
+            GameDbContext dbContext,
+            IConfiguration configuration)
         {
-            this._dbContext = dbContext;//для считывания логина-пароля из БД
+            this._dbContext = dbContext;
+            this._configuration = configuration;
         }
+
         public string Authenticate(LoginRequest request)
         {
-            
-            string jwtKey = Program.JwtKey;
+            string jwtKey = _configuration["Jwt:Key"];
+
+            if (string.IsNullOrWhiteSpace(jwtKey))
+            {
+                throw new InvalidOperationException(
+                    "JWT key is not configured.");
+            }
 
             UserEntity user = _dbContext.Users.FirstOrDefault(x => x.Email == request.Email);
 
@@ -38,7 +48,8 @@ namespace SettlementGame.Web
             {
                 return null;
             }
-            //переходим на хранение в БД
+            
+            //now save it in BD
             //if (request.Email == "Admin" && request.Password == "321")
             //{
             //return Ok("token321");
@@ -56,7 +67,7 @@ namespace SettlementGame.Web
                 issuer: "game",
                 audience: "game_client",
                 claims: claims,
-                expires: DateTime.Now.AddHours(9),//не будем выбивать человека каждые 4 часа
+                expires: DateTime.Now.AddHours(9),//9 hours - normal working day
                 signingCredentials: creds
             );
 

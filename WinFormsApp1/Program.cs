@@ -6,40 +6,49 @@ namespace WinFormsApp1
     internal static class Program
     {
         /// <summary>
-        ///  The main entry point for the application.
+        /// The main entry point for the application.
         /// </summary>
         [STAThread]
-
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
+            // Initialize the Windows Forms application.
             ApplicationConfiguration.Initialize();
-            HttpClient client = new HttpClient();//1 на всё приложение
+
+            // Create one HttpClient for the entire application.
+            // The same client is used for authentication and all subsequent API requests.
+            HttpClient client = new HttpClient();
+
+            // Allow long-running requests, such as simulation Ticks.
             client.Timeout = TimeSpan.FromMinutes(15);
+
+            // Set the base address of the Web API.
             client.BaseAddress = new Uri("http://localhost:5126/");
+
+            // Create the authentication service.
+            // AuthService is responsible for sending Login requests to the Web API.
             AuthService authService = new AuthService(client);
-            // создаём сервис авторизации
+
+            // Create the Login form.
             AuthenticationClient authForm = new AuthenticationClient(authService);
-            // создаём форму логина
+
+            // Show the Login form modally.
+            // The main application does not start until the user successfully logs in.
             if (authForm.ShowDialog() == DialogResult.OK)
-            // показываем модально (пока не залогинился — дальше нельзя)
             {
+                // Get the JWT returned by the authentication form.
                 string token = authForm.Token;
-                // получаем токен из формы
 
+                // Add the JWT to the Authorization header of the shared HttpClient.
+                // All subsequent API requests will therefore contain:
+                // Authorization: Bearer <token>
                 client.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                //MessageBox.Show(client.DefaultRequestHeaders.Authorization.ToString());
-                // добавляем токен ко ВСЕМ последующим запросам
-                //MessageBox.Show(token);
+                    new System.Net.Http.Headers.AuthenticationHeaderValue(
+                        "Bearer",
+                        token);
 
+                // Start the main application form.
                 Application.Run(new MainForm(client));
-                // запускаем основную форму
             }
-
-            
-
         }
     }
 }
