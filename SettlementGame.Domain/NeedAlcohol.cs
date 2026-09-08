@@ -15,7 +15,7 @@ namespace SettlementGame.Domain
             Amount = amount;
         }
 
-        public override int Cost { get; set; } = 5;
+        public override int Cost { get; set; } = -5;
 
         public override bool IsCritical
         {
@@ -31,6 +31,11 @@ namespace SettlementGame.Domain
         public override double GetIncreaseChangePerTick()
         {
             return 0.1;
+        }
+
+        public override bool ShouldTryToSatisfy()
+        {
+            if (Amount > 0.5) { return true; } else { return false; }
         }
 
         public override bool TryToSatisfy(Worker worker, List<Resource> resourceList)

@@ -247,7 +247,7 @@ namespace SettlementGame.Domain
 
         public bool HasEnoughMoney(int value)
         {
-            if ((PersonalMoney - value) >= 0)
+            if ((PersonalMoney + value) >= 0)
             {
                 return true;
             }
